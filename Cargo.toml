@@ -3,3 +3,6 @@
 name = "substudy"
 version = "0.0.1"
 authors = ["Eric Kidd <git@randomhacks.net>"]
+
+[dependencies.peg]
+git = "https://github.com/kevinmehall/rust-peg.git"
