@@ -13,5 +13,6 @@ extern crate regex;
 
 pub mod err;
 pub mod srt;
+pub mod clean;
 pub mod merge;
 pub mod align;

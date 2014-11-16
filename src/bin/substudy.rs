@@ -11,11 +11,12 @@ use std::io::Writer;
 
 use substudy::err::Result as SubStudyResult;
 use substudy::srt::SubtitleFile;
+use substudy::clean::clean_subtitle_file;
 use substudy::align::combine_files;
 
 fn combine(path1: &Path, path2: &Path) -> SubStudyResult<String> {
-    let file1 = try!(SubtitleFile::from_path(path1));
-    let file2 = try!(SubtitleFile::from_path(path2));
+    let file1 = clean_subtitle_file(&try!(SubtitleFile::from_path(path1)));
+    let file2 = clean_subtitle_file(&try!(SubtitleFile::from_path(path2)));
     Ok(combine_files(&file1, &file2).to_string())
 }
 
