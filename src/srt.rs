@@ -128,7 +128,7 @@ use srt::{Subtitle,SubtitleFile};
 
 #[pub]
 subtitle_file -> SubtitleFile
-    = blank_lines? result:subtitles blank_lines? {
+    = bom? blank_lines? result:subtitles blank_lines? {
         SubtitleFile{subtitles: result}
     }
 
@@ -163,6 +163,9 @@ comma_float -> f32
         let fixed: String = match_str.replace(",", ".");
         from_str::<f32>(fixed.as_slice()).unwrap()
     }
+
+bom
+    = "\uFEFF"
 
 newline
     = "\r"? "\n"
