@@ -187,6 +187,11 @@ fn clone_as(sub: &Subtitle, index: uint, before: &str, after: &str) -> Subtitle 
     Subtitle{index: index, begin: sub.begin, end: sub.end, lines: lines}
 }
 
+static STYLE1B: &'static str = "<font color=\"yellow\">";
+static STYLE1E: &'static str = "</font>";
+static STYLE2B: &'static str = "<i>";
+static STYLE2E: &'static str = "</i>";
+
 /// Combine two subtitle files into an aligned file.
 pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile)
                      -> SubtitleFile
@@ -194,11 +199,11 @@ pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile)
     let subs = align_files(file1, file2).iter().enumerate().map(|(i, pair)| {
         match pair {
             &(None, None) => panic!("Shouldn't have empty alignment pair!"),
-            &(Some(ref sub), None) => clone_as(sub, i+1, "<i>", "</i>"),
-            &(None, Some(ref sub)) => clone_as(sub, i+1, "", ""),
+            &(Some(ref sub), None) => clone_as(sub, i+1, STYLE1B, STYLE1E),
+            &(None, Some(ref sub)) => clone_as(sub, i+1, STYLE2B, STYLE2E),
             &(Some(ref sub1), Some(ref sub2)) => {
-                let mut new = clone_as(sub1, i+1, "<i>", "</i>");
-                let to_merge = clone_as(sub2, i+1, "", "");
+                let mut new = clone_as(sub1, i+1, STYLE1B, STYLE1E);
+                let to_merge = clone_as(sub2, i+1, STYLE2B, STYLE2E);
                 let mut lines = to_merge.lines.clone();
                 lines.push_all(new.lines.as_slice());
                 new.lines = lines;

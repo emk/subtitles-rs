@@ -1,31 +1,31 @@
 1
 00:01:02,328 --> 00:01:04,664
-Yay! Yay! Aang's back!
-<i>¡Si! ¡Aang ha vuelto!</i>
+<i>Yay! Yay! Aang's back!</i>
+<font color="yellow">¡Si! ¡Aang ha vuelto!</font>
 
 2
 00:01:07,700 --> 00:01:10,736
-( cheering )
+<i>( cheering )</i>
 
 3
 00:01:12,839 --> 00:01:13,839
-I knew it!
-<i>¡Lo sabía!</i>
+<i>I knew it!</i>
+<font color="yellow">¡Lo sabía!</font>
 
 4
 00:01:13,840 --> 00:01:16,579
-You signaled the Fire Navy with that flare.
-<i>Tu diste la señal a la armada del fuego</i>
-<i>con la bengala,</i>
+<i>You signaled the Fire Navy with that flare.</i>
+<font color="yellow">Tu diste la señal a la armada del fuego</font>
+<font color="yellow">con la bengala,</font>
 
 5
 00:01:16,604 --> 00:01:18,599
-You're leading them straight to us, aren't
-you?
-<i>harás que vengan a nosotros.</i>
+<i>You're leading them straight to us, aren't</i>
+<i>you?</i>
+<font color="yellow">harás que vengan a nosotros.</font>
 
 6
 00:01:18,624 --> 00:01:21,879
-Aang didn't do anything.
-<i>El no ha hecho nada, Sokka, fué un</i>
-<i>accidente.</i>
+<i>Aang didn't do anything.</i>
+<font color="yellow">El no ha hecho nada, Sokka, fué un</font>
+<font color="yellow">accidente.</font>
