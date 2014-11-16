@@ -178,8 +178,12 @@ pub fn align_files(file1: &SubtitleFile, file2: &SubtitleFile)
 // Clone a subtitle with the specified index, and wrap its lines with
 // formatting.
 fn clone_as(sub: &Subtitle, index: uint, before: &str, after: &str) -> Subtitle {
-    let lines =
-        sub.lines.iter().map(|l| format!("{}{}{}", before, l, after)).collect();
+    let lines = sub.lines.iter().map(|l| {
+        // For now, strip out existing formatting.  We'll change this once
+        // color works.
+        let cleaned = regex!(r"<[a-z/][^>]*>").replace_all(l.as_slice(), "");
+        format!("{}{}{}", before, cleaned.as_slice(), after)
+    }).collect();
     Subtitle{index: index, begin: sub.begin, end: sub.end, lines: lines}
 }
 
@@ -194,7 +198,8 @@ pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile)
             &(None, Some(ref sub)) => clone_as(sub, i+1, "", ""),
             &(Some(ref sub1), Some(ref sub2)) => {
                 let mut new = clone_as(sub1, i+1, "<i>", "</i>");
-                let mut lines = sub2.lines.clone();
+                let to_merge = clone_as(sub2, i+1, "", "");
+                let mut lines = to_merge.lines.clone();
                 lines.push_all(new.lines.as_slice());
                 new.lines = lines;
                 new
