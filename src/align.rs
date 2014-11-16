@@ -1,5 +1,7 @@
 //! Align two subtitle files.
 
+use std::num::{Float,FloatMath};
+
 use srt::{Subtitle, SubtitleFile};
 use merge::merge_subtitles;
 

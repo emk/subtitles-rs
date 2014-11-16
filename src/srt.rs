@@ -1,6 +1,8 @@
 //! SRT-format subtitle support.
 
 use std::io::File;
+use std::num::Float;
+
 use err::Result as MyResult;
 use err::ParseError;
 
