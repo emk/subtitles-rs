@@ -6,3 +6,7 @@ authors = ["Eric Kidd <git@randomhacks.net>"]
 
 [dependencies.peg]
 git = "https://github.com/kevinmehall/rust-peg.git"
+
+[[bin]]
+name = "substudy"
+test = false
