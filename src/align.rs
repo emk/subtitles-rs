@@ -4,6 +4,7 @@ use std::num::{Float,FloatMath};
 
 use srt::{Subtitle, SubtitleFile};
 use merge::merge_subtitles;
+use clean::clean_subtitle_file;
 
 // How well do two subtitles match each other, going solely by the time?
 #[deriving(PartialEq)]
@@ -175,16 +176,15 @@ pub fn align_files(file1: &SubtitleFile, file2: &SubtitleFile)
     }).collect()
 }
 
-// Clone a subtitle with the specified index, and wrap its lines with
-// formatting.
-fn clone_as(sub: &Subtitle, index: uint, before: &str, after: &str) -> Subtitle {
+// Clone a subtitle and wrap its lines with formatting.
+fn clone_as(sub: &Subtitle, before: &str, after: &str) -> Subtitle {
     let lines = sub.lines.iter().map(|l| {
         // For now, strip out existing formatting.  We'll change this once
         // color works.
         let cleaned = regex!(r"<[a-z/][^>]*>").replace_all(l.as_slice(), "");
         format!("{}{}{}", before, cleaned.as_slice(), after)
     }).collect();
-    Subtitle{index: index, begin: sub.begin, end: sub.end, lines: lines}
+    Subtitle{index: sub.index, begin: sub.begin, end: sub.end, lines: lines}
 }
 
 static STYLE1B: &'static str = "<font color=\"yellow\">";
@@ -196,14 +196,14 @@ static STYLE2E: &'static str = "</i>";
 pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile)
                      -> SubtitleFile
 {
-    let subs = align_files(file1, file2).iter().enumerate().map(|(i, pair)| {
+    let mut subs: Vec<Subtitle> = align_files(file1, file2).iter().map(|pair| {
         match pair {
             &(None, None) => panic!("Shouldn't have empty alignment pair!"),
-            &(Some(ref sub), None) => clone_as(sub, i+1, STYLE1B, STYLE1E),
-            &(None, Some(ref sub)) => clone_as(sub, i+1, STYLE2B, STYLE2E),
+            &(Some(ref sub), None) => clone_as(sub, STYLE1B, STYLE1E),
+            &(None, Some(ref sub)) => clone_as(sub, STYLE2B, STYLE2E),
             &(Some(ref sub1), Some(ref sub2)) => {
-                let mut new = clone_as(sub1, i+1, STYLE1B, STYLE1E);
-                let to_merge = clone_as(sub2, i+1, STYLE2B, STYLE2E);
+                let mut new = clone_as(sub1, STYLE1B, STYLE1E);
+                let to_merge = clone_as(sub2, STYLE2B, STYLE2E);
                 let mut lines = to_merge.lines.clone();
                 lines.push_all(new.lines.as_slice());
                 new.lines = lines;
@@ -211,7 +211,21 @@ pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile)
             }
         }
     }).collect();
-    SubtitleFile{subtitles: subs}
+    // Extend the time of each sub to account for increased text.  We rely
+    // on clean_subtitle_file to clean up any remaining overlaps.
+    for i in range(0, subs.len()) {
+        if i == 0 {
+            subs[i].begin = (subs[i].begin - 2.0).max(0.0);
+        } else {
+            subs[i].begin = (subs[i].begin - 2.0).max(subs[i-1].end + 0.001);
+        }
+        if i+1 == subs.len() {
+            subs[i].end += 2.0;
+        } else {
+            subs[i].end = (subs[i].end + 2.0).min(subs[i+1].begin - 0.001);
+        }
+    }
+    clean_subtitle_file(&SubtitleFile{subtitles: subs})
 }
 
 #[test]
