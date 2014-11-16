@@ -13,11 +13,11 @@ pub fn format_time(time: f32) -> String {
 
 /// A single SRT-format subtitle, minus some of the optional fields used in
 /// various versions of the file format.
-#[deriving(Show, PartialEq)]
+#[deriving(Show, PartialEq, Clone)]
 pub struct Subtitle {
     /// The index of this subtitle.  We should normalize these to start
     /// with 1 on output.
-    pub index: u32,
+    pub index: uint,
 
     /// The start time of this subtitle, in seconds.
     pub begin: f32,
@@ -153,8 +153,8 @@ lines -> Vec<String>
 line -> String
     = [^\r\n]+ { match_str.to_string() }
 
-digits -> u32
-    = [0-9]+ { from_str::<u32>(match_str).unwrap() }
+digits -> uint
+    = [0-9]+ { from_str::<uint>(match_str).unwrap() }
 
 comma_float -> f32
     = [0-9]+ "," [0-9]+ {

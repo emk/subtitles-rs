@@ -6,7 +6,7 @@ static LINE_MAX: uint = 43;
 
 /// Merge several subtitles into a single subtitle.  Returns `None` if no
 /// subtitles have been supplied, or if the resulting subtitle has no text.
-pub fn merge(subs: &[Subtitle]) -> Option<Subtitle> {
+pub fn merge_subtitles(subs: &[Subtitle]) -> Option<Subtitle> {
     // Break text into words.
     let mut words = vec!();
     for sub in subs.iter() {
@@ -48,16 +48,16 @@ pub fn merge(subs: &[Subtitle]) -> Option<Subtitle> {
 #[cfg(test)]
 mod test {
     use srt::SubtitleFile;
-    use merge::merge;
+    use merge::merge_subtitles;
 
     fn merge_for_test(input: &str) -> String {
         let srt = SubtitleFile::from_str(input).unwrap();
-        merge(srt.subtitles.as_slice()).unwrap().to_string()
+        merge_subtitles(srt.subtitles.as_slice()).unwrap().to_string()
     }
 
     #[test]
     fn merge_zero() {
-        assert_eq!(None, merge([]));
+        assert_eq!(None, merge_subtitles([]));
     }
     
     #[test]

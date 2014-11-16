@@ -1,6 +1,7 @@
 //! Align two subtitle files.
 
 use srt::{Subtitle, SubtitleFile};
+use merge::merge_subtitles;
 
 // How well do two subtitles match each other, going solely by the time?
 #[deriving(PartialEq)]
@@ -80,7 +81,7 @@ fn best_matches(subs: &Vec<Subtitle>, candidates: &Vec<Subtitle>) ->
 
 /// Alignment specification, showing how to match up the specified indices
 /// in two subtitle files.
-pub type Alignment = Vec<(Vec<uint>, Vec<uint>)>;
+type Alignment = Vec<(Vec<uint>, Vec<uint>)>;
 
 // Returns true if `items[i].is_some()` and the value is found in `group`.
 // Returns false if `i` is out of bounds.
@@ -93,7 +94,7 @@ fn group_contains(group: &Vec<uint>, items: &Vec<Option<uint>>, i: uint) -> bool
 }
 
 /// Find a good way to align two subtitle files.
-pub fn alignment(file1: &SubtitleFile, file2: &SubtitleFile) -> Alignment {  
+fn alignment(file1: &SubtitleFile, file2: &SubtitleFile) -> Alignment {  
     let (subs1, subs2) = (&file1.subtitles, &file2.subtitles);
     // assert!(subs1 && subs2 contain valid subs in ascending order)
     let matches1 = best_matches(subs1, subs2);
@@ -154,3 +155,62 @@ fn test_alignment() {
     assert_eq!(expected, alignment(&srt_es, &srt_en));
 }
 
+/// Align two subtitle files, merging subtitles as necessary.
+pub fn align_files(file1: &SubtitleFile, file2: &SubtitleFile)
+                   -> Vec<(Option<Subtitle>, Option<Subtitle>)>
+{
+    fn merge(file: &SubtitleFile, indices: &[uint]) -> Option<Subtitle> {
+        let mut subs = vec!();
+        for &i in indices.iter() {
+            subs.push(file.subtitles[i].clone())
+        }
+        merge_subtitles(subs.as_slice())
+    }
+
+    alignment(file1, file2).iter().map(|&(ref indices1, ref indices2)| {
+        (merge(file1, indices1.as_slice()),
+         merge(file2, indices2.as_slice()))
+    }).collect()
+}
+
+// Clone a subtitle with the specified index, and wrap its lines with
+// formatting.
+fn clone_as(sub: &Subtitle, index: uint, before: &str, after: &str) -> Subtitle {
+    let lines =
+        sub.lines.iter().map(|l| format!("{}{}{}", before, l, after)).collect();
+    Subtitle{index: index, begin: sub.begin, end: sub.end, lines: lines}
+}
+
+/// Combine two subtitle files into an aligned file.
+pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile)
+                     -> SubtitleFile
+{
+    let subs = align_files(file1, file2).iter().enumerate().map(|(i, pair)| {
+        match pair {
+            &(None, None) => panic!("Shouldn't have empty alignment pair!"),
+            &(Some(ref sub), None) => clone_as(sub, i+1, "<i>", "</i>"),
+            &(None, Some(ref sub)) => clone_as(sub, i+1, "", ""),
+            &(Some(ref sub1), Some(ref sub2)) => {
+                let mut new = clone_as(sub1, i+1, "<i>", "</i>");
+                let mut lines = sub2.lines.clone();
+                lines.push_all(new.lines.as_slice());
+                new.lines = lines;
+                new
+            }
+        }
+    }).collect();
+    SubtitleFile{subtitles: subs}
+}
+
+#[test]
+fn test_combine_files() {
+    // Load sample subtitles.
+    let path_es = Path::new("fixtures/sample.es.srt");
+    let srt_es = SubtitleFile::from_path(&path_es).unwrap();
+    let path_en = Path::new("fixtures/sample.en.srt");
+    let srt_en = SubtitleFile::from_path(&path_en).unwrap();
+    let path_combined = Path::new("fixtures/combined.srt");
+    let expected = SubtitleFile::from_path(&path_combined).unwrap();
+    assert_eq!(expected.to_string(),
+               combine_files(&srt_es, &srt_en).to_string());
+}
