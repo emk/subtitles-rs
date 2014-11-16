@@ -8,7 +8,10 @@
 
 #[phase(plugin, link)] extern crate log;
 #[phase(plugin)] extern crate peg_syntax_ext;
+extern crate regex;
+#[phase(plugin)] extern crate regex_macros;
 
 pub mod err;
 pub mod srt;
+pub mod merge;
 pub mod align;

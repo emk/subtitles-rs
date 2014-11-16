@@ -13,6 +13,7 @@ pub fn format_time(time: f32) -> String {
 
 /// A single SRT-format subtitle, minus some of the optional fields used in
 /// various versions of the file format.
+#[deriving(Show, PartialEq)]
 pub struct Subtitle {
     /// The index of this subtitle.  We should normalize these to start
     /// with 1 on output.
@@ -39,6 +40,7 @@ impl Subtitle {
 }
 
 /// The contents of an SRT-format subtitle file.
+#[deriving(Show, PartialEq)]
 pub struct SubtitleFile {
     /// The subtitles in this file.
     pub subtitles: Vec<Subtitle>

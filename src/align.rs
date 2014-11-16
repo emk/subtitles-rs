@@ -122,8 +122,10 @@ pub fn alignment(file1: &SubtitleFile, file2: &SubtitleFile) -> Alignment {
             while group_contains(&matched1, &matches2, i2) ||
                   group_contains(&matched2, &matches1, i1) {
                 if group_contains(&matched1, &matches2, i2) {
+                    // i2 matches something in matched1, so add to matched2.
                     matched2.push(i2); i2 += 1;
                 } else if group_contains(&matched2, &matches1, i1) {
+                    // i1 matches something in matched2, so add to matched1.
                     matched1.push(i1); i1 += 1;
                 }
                 debug!("grouping: {}, {}", matched1, matched2);
