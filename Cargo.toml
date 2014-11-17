@@ -13,3 +13,4 @@ git = "git://github.com/docopt/docopt.rs"
 [[bin]]
 name = "substudy"
 test = false
+doc = false
