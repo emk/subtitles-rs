@@ -68,7 +68,12 @@ impl SubtitleFile {
     pub fn to_string(&self) -> String {
         let subs: Vec<String> =
             self.subtitles.iter().map(|s| s.to_string()).collect();
-        subs.connect("\n")
+        // The BOM (byte-order mark) is generally discouraged on Linux, but
+        // it's sometimes needed to get good results under Windows.  We
+        // include it here because Wikipedia says that SRT files files
+        // default to various legacy encoding, but that the BOM can be used
+        // for Unicode.
+        format!("\uFEFF{}", subs.connect("\n"))
     }
 }
 
@@ -109,7 +114,7 @@ Line 1
 
     #[test]
     fn subtitle_file_to_string() {
-        let data = r"16
+        let data = "\uFEFF16
 00:01:02,328 --> 00:01:04,664
 Line 1.1
 

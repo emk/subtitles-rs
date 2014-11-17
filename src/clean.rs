@@ -79,7 +79,7 @@ Out of order.
 Overlapping.
 ").unwrap();
 
-    let cleaned = r"1
+    let cleaned = "\uFEFF1
 00:01:02,328 --> 00:01:03,162
 Hey!
 
