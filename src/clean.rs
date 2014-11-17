@@ -9,7 +9,7 @@ use srt::{Subtitle,SubtitleFile};
 //     SPEAKER:
 //     ( sound effect )
 //     ♪ music ♪
-static CLUTTER: Regex = regex!(r"(\([^)]*\)|♪[^♪]*♪|[A-Z]{2,}:)");
+static CLUTTER: Regex = regex!(r"(\([^)]*\)|♪[^♪]*♪|[A-Z]{2,} ?:)");
 
 // Used to compress and normalize consecutive whitespace.
 static WHITESPACE: Regex = regex!(r"\s+");
