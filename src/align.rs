@@ -214,15 +214,19 @@ pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile)
     // Extend the time of each sub to account for increased text.  We rely
     // on clean_subtitle_file to clean up any remaining overlaps.
     for i in range(0, subs.len()) {
+        if i+1 == subs.len() {
+            subs[i].end += 2.0;
+        } else {
+            // Extend forward into any unused space, but don't intefere with
+            // the buffer we want to add before the next subtitle.
+            let wanted = (subs[i].end + 2.0).min(subs[i+1].begin - 2.001);
+            subs[i].end = subs[i].end.max(wanted);
+        }
+
         if i == 0 {
             subs[i].begin = (subs[i].begin - 2.0).max(0.0);
         } else {
             subs[i].begin = (subs[i].begin - 2.0).max(subs[i-1].end + 0.001);
-        }
-        if i+1 == subs.len() {
-            subs[i].end += 2.0;
-        } else {
-            subs[i].end = (subs[i].end + 2.0).min(subs[i+1].begin - 0.001);
         }
     }
     clean_subtitle_file(&SubtitleFile{subtitles: subs})

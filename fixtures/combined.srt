@@ -1,31 +1,31 @@
 1
-00:01:00,328 --> 00:01:06,664
+00:01:00,328 --> 00:01:05,699
 <i>Yay! Yay! Aang's back!</i>
 <font color="yellow">¡Si! ¡Aang ha vuelto!</font>
 
 2
-00:01:06,665 --> 00:01:12,736
+00:01:05,700 --> 00:01:10,838
 <i>cheering</i>
 
 3
-00:01:12,737 --> 00:01:13,839
+00:01:10,839 --> 00:01:13,839
 <i>I knew it!</i>
 <font color="yellow">¡Lo sabía!</font>
 
 4
-00:01:13,840 --> 00:01:16,603
+00:01:13,840 --> 00:01:16,579
 <i>You signaled the Fire Navy with that flare.</i>
 <font color="yellow">Tu diste la señal a la armada del fuego</font>
 <font color="yellow">con la bengala,</font>
 
 5
-00:01:16,604 --> 00:01:18,623
+00:01:16,580 --> 00:01:18,599
 <i>You're leading them straight to us, aren't</i>
 <i>you?</i>
 <font color="yellow">harás que vengan a nosotros.</font>
 
 6
-00:01:18,624 --> 00:01:23,879
+00:01:18,600 --> 00:01:23,879
 <i>Aang didn't do anything.</i>
 <font color="yellow">El no ha hecho nada, Sokka, fué un</font>
 <font color="yellow">accidente.</font>
