@@ -60,6 +60,16 @@ excellent choice, and it runs fine in a Windows VM.
 [opensubtitles.org]: http://www.opensubtitles.org/en/search
 [Subtitle Edit]: http://www.nikse.dk/subtitleedit/
 
+## Watching video with bilingual SRT subtitles
+
+My favorite tools are [VLC][], for watching on my computer, and
+[Videostream][], for streaming videos to my TV using a [Chromecast][].  The
+same subtitle file should work fine with both.
+
+[VLC]: http://www.videolan.org/vlc/
+[Videostream]: http://www.getvideostream.com/
+[Chromecast]: http://www.google.com/chrome/devices/chromecast/
+
 ## Contributing
 
 Please feel welcome to send me a pull request or submit an issue!
