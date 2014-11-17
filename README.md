@@ -18,7 +18,7 @@ changing on an almost nighly basis.
 curl https://static.rust-lang.org/rustup.sh | sudo bash
 ```
 
-Next, you'll need to clone and buil `substudy`:
+Next, you'll need to clone and build `substudy`:
 
 ```sh
 git clone https://github.com/emk/substudy.git
