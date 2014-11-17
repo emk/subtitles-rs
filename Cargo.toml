@@ -7,6 +7,9 @@ authors = ["Eric Kidd <git@randomhacks.net>"]
 [dependencies.peg]
 git = "https://github.com/kevinmehall/rust-peg.git"
 
+[dependencies.docopt_macros]
+git = "git://github.com/docopt/docopt.rs"
+
 [[bin]]
 name = "substudy"
 test = false

@@ -5,24 +5,43 @@ working on any given day.
 
 ## Building `substudy`
 
-Installing Rust and Cargo:
+You'll need to install Rust and Cargo.  Note that Rust is currently
+undergoing library stabilization before version 1.0, and things are
+changing on an almost nighly basis.
 
 ```sh
 curl https://static.rust-lang.org/rustup.sh | sudo bash
 ```
 
-Clone, compiling and building `substudy`, assuming it builds with the most
-recent nightly build of Rust:
+Next, you'll need to clone and buil `substudy`:
 
 ```sh
 git clone https://github.com/emk/substudy.git
 cd substudy
 cargo build
-target/substudy foreign.srt native.srt > bilingual.srt
 ```
 
-Note that the command-line interface will change as more features are
-added.
+If this fails with the latest Rust, please feel free to submit an issue.
+
+## Running `substudy`
+
+To get a list of supported commands, run `target/substudy --help`:
+
+```
+Subtitle processing tools for students of foreign languages
+
+Usage: substudy clean <subtitles>
+       substudy combine <foreign-subtitles> <native-subtitles>
+       substudy --help
+
+For now, all subtitles must be in *.srt format and encoded as UTF-8.
+```
+
+So, for example, you could run:
+
+``` sh
+target/substudy combine foreign.srt native.srt > bilingual.srt
+```
 
 ## Finding & preparing subtitles
 
