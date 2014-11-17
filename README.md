@@ -70,6 +70,16 @@ same subtitle file should work fine with both.
 [Videostream]: http://www.getvideostream.com/
 [Chromecast]: http://www.google.com/chrome/devices/chromecast/
 
+## Using substudy as a library
+
+You can find [API documentation on the Rust CI site][apidoc].  Note that
+all APIs are experimental and subject to change.  If you want to use
+`substudy` as a library in your own tools, you're encouraged to do so, but
+it might be worth letting me know which APIs you're using so that I can
+stabilize them.
+
+[apidoc]: http://www.rust-ci.org/emk/substudy/doc/substudy/
+
 ## Contributing
 
 Please feel welcome to send me a pull request or submit an issue!
