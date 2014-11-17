@@ -1,19 +1,32 @@
 //! Tools for cleaning up subtitle files and getting them into some
 //! kind of normalized format.
 
+use regex::Regex;
 use srt::{Subtitle,SubtitleFile};
 
-// Does this line look useful?
-fn keep_line(line: &str) -> bool {
-    line.len() > 0 && !(regex!(r"^[(♪]")).is_match(line)
+// Used to remove the following common sorts of closed-caption clutter:
+//
+//     SPEAKER:
+//     ( sound effect )
+//     ♪ music ♪
+static CLUTTER: Regex = regex!(r"(\( [^)]*(\)|$)|♪ [^♪]*(♪|$)|[A-Z]{2,}:)");
+
+// Used to compress and normalize consecutive whitespace.
+static WHITESPACE: Regex = regex!(r"\s+");
+
+// Clean up a single subtitle line.
+fn clean_line(line: &str) -> String {
+    WHITESPACE.replace_all(CLUTTER.replace_all(line, "").as_slice(), " ")
+        .trim().to_string()
 }
 
 // Clean up a subtitle, or discard it if it looks useless.
 fn clean_subtitle(sub: &Subtitle) -> Option<Subtitle> {
     if sub.end <= sub.begin { return None; }
     let lines: Vec<String> = sub.lines.iter()
-        .filter(|l| keep_line(l.as_slice()))
-        .map(|s| s.clone()).collect();
+        .map(|l| clean_line(l.as_slice()))
+        .filter(|l| l.len() > 0)
+        .map(|l| l.to_string()).collect();
     if lines.len() == 0 { return None; }
     Some(Subtitle{index: sub.index, begin: sub.begin, end: sub.end,
                   lines: lines})
@@ -64,7 +77,7 @@ They've arrived.
 
 18
 00:01:02,328 --> 00:01:03,162
-Hey!
+JOE: Hey! ( waves arms )
 
 51
 00:02:35,636 --> 00:02:32,895
