@@ -1,7 +1,12 @@
 This is an experimental tool to help language-learners exploit parallel
-subtitles in various ways.  It's written using Rust, a programming language
-that's still under heavy development.  So it may be hard to get this
-working on any given day.
+subtitles in various ways.
+
+It's written using Rust, a programming language that's still under heavy
+development.  So it may be hard to get this working on any given day.  But
+if the following badge is green, there's a good chance everything will
+work:
+
+[![Build Status](https://travis-ci.org/emk/substudy.svg?branch=master)](https://travis-ci.org/emk/substudy)
 
 ## Building `substudy`
 
