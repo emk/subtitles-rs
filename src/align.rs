@@ -6,6 +6,8 @@ use srt::{Subtitle, SubtitleFile};
 use merge::merge_subtitles;
 use clean::clean_subtitle_file;
 
+use self::MatchQuality::{NoMatch, Nearby, Overlap};
+
 // How well do two subtitles match each other, going solely by the time?
 #[deriving(PartialEq)]
 enum MatchQuality {

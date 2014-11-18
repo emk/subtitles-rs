@@ -3,6 +3,7 @@
 use std::error;
 use std::io;
 use std::result;
+pub use self::Error::{IoError, ParseError};
 
 /// Our library's error class.  This may grow new enumeration values.
 #[deriving(Show)]
