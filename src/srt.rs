@@ -3,8 +3,7 @@
 use std::io::File;
 use std::num::Float;
 
-use err::Result as MyResult;
-use err::ParseError;
+use err::{SubStudyError, SubStudyResult};
 
 /// Format seconds using the standard SRT time format.
 pub fn format_time(time: f32) -> String {
@@ -50,15 +49,15 @@ pub struct SubtitleFile {
 
 impl SubtitleFile {
     /// Parse raw subtitle text into an appropriate structure.
-    pub fn from_str(data: &str) -> MyResult<SubtitleFile> {
+    pub fn from_str(data: &str) -> SubStudyResult<SubtitleFile> {
         match grammar::subtitle_file(data) {
             Ok(file) => Ok(file),
-            Err(msg) => Err(ParseError(msg))
+            Err(msg) => Err(SubStudyError::Parse(msg))
         }
     }
 
     /// Parse the subtitle file found at the specified path.
-    pub fn from_path(path: &Path) -> MyResult<SubtitleFile> {
+    pub fn from_path(path: &Path) -> SubStudyResult<SubtitleFile> {
         let mut file = try!(File::open(path));
         let data = try!(file.read_to_string());
         SubtitleFile::from_str(data.as_slice())

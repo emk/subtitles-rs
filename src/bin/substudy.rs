@@ -12,7 +12,7 @@ extern crate substudy;
 
 use std::io::Writer;
 
-use substudy::err::Result as SubStudyResult;
+use substudy::err::SubStudyResult;
 use substudy::srt::SubtitleFile;
 use substudy::clean::clean_subtitle_file;
 use substudy::align::combine_files;
