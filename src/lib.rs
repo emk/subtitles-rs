@@ -11,12 +11,16 @@
 #![deny(warnings)]
 #![feature(phase)]
 
+extern crate collections;
 #[phase(plugin, link)] extern crate log;
 #[phase(plugin)] extern crate peg_syntax_ext;
 extern crate regex;
 #[phase(plugin)] extern crate regex_macros;
+extern crate uchardet;
+extern crate encoding;
 
 pub mod err;
+pub mod decode;
 pub mod srt;
 pub mod clean;
 pub mod merge;

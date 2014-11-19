@@ -4,6 +4,7 @@ use std::io::File;
 use std::num::Float;
 
 use err::{SubStudyError, SubStudyResult};
+use decode::smart_decode;
 
 /// Format seconds using the standard SRT time format.
 pub fn format_time(time: f32) -> String {
@@ -59,7 +60,8 @@ impl SubtitleFile {
     /// Parse the subtitle file found at the specified path.
     pub fn from_path(path: &Path) -> SubStudyResult<SubtitleFile> {
         let mut file = try!(File::open(path));
-        let data = try!(file.read_to_string());
+        let bytes = try!(file.read_to_end());
+        let data = try!(smart_decode(bytes.as_slice()));
         SubtitleFile::from_str(data.as_slice())
     }
 

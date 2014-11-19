@@ -2,14 +2,21 @@
 
 use std::error::{Error,FromError};
 use std::io::IoError;
+use uchardet::EncodingDetectorError;
 
 /// Our library's error class.  This may grow new enumeration values.
 #[deriving(Show)]
 pub enum SubStudyError {
-    /// An error occurred while reading or writing subtitle data.
+    /// Error reading or writing subtitle data.
     Io(IoError),
 
-    /// An error occurred while parsing subtitle data.
+    /// Error detecting the subtitle encoding.
+    EncodingDetector(EncodingDetectorError),
+
+    /// Error decoding the subtiles to UTF-8.
+    Decode(String),
+
+    /// An error which occurred while parsing subtitle data.
     Parse(String)
 }
 
@@ -20,6 +27,8 @@ impl Error for SubStudyError {
     fn description(&self) -> &str {
         match *self {
             SubStudyError::Io(ref err) => err.description(),
+            SubStudyError::EncodingDetector(ref err) => err.description(),
+            SubStudyError::Decode(_) => "decode error",
             SubStudyError::Parse(_) => "parse error"
         }
     }
@@ -27,6 +36,8 @@ impl Error for SubStudyError {
     fn detail(&self) -> Option<String> {
         match *self {
             SubStudyError::Io(ref err) => err.detail(),
+            SubStudyError::EncodingDetector(ref err) => err.detail(),
+            SubStudyError::Decode(ref str) => Some(str.clone()),
             SubStudyError::Parse(ref str) => Some(str.clone())
         }
     }
@@ -39,5 +50,11 @@ impl Error for SubStudyError {
 impl FromError<IoError> for SubStudyError {
     fn from_error(err: IoError) -> SubStudyError {
         SubStudyError::Io(err)
+    }
+}
+
+impl FromError<EncodingDetectorError> for SubStudyError {
+    fn from_error(err: EncodingDetectorError) -> SubStudyError {
+        SubStudyError::EncodingDetector(err)
     }
 }

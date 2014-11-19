@@ -39,7 +39,9 @@ Usage: substudy clean <subtitles>
        substudy combine <foreign-subtitles> <native-subtitles>
        substudy --help
 
-For now, all subtitles must be in *.srt format and encoded as UTF-8.
+For now, all subtitles must be in *.srt format. Many common encodings
+will be automatically detected, but try converting to UTF-8 if you
+have problems.
 ```
 
 So, for example, you could run:

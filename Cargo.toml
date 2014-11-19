@@ -15,6 +15,12 @@ branch = "enum_scoping"
 # Temporary fixes:
 git = "git://github.com/CraZySacX/docopt.rs"
 
+[dependencies.encoding]
+git = "https://github.com/lifthrasiir/rust-encoding"
+
+[dependencies.uchardet]
+git = "git://github.com/emk/rust-uchardet"
+
 [[bin]]
 name = "substudy"
 test = false
