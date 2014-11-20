@@ -10,7 +10,7 @@ use decode::smart_decode;
 pub fn format_time(time: f32) -> String {
     let (h, rem) = ((time / 3600.0).trunc(), time % 3600.0);
     let (m, s) = ((rem / 60.0).trunc(), rem % 60.0);
-    (format!("{:02f}:{:02f}:{:0>6.3f}", h, m, s)).replace(".", ",")
+    (format!("{:02}:{:02}:{:0>6.3}", h, m, s)).replace(".", ",")
 }
 
 /// A single SRT-format subtitle, minus some of the optional fields used in
