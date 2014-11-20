@@ -5,15 +5,10 @@ version = "0.0.1"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
 [dependencies.peg]
-#git = "https://github.com/kevinmehall/rust-peg.git"
-# Temporary fixes:
-git = "https://github.com/emk/rust-peg.git"
-branch = "enum_scoping"
+git = "https://github.com/kevinmehall/rust-peg.git"
 
 [dependencies.docopt_macros]
-#git = "git://github.com/docopt/docopt.rs"
-# Temporary fixes:
-git = "git://github.com/CraZySacX/docopt.rs"
+git = "git://github.com/docopt/docopt.rs"
 
 [dependencies.encoding]
 git = "https://github.com/lifthrasiir/rust-encoding"
