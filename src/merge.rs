@@ -1,3 +1,4 @@
+
 //! Tools for merge multiple subtitles into one.
 
 use srt::Subtitle;
@@ -57,7 +58,7 @@ mod test {
 
     #[test]
     fn merge_zero() {
-        assert_eq!(None, merge_subtitles([]));
+        assert_eq!(None, merge_subtitles(&[]));
     }
     
     #[test]
