@@ -7,7 +7,7 @@ authors = ["Eric Kidd <git@randomhacks.net>"]
 [dependencies]
 docopt_macros = "~0.6.8"
 encoding = "~0.2.3"
-uchardet = "~0.0.4"
+uchardet = "~0.0.6"
 
 [dependencies.peg]
 git = "https://github.com/kevinmehall/rust-peg.git"

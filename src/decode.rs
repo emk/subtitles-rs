@@ -2,14 +2,14 @@
 
 use encoding::label::encoding_from_whatwg_label;
 use encoding::types::DecoderTrap;
-use uchardet::EncodingDetector;
+use uchardet::detect_encoding_name;
 use err::{SubStudyError, SubStudyResult};
 
 /// Guess the encoding of a byte buffer and decode it to a string.
 pub fn smart_decode(bytes: &[u8]) -> SubStudyResult<String> {
     // If no matching encoding is found, that means we either have
     // valid ASCII data, or something hopelessly unsalvageable.
-    let name = try!(EncodingDetector::detect(bytes))
+    let name = try!(detect_encoding_name(bytes))
         .unwrap_or("ascii".to_string());
     let encoding = try!(encoding_from_whatwg_label(name.as_slice())
         .ok_or_else(|| {
