@@ -1,6 +1,5 @@
 //! Command-line iterface to substudy.
 
-#![license = "Public domain (Unlicense)"]
 #![deny(warnings)]
 #![feature(phase)]
 

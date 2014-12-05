@@ -5,7 +5,6 @@
 //! For further details about how to use substudy, see [the main GitHub
 //! page](http://www.rust-ci.org/emk/substudy/doc/substudy/).
 
-#![license = "Public domain (Unlicense)"]
 #![experimental]
 #![deny(missing_docs)]
 #![deny(warnings)]
