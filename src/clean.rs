@@ -92,7 +92,7 @@ Out of order.
 Overlapping.
 ").unwrap();
 
-    let cleaned = "\uFEFF1
+    let cleaned = "\u{FEFF}1
 00:01:02,328 --> 00:01:03,162
 Hey!
 

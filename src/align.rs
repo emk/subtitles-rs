@@ -9,7 +9,7 @@ use clean::clean_subtitle_file;
 use self::MatchQuality::{NoMatch, Nearby, Overlap};
 
 // How well do two subtitles match each other, going solely by the time?
-#[deriving(PartialEq)]
+#[deriving(PartialEq, Copy, Show)]
 enum MatchQuality {
     NoMatch,          // More than two seconds away.
     Nearby(f32),      // 0.0 <= seconds <= 2.0

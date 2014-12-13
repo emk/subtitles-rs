@@ -74,7 +74,7 @@ impl SubtitleFile {
         // include it here because Wikipedia says that SRT files files
         // default to various legacy encoding, but that the BOM can be used
         // for Unicode.
-        format!("\uFEFF{}", subs.connect("\n"))
+        format!("\u{FEFF}{}", subs.connect("\n"))
     }
 }
 
@@ -115,7 +115,7 @@ Line 1
 
     #[test]
     fn subtitle_file_to_string() {
-        let data = "\uFEFF16
+        let data = "\u{FEFF}16
 00:01:02,328 --> 00:01:04,664
 Line 1.1
 
