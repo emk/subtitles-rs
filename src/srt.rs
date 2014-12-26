@@ -129,7 +129,7 @@ Line 2.1
 }
 
 // Our parser expression grammar.  We'd like to move this to another file.
-peg! grammar(r#"
+peg! grammar{r#"
 use srt::{Subtitle,SubtitleFile};
 
 #[pub]
@@ -179,4 +179,4 @@ newline
 blank_lines
     = newline+
 
-"#)
+"#}

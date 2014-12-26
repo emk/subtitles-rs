@@ -3,7 +3,7 @@
 #![deny(warnings)]
 #![feature(phase)]
 
-extern crate serialize;
+extern crate "rustc-serialize" as rustc_serialize;
 extern crate docopt;
 #[phase(plugin)] extern crate docopt_macros;
 
@@ -16,7 +16,7 @@ use substudy::srt::SubtitleFile;
 use substudy::clean::clean_subtitle_file;
 use substudy::align::combine_files;
 
-docopt!(Args deriving Show, "
+docopt!{Args deriving Show, "
 Subtitle processing tools for students of foreign languages
 
 Usage: substudy clean <subtitles>
@@ -26,7 +26,7 @@ Usage: substudy clean <subtitles>
 For now, all subtitles must be in *.srt format. Many common encodings
 will be automatically detected, but try converting to UTF-8 if you
 have problems.
-")
+"}
 
 // Choose and run the appropriate command.
 fn run(args: &Args) -> SubStudyResult<String> {

@@ -17,7 +17,7 @@ pub fn smart_decode(bytes: &[u8]) -> SubStudyResult<String> {
         }));
     match encoding.decode(bytes, DecoderTrap::Strict) {
         Ok(result) => Ok(result),
-        Err(msg) => Err(SubStudyError::Decode(msg.into_string()))
+        Err(msg) => Err(SubStudyError::Decode(msg.into_owned()))
     }
 }
 
