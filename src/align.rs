@@ -1,6 +1,7 @@
 //! Align two subtitle files.
 
-use std::num::{Float,FloatMath};
+use std::num::Float;
+use std::cmp::Ordering;
 
 use srt::{Subtitle, SubtitleFile};
 use merge::merge_subtitles;
@@ -9,7 +10,7 @@ use clean::clean_subtitle_file;
 use self::MatchQuality::{NoMatch, Nearby, Overlap};
 
 // How well do two subtitles match each other, going solely by the time?
-#[deriving(PartialEq, Copy, Show)]
+#[derive(PartialEq, Copy, Show)]
 enum MatchQuality {
     NoMatch,          // More than two seconds away.
     Nearby(f32),      // 0.0 <= seconds <= 2.0
@@ -22,11 +23,11 @@ impl PartialOrd for MatchQuality {
             (&Overlap(v1), &Overlap(v2)) => v1.partial_cmp(&v2),
             (&Nearby(v1), &Nearby(v2)) =>
                 v1.partial_cmp(&v2).map(|c| c.reverse()),
-            (&NoMatch, &NoMatch) => Some(Equal),
-            (&Overlap(_), _) => Some(Greater),
-            (_, &Overlap(_)) => Some(Less),
-            (&Nearby(_), _) => Some(Greater),
-            (_, &Nearby(_)) => Some(Less)
+            (&NoMatch, &NoMatch) => Some(Ordering::Equal),
+            (&Overlap(_), _) => Some(Ordering::Greater),
+            (_, &Overlap(_)) => Some(Ordering::Less),
+            (&Nearby(_), _) => Some(Ordering::Greater),
+            (_, &Nearby(_)) => Some(Ordering::Less)
         }
     }
 }
@@ -53,8 +54,8 @@ fn match_quality(sub1: &Subtitle, sub2: &Subtitle) -> MatchQuality {
 }
 
 // Find the index of the best match for `sub` in `candidates`.
-fn best_match(sub: &Subtitle, candidates: &Vec<Subtitle>) -> Option<uint> {
-    let mut best: Option<(uint, MatchQuality)> = None;
+fn best_match(sub: &Subtitle, candidates: &Vec<Subtitle>) -> Option<usize> {
+    let mut best: Option<(usize, MatchQuality)> = None;
     for (i, candidate) in candidates.iter().enumerate() {
         let mq = match_quality(sub, candidate);
         if mq == NoMatch { continue; }
@@ -69,7 +70,7 @@ fn best_match(sub: &Subtitle, candidates: &Vec<Subtitle>) -> Option<uint> {
 
 // Find the index of the best match each subtitle in `subs` in `candidates`.
 fn best_matches(subs: &Vec<Subtitle>, candidates: &Vec<Subtitle>) ->
-    Vec<Option<uint>>
+    Vec<Option<usize>>
 {
     // We could be a lot more efficient about this if we wanted.
     subs.iter().map(|s| best_match(s, candidates)).collect()
@@ -86,11 +87,13 @@ fn best_matches(subs: &Vec<Subtitle>, candidates: &Vec<Subtitle>) ->
 
 /// Alignment specification, showing how to match up the specified indices
 /// in two subtitle files.
-type Alignment = Vec<(Vec<uint>, Vec<uint>)>;
+type Alignment = Vec<(Vec<usize>, Vec<usize>)>;
 
 // Returns true if `items[i].is_some()` and the value is found in `group`.
 // Returns false if `i` is out of bounds.
-fn group_contains(group: &Vec<uint>, items: &Vec<Option<uint>>, i: uint) -> bool{
+fn group_contains(group: &Vec<usize>, items: &Vec<Option<usize>>, i: usize) ->
+    bool
+{
     if !(i < items.len()) { return false; }
     match items[i] {
         None => false,
@@ -108,7 +111,7 @@ fn alignment(file1: &SubtitleFile, file2: &SubtitleFile) -> Alignment {
     let mut i1 = 0;
     let mut i2 = 0;
     while i1 < subs1.len() && i2 < subs2.len() {
-        debug!("subs1: {} matches {}, subs2: {} matches {}",
+        debug!("subs1: {} matches {:?}, subs2: {} matches {:?}",
                i1, matches1[i1], i2, matches2[i2]);
         if subs1[i1].begin < subs2[i2].begin && matches1[i1] != Some(i2) {
             // Subs1 has an item which doesn't match subs2.
@@ -134,7 +137,7 @@ fn alignment(file1: &SubtitleFile, file2: &SubtitleFile) -> Alignment {
                     // i1 matches something in matched2, so add to matched1.
                     matched1.push(i1); i1 += 1;
                 }
-                debug!("grouping: {}, {}", matched1, matched2);
+                debug!("grouping: {:?}, {:?}", matched1, matched2);
             }
             alignment.push((matched1, matched2));
         }
@@ -164,7 +167,7 @@ fn test_alignment() {
 pub fn align_files(file1: &SubtitleFile, file2: &SubtitleFile)
                    -> Vec<(Option<Subtitle>, Option<Subtitle>)>
 {
-    fn merge(file: &SubtitleFile, indices: &[uint]) -> Option<Subtitle> {
+    fn merge(file: &SubtitleFile, indices: &[usize]) -> Option<Subtitle> {
         let mut subs = vec!();
         for &i in indices.iter() {
             subs.push(file.subtitles[i].clone())

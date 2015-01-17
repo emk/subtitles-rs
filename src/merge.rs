@@ -3,7 +3,7 @@
 
 use srt::Subtitle;
 
-static LINE_MAX: uint = 43;
+static LINE_MAX: usize = 43;
 
 /// Merge several subtitles into a single subtitle.  Returns `None` if no
 /// subtitles have been supplied, or if the resulting subtitle has no text.

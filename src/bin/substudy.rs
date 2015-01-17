@@ -1,11 +1,12 @@
 //! Command-line iterface to substudy.
 
 #![deny(warnings)]
-#![feature(phase)]
+#![feature(plugin)]
+#![allow(unstable)]
 
 extern crate "rustc-serialize" as rustc_serialize;
 extern crate docopt;
-#[phase(plugin)] extern crate docopt_macros;
+#[plugin] #[no_link] extern crate docopt_macros;
 
 extern crate substudy;
 
@@ -16,7 +17,7 @@ use substudy::srt::SubtitleFile;
 use substudy::clean::clean_subtitle_file;
 use substudy::align::combine_files;
 
-docopt!{Args deriving Show, "
+docopt!{Args derive Show, "
 Subtitle processing tools for students of foreign languages
 
 Usage: substudy clean <subtitles>
@@ -36,7 +37,7 @@ fn run(args: &Args) -> SubStudyResult<String> {
         Args{cmd_combine: true, arg_foreign_subtitles: ref path1,
              arg_native_subtitles: ref path2, ..} =>
             cmd_combine(&Path::new(path1), &Path::new(path2)),
-        _ => panic!("Unexpected argument combination: {}", args)
+        _ => panic!("Unexpected argument combination: {:?}", args)
     }
 }
 

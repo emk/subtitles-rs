@@ -15,11 +15,11 @@ pub fn format_time(time: f32) -> String {
 
 /// A single SRT-format subtitle, minus some of the optional fields used in
 /// various versions of the file format.
-#[deriving(Show, PartialEq, Clone)]
+#[derive(Show, PartialEq, Clone)]
 pub struct Subtitle {
     /// The index of this subtitle.  We should normalize these to start
     /// with 1 on output.
-    pub index: uint,
+    pub index: usize,
 
     /// The start time of this subtitle, in seconds.
     pub begin: f32,
@@ -42,7 +42,7 @@ impl Subtitle {
 }
 
 /// The contents of an SRT-format subtitle file.
-#[deriving(Show, PartialEq)]
+#[derive(Show, PartialEq)]
 pub struct SubtitleFile {
     /// The subtitles in this file.
     pub subtitles: Vec<Subtitle>
@@ -130,6 +130,7 @@ Line 2.1
 
 // Our parser expression grammar.  We'd like to move this to another file.
 peg! grammar{r#"
+use std::str::FromStr;
 use srt::{Subtitle,SubtitleFile};
 
 #[pub]
@@ -161,13 +162,13 @@ lines -> Vec<String>
 line -> String
     = [^\r\n]+ { match_str.to_string() }
 
-digits -> uint
-    = [0-9]+ { from_str::<uint>(match_str).unwrap() }
+digits -> usize
+    = [0-9]+ { FromStr::from_str(match_str).unwrap() }
 
 comma_float -> f32
     = [0-9]+ "," [0-9]+ {
         let fixed: String = match_str.replace(",", ".");
-        from_str::<f32>(fixed.as_slice()).unwrap()
+        FromStr::from_str(fixed.as_slice()).unwrap()
     }
 
 bom

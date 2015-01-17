@@ -13,11 +13,13 @@ readme = "README.md"
 keywords = ["text"]
 
 [dependencies]
+docopt = "*"
 docopt_macros = "*"
 encoding = "*"
 uchardet = "*"
 peg = "*"
 rustc-serialize = "*"
+regex_macros = "*"
 
 [[bin]]
 name = "substudy"

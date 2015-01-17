@@ -5,7 +5,7 @@ use std::io::IoError;
 use uchardet::EncodingDetectorError;
 
 /// Our library's error class.  This may grow new enumeration values.
-#[deriving(Show)]
+#[derive(Show)]
 pub enum SubStudyError {
     /// Error reading or writing subtitle data.
     Io(IoError),
