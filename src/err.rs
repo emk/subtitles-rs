@@ -1,6 +1,7 @@
 //! Error-handling for this library.
 
 use std::error::{Error,FromError};
+use std::fmt;
 use std::io::IoError;
 use uchardet::EncodingDetectorError;
 
@@ -33,17 +34,19 @@ impl Error for SubStudyError {
         }
     }
 
-    fn detail(&self) -> Option<String> {
-        match *self {
-            SubStudyError::Io(ref err) => err.detail(),
-            SubStudyError::EncodingDetector(ref err) => err.detail(),
-            SubStudyError::Decode(ref str) => Some(str.clone()),
-            SubStudyError::Parse(ref str) => Some(str.clone())
-        }
-    }
-
     fn cause(&self) -> Option<&Error> {
         None
+    }
+}
+
+impl fmt::Display for SubStudyError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            SubStudyError::Io(ref err) => err.fmt(f),
+            SubStudyError::EncodingDetector(ref err) => err.fmt(f),
+            SubStudyError::Decode(ref s) => write!(f, "{}", &s),
+            SubStudyError::Parse(ref s) => write!(f, "{}", &s)
+        }
     }
 }
 

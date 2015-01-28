@@ -19,6 +19,7 @@ encoding = "*"
 uchardet = "*"
 peg = "*"
 rustc-serialize = "*"
+regex = "*"
 regex_macros = "*"
 
 [[bin]]
