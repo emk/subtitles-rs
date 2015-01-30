@@ -12,7 +12,7 @@ pub fn merge_subtitles(subs: &[Subtitle]) -> Option<Subtitle> {
     let mut words = vec!();
     for sub in subs.iter() {
         for line in sub.lines.iter() {
-            for word in regex!(r"\s+").split(line.as_slice()) {
+            for word in regex!(r"\s+").split(&line[]) {
                 words.push(word.to_string());
             }
         }
@@ -23,10 +23,10 @@ pub fn merge_subtitles(subs: &[Subtitle]) -> Option<Subtitle> {
     let mut line = "".to_string();
     for word in words.iter() {
         if line.len() == 0 {
-            line.push_str(word.as_slice());
+            line.push_str(&word[]);
         } else if line.len() + 1 + word.len() <= LINE_MAX {
             line.push_str(" ");
-            line.push_str(word.as_slice());
+            line.push_str(&word[]);
         } else {
             lines.push(line);
             line = word.clone();
@@ -53,7 +53,7 @@ mod test {
 
     fn merge_for_test(input: &str) -> String {
         let srt = SubtitleFile::from_str(input).unwrap();
-        merge_subtitles(srt.subtitles.as_slice()).unwrap().to_string()
+        merge_subtitles(&srt.subtitles[]).unwrap().to_string()
     }
 
     #[test]
@@ -72,7 +72,7 @@ Yay!
 00:01:02,328 --> 00:01:03,162
 Yay! Yay!
 ";
-        assert_eq!(expected, merge_for_test(example).as_slice());
+        assert_eq!(expected, &merge_for_test(example)[]);
     }
 
     #[test]
@@ -90,7 +90,7 @@ Aang's back!
 00:01:02,328 --> 00:01:04,664
 Yay! Yay! Aang's back!
 ";
-        assert_eq!(expected, merge_for_test(example).as_slice());
+        assert_eq!(expected, &merge_for_test(example)[]);
     }
 
     #[test]
@@ -109,7 +109,7 @@ to us, aren't you?
 You're leading them straight to us, aren't
 you?
 ";
-        assert_eq!(expected, merge_for_test(example).as_slice());
+        assert_eq!(expected, &merge_for_test(example)[]);
     }
 }
 

@@ -6,9 +6,13 @@
 //! page](http://www.rust-ci.org/emk/substudy/doc/substudy/).
 
 #![feature(plugin)]
+#![feature(io)]
+#![feature(collections)]
+#![feature(core)]
+// Only needed for tests, no way to declare.
+//#![feature(path)]
+
 #![deny(missing_docs)]
-#![deny(warnings)]
-#![allow(unstable)]
 
 extern crate collections;
 #[macro_use] extern crate log;

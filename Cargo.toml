@@ -21,6 +21,7 @@ peg = "*"
 rustc-serialize = "*"
 regex = "*"
 regex_macros = "*"
+log = "*"
 
 [[bin]]
 name = "substudy"

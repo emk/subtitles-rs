@@ -1,8 +1,8 @@
 //! Command-line iterface to substudy.
 
-#![deny(warnings)]
 #![feature(plugin)]
-#![allow(unstable)]
+#![feature(path)]
+#![feature(core)]
 
 extern crate "rustc-serialize" as rustc_serialize;
 extern crate docopt;
@@ -10,7 +10,7 @@ extern crate docopt;
 
 extern crate substudy;
 
-use std::io::Writer;
+use std::old_io::Writer;
 
 use substudy::err::SubStudyResult;
 use substudy::srt::SubtitleFile;

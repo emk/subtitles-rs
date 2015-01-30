@@ -16,7 +16,7 @@ static WHITESPACE: Regex = regex!(r"\s+");
 
 // Clean up a single subtitle line.
 fn clean_line(line: &str) -> String {
-    WHITESPACE.replace_all(CLUTTER.replace_all(line, "").as_slice(), " ")
+    WHITESPACE.replace_all(&CLUTTER.replace_all(line, "")[], " ")
         .trim().to_string()
 }
 
@@ -24,7 +24,7 @@ fn clean_line(line: &str) -> String {
 fn clean_subtitle(sub: &Subtitle) -> Option<Subtitle> {
     if sub.end <= sub.begin { return None; }
     let lines: Vec<String> = sub.lines.iter()
-        .map(|l| clean_line(l.as_slice()))
+        .map(|l| clean_line(&l[]))
         .filter(|l| l.len() > 0)
         .map(|l| l.to_string()).collect();
     if lines.len() == 0 { return None; }
@@ -46,7 +46,7 @@ pub fn clean_subtitle_file(file: &SubtitleFile) -> SubtitleFile {
 
     // Fix overlaps.
     if subs.len() >= 2 {
-        for i in range(0, subs.len()-1) {
+        for i in (0..subs.len()-1) {
             if subs[i].end > subs[i+1].begin {
                 subs[i].end = subs[i+1].begin - 0.001;
             }
@@ -109,5 +109,5 @@ Overlapping.
 Out of order.
 ";
 
-    assert_eq!(cleaned, clean_subtitle_file(&dirty).to_string().as_slice());
+    assert_eq!(cleaned, &clean_subtitle_file(&dirty).to_string()[]);
 }

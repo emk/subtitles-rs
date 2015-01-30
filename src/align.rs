@@ -172,12 +172,12 @@ pub fn align_files(file1: &SubtitleFile, file2: &SubtitleFile)
         for &i in indices.iter() {
             subs.push(file.subtitles[i].clone())
         }
-        merge_subtitles(subs.as_slice())
+        merge_subtitles(&subs[])
     }
 
     alignment(file1, file2).iter().map(|&(ref indices1, ref indices2)| {
-        (merge(file1, indices1.as_slice()),
-         merge(file2, indices2.as_slice()))
+        (merge(file1, &indices1[]),
+         merge(file2, &indices2[]))
     }).collect()
 }
 
@@ -186,8 +186,8 @@ fn clone_as(sub: &Subtitle, before: &str, after: &str) -> Subtitle {
     let lines = sub.lines.iter().map(|l| {
         // For now, strip out existing formatting.  We'll change this once
         // color works.
-        let cleaned = regex!(r"<[a-z/][^>]*>").replace_all(l.as_slice(), "");
-        format!("{}{}{}", before, cleaned.as_slice(), after)
+        let cleaned = regex!(r"<[a-z/][^>]*>").replace_all(&l[], "");
+        format!("{}{}{}", before, &cleaned[], after)
     }).collect();
     Subtitle{index: sub.index, begin: sub.begin, end: sub.end, lines: lines}
 }
@@ -210,7 +210,7 @@ pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile)
                 let mut new = clone_as(sub1, STYLE1B, STYLE1E);
                 let to_merge = clone_as(sub2, STYLE2B, STYLE2E);
                 let mut lines = to_merge.lines.clone();
-                lines.push_all(new.lines.as_slice());
+                lines.push_all(&new.lines[]);
                 new.lines = lines;
                 new
             }
@@ -218,7 +218,7 @@ pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile)
     }).collect();
     // Extend the time of each sub to account for increased text.  We rely
     // on clean_subtitle_file to clean up any remaining overlaps.
-    for i in range(0, subs.len()) {
+    for i in (0..subs.len()) {
         if i+1 == subs.len() {
             subs[i].end += 2.0;
         } else {

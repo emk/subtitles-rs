@@ -2,7 +2,7 @@
 
 use std::error::{Error,FromError};
 use std::fmt;
-use std::io::IoError;
+use std::old_io::IoError;
 use uchardet::EncodingDetectorError;
 
 /// Our library's error class.  This may grow new enumeration values.

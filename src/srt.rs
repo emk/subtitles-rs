@@ -1,6 +1,6 @@
 //! SRT-format subtitle support.
 
-use std::io::File;
+use std::old_io::File;
 use std::num::Float;
 
 use err::{SubStudyError, SubStudyResult};
@@ -61,8 +61,8 @@ impl SubtitleFile {
     pub fn from_path(path: &Path) -> SubStudyResult<SubtitleFile> {
         let mut file = try!(File::open(path));
         let bytes = try!(file.read_to_end());
-        let data = try!(smart_decode(bytes.as_slice()));
-        SubtitleFile::from_str(data.as_slice())
+        let data = try!(smart_decode(&bytes[]));
+        SubtitleFile::from_str(&data[])
     }
 
     /// Convert subtitles to a string.
@@ -124,7 +124,7 @@ Line 1.1
 Line 2.1
 ";
         let srt = SubtitleFile::from_str(data).unwrap();
-        assert_eq!(data, srt.to_string().as_slice());
+        assert_eq!(data, &srt.to_string()[]);
     }
 }
 
@@ -168,7 +168,7 @@ digits -> usize
 comma_float -> f32
     = [0-9]+ "," [0-9]+ {
         let fixed: String = match_str.replace(",", ".");
-        FromStr::from_str(fixed.as_slice()).unwrap()
+        FromStr::from_str(&fixed[]).unwrap()
     }
 
 bom

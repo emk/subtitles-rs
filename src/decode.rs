@@ -11,7 +11,7 @@ pub fn smart_decode(bytes: &[u8]) -> SubStudyResult<String> {
     // valid ASCII data, or something hopelessly unsalvageable.
     let name = try!(detect_encoding_name(bytes))
         .unwrap_or("ascii".to_string());
-    let encoding = try!(encoding_from_whatwg_label(name.as_slice())
+    let encoding = try!(encoding_from_whatwg_label(&name[])
         .ok_or_else(|| {
             SubStudyError::Decode(format!("Unknown encoding: {}", name))
         }));
@@ -23,10 +23,10 @@ pub fn smart_decode(bytes: &[u8]) -> SubStudyResult<String> {
 
 #[test]
 fn test_smart_decode() {
-    assert_eq!("ascii", smart_decode("ascii".as_bytes()).unwrap().as_slice());
+    assert_eq!("ascii", &smart_decode("ascii".as_bytes()).unwrap()[]);
     assert_eq!("français",
-               smart_decode("français".as_bytes()).unwrap().as_slice());
+               &smart_decode("français".as_bytes()).unwrap()[]);
     assert_eq!("français",
-               smart_decode(&[0x66u8, 0x72, 0x61, 0x6e, 0xe7,
-                              0x61, 0x69, 0x73]).unwrap().as_slice());
+               &smart_decode(&[0x66u8, 0x72, 0x61, 0x6e, 0xe7,
+                               0x61, 0x69, 0x73]).unwrap()[]);
 }
