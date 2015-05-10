@@ -6,19 +6,17 @@
 //! page](http://www.rust-ci.org/emk/substudy/doc/substudy/).
 
 #![feature(plugin)]
-#![feature(io)]
 #![feature(collections)]
-#![feature(core)]
-// Only needed for tests, no way to declare.
-//#![feature(path)]
+#![feature(str_char)]
 
-#![deny(missing_docs)]
+//#![deny(missing_docs)]
+
+#![plugin(peg_syntax_ext)]
+#![plugin(regex_macros)]
 
 extern crate collections;
 #[macro_use] extern crate log;
-#[plugin] #[no_link] extern crate peg_syntax_ext;
 extern crate regex;
-#[plugin] #[no_link] extern crate regex_macros;
 extern crate uchardet;
 extern crate encoding;
 

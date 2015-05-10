@@ -1,23 +1,22 @@
 //! Command-line iterface to substudy.
 
 #![feature(plugin)]
-#![feature(path)]
-#![feature(core)]
 
-extern crate "rustc-serialize" as rustc_serialize;
+#![plugin(docopt_macros)]
+
+extern crate rustc_serialize;
 extern crate docopt;
-#[plugin] #[no_link] extern crate docopt_macros;
 
 extern crate substudy;
 
-use std::old_io::Writer;
+use std::path::Path;
 
 use substudy::err::SubStudyResult;
 use substudy::srt::SubtitleFile;
 use substudy::clean::clean_subtitle_file;
 use substudy::align::combine_files;
 
-docopt!{Args derive Show, "
+docopt!{Args derive Debug, "
 Subtitle processing tools for students of foreign languages
 
 Usage: substudy clean <subtitles>

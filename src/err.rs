@@ -1,12 +1,13 @@
 //! Error-handling for this library.
 
-use std::error::{Error,FromError};
+use std::error::Error;
 use std::fmt;
-use std::old_io::IoError;
+use std::io::Error as IoError;
 use uchardet::EncodingDetectorError;
+use srt::ParseError;
 
 /// Our library's error class.  This may grow new enumeration values.
-#[derive(Show)]
+#[derive(Debug)]
 pub enum SubStudyError {
     /// Error reading or writing subtitle data.
     Io(IoError),
@@ -18,7 +19,7 @@ pub enum SubStudyError {
     Decode(String),
 
     /// An error which occurred while parsing subtitle data.
-    Parse(String)
+    Parse(ParseError)
 }
 
 /// Our library's result type.
@@ -50,14 +51,14 @@ impl fmt::Display for SubStudyError {
     }
 }
 
-impl FromError<IoError> for SubStudyError {
-    fn from_error(err: IoError) -> SubStudyError {
+impl From<IoError> for SubStudyError {
+    fn from(err: IoError) -> SubStudyError {
         SubStudyError::Io(err)
     }
 }
 
-impl FromError<EncodingDetectorError> for SubStudyError {
-    fn from_error(err: EncodingDetectorError) -> SubStudyError {
+impl From<EncodingDetectorError> for SubStudyError {
+    fn from(err: EncodingDetectorError) -> SubStudyError {
         SubStudyError::EncodingDetector(err)
     }
 }

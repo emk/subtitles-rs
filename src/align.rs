@@ -1,6 +1,5 @@
 //! Align two subtitle files.
 
-use std::num::Float;
 use std::cmp::Ordering;
 
 use srt::{Subtitle, SubtitleFile};
@@ -10,7 +9,7 @@ use clean::clean_subtitle_file;
 use self::MatchQuality::{NoMatch, Nearby, Overlap};
 
 // How well do two subtitles match each other, going solely by the time?
-#[derive(PartialEq, Copy, Show)]
+#[derive(PartialEq, Clone, Copy, Debug)]
 enum MatchQuality {
     NoMatch,          // More than two seconds away.
     Nearby(f32),      // 0.0 <= seconds <= 2.0
@@ -147,6 +146,8 @@ fn alignment(file1: &SubtitleFile, file2: &SubtitleFile) -> Alignment {
 
 #[test]
 fn test_alignment() {
+    use std::path::Path;
+
     // Load sample subtitles.
     let path_es = Path::new("fixtures/sample.es.srt");
     let srt_es = SubtitleFile::from_path(&path_es).unwrap();
@@ -172,12 +173,12 @@ pub fn align_files(file1: &SubtitleFile, file2: &SubtitleFile)
         for &i in indices.iter() {
             subs.push(file.subtitles[i].clone())
         }
-        merge_subtitles(&subs[])
+        merge_subtitles(&subs)
     }
 
     alignment(file1, file2).iter().map(|&(ref indices1, ref indices2)| {
-        (merge(file1, &indices1[]),
-         merge(file2, &indices2[]))
+        (merge(file1, &indices1),
+         merge(file2, &indices2))
     }).collect()
 }
 
@@ -186,8 +187,8 @@ fn clone_as(sub: &Subtitle, before: &str, after: &str) -> Subtitle {
     let lines = sub.lines.iter().map(|l| {
         // For now, strip out existing formatting.  We'll change this once
         // color works.
-        let cleaned = regex!(r"<[a-z/][^>]*>").replace_all(&l[], "");
-        format!("{}{}{}", before, &cleaned[], after)
+        let cleaned = regex!(r"<[a-z/][^>]*>").replace_all(&l, "");
+        format!("{}{}{}", before, &cleaned, after)
     }).collect();
     Subtitle{index: sub.index, begin: sub.begin, end: sub.end, lines: lines}
 }
@@ -210,7 +211,7 @@ pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile)
                 let mut new = clone_as(sub1, STYLE1B, STYLE1E);
                 let to_merge = clone_as(sub2, STYLE2B, STYLE2E);
                 let mut lines = to_merge.lines.clone();
-                lines.push_all(&new.lines[]);
+                lines.push_all(&new.lines);
                 new.lines = lines;
                 new
             }
@@ -239,6 +240,8 @@ pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile)
 
 #[test]
 fn test_combine_files() {
+    use std::path::Path;
+
     // Load sample subtitles.
     let path_es = Path::new("fixtures/sample.es.srt");
     let srt_es = SubtitleFile::from_path(&path_es).unwrap();

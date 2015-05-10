@@ -1,10 +1,12 @@
 //! SRT-format subtitle support.
 
-use std::old_io::File;
-use std::num::Float;
-
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
 use err::{SubStudyError, SubStudyResult};
 use decode::smart_decode;
+
+pub use self::grammar::ParseError;
 
 /// Format seconds using the standard SRT time format.
 pub fn format_time(time: f32) -> String {
@@ -15,7 +17,7 @@ pub fn format_time(time: f32) -> String {
 
 /// A single SRT-format subtitle, minus some of the optional fields used in
 /// various versions of the file format.
-#[derive(Show, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Subtitle {
     /// The index of this subtitle.  We should normalize these to start
     /// with 1 on output.
@@ -42,7 +44,7 @@ impl Subtitle {
 }
 
 /// The contents of an SRT-format subtitle file.
-#[derive(Show, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct SubtitleFile {
     /// The subtitles in this file.
     pub subtitles: Vec<Subtitle>
@@ -60,9 +62,10 @@ impl SubtitleFile {
     /// Parse the subtitle file found at the specified path.
     pub fn from_path(path: &Path) -> SubStudyResult<SubtitleFile> {
         let mut file = try!(File::open(path));
-        let bytes = try!(file.read_to_end());
-        let data = try!(smart_decode(&bytes[]));
-        SubtitleFile::from_str(&data[])
+        let mut bytes = Vec::new();
+        try!(file.read_to_end(&mut bytes));
+        let data = try!(smart_decode(&bytes));
+        SubtitleFile::from_str(&data)
     }
 
     /// Convert subtitles to a string.
@@ -80,6 +83,7 @@ impl SubtitleFile {
 
 #[cfg(test)]
 mod test {
+    use std::path::Path;
     use srt::{SubtitleFile,Subtitle};
 
     #[test]
@@ -124,11 +128,12 @@ Line 1.1
 Line 2.1
 ";
         let srt = SubtitleFile::from_str(data).unwrap();
-        assert_eq!(data, &srt.to_string()[]);
+        assert_eq!(data, &srt.to_string());
     }
 }
 
 // Our parser expression grammar.  We'd like to move this to another file.
+#[allow(missing_docs)]
 peg! grammar{r#"
 use std::str::FromStr;
 use srt::{Subtitle,SubtitleFile};
@@ -168,7 +173,7 @@ digits -> usize
 comma_float -> f32
     = [0-9]+ "," [0-9]+ {
         let fixed: String = match_str.replace(",", ".");
-        FromStr::from_str(&fixed[]).unwrap()
+        FromStr::from_str(&fixed).unwrap()
     }
 
 bom
