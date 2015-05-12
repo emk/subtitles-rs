@@ -1,3 +1,5 @@
+[![Latest version](https://img.shields.io/crates/v/substudy.svg)](https://crates.io/crates/substudy) [![License](https://img.shields.io/crates/l/substudy.svg)](https://crates.io/crates/substudy)
+
 This is an experimental tool to help language-learners exploit parallel
 subtitles in various ways.
 
