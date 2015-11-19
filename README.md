@@ -37,8 +37,19 @@ curl -sf https://raw.githubusercontent.com/brson/multirust/master/blastoff.sh | 
 multirust update nightly
 ```
 
-Follow any extra installation instructions printed by `multirust`.  Once
-that is set up, you can then install `substudy` by running:
+Follow any extra installation instructions printed by `multirust`.  You
+will also need to have a working copy of `cmake`, which you might be able
+to install as follows:
+
+```sh
+# MacOS X with `brew` installed.
+brew install cmake
+
+# Ubuntu.
+sudo apt-get install cmake
+```
+
+Once all that is set up, you can then install `substudy` by running:
 
 ```sh
 multirust run nightly cargo install substudy
@@ -111,6 +122,17 @@ it might be worth letting me know which APIs you're using so that I can
 stabilize them.
 
 [apidoc]: http://emk.github.io/substudy/substudy/index.html
+
+## EXPERIMENTAL: Building with video file support
+
+This doesn't _do_ anything yet, and it takes a long time, but you could try:
+
+```sh
+cargo build --features video
+```
+
+This will attempt to compile and link ffmpeg, with varying degress of
+success.
 
 ## Contributing
 

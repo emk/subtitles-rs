@@ -12,9 +12,27 @@ repository = "https://github.com/emk/substudy"
 readme = "README.md"
 keywords = ["text"]
 
+[features]
+# Enable this to build experimental video support.
+#
+# We tried installing with:
+#
+#     sudo apt-get install libavutil-dev libavcodec-dev libavdevice-dev \
+#         libavformat-dev libavfilter-dev libswscale-dev libavresample-dev
+#
+# ...and:
+#
+#     ["ffmpeg/codec", "ffmpeg/device", "ffmpeg/filter", "ffmpeg/format",
+#      "ffmpeg/resampling", "ffmpeg/software-scaling"]
+#
+# But it complained anyway, saying "cannot find -lswresample".  So we're
+# going to try just building ffmpeg from source.
+video = ["ffmpeg", "ffmpeg/build"]
+
 [dependencies]
 docopt = "0.6.76"
 encoding = "0.2.32"
+ffmpeg = { version = "~0.2.0", optional = true }
 log = "0.3.3"
 rustc-serialize = "0.3.16"
 regex = "0.1.41"

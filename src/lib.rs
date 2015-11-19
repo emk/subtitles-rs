@@ -11,6 +11,8 @@
 extern crate regex;
 extern crate uchardet;
 extern crate encoding;
+#[cfg(feature="ffmpeg")]
+extern crate ffmpeg;
 
 pub mod err;
 pub mod decode;
