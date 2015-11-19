@@ -221,7 +221,7 @@ pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile)
     }).collect();
     // Extend the time of each sub to account for increased text.  We rely
     // on clean_subtitle_file to clean up any remaining overlaps.
-    for i in (0..subs.len()) {
+    for i in 0..subs.len() {
         if i+1 == subs.len() {
             subs[i].end += 2.0;
         } else {

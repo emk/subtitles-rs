@@ -46,7 +46,7 @@ pub fn clean_subtitle_file(file: &SubtitleFile) -> SubtitleFile {
 
     // Fix overlaps.
     if subs.len() >= 2 {
-        for i in (0..subs.len()-1) {
+        for i in 0..subs.len()-1 {
             if subs[i].end > subs[i+1].begin {
                 subs[i].end = subs[i+1].begin - 0.001;
             }
