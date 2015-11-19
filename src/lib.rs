@@ -11,6 +11,7 @@
 extern crate regex;
 extern crate uchardet;
 extern crate encoding;
+extern crate ffmpeg;
 
 pub mod err;
 pub mod decode;

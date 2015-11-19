@@ -15,6 +15,7 @@ keywords = ["text"]
 [dependencies]
 docopt = "0.6.76"
 encoding = "0.2.32"
+ffmpeg = "~0.2.0"
 log = "0.3.3"
 rustc-serialize = "0.3.16"
 regex = "0.1.41"
