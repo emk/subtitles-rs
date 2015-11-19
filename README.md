@@ -5,8 +5,9 @@ subtitles in various ways.  Among other things, it can generate bilingual
 subtitles:
 
 ![Avatar with English and Spanish subtitles](https://s3.amazonaws.com/hosted-forum-images/substudy/avatar-bilingual-subs.jpg)
-[i]Avatar: The Last Airbender[/i], season 1, episode 1, with English and
-Spanish subtitles.
+
+(_Avatar: The Last Airbender_, season 1, episode 1, with English and
+Spanish subtitles.)
 
 Features include:
 
