@@ -1,5 +1,6 @@
 //! Align two subtitle files.
 
+use regex::Regex;
 use std::cmp::Ordering;
 
 use srt::{Subtitle, SubtitleFile};
@@ -184,10 +185,11 @@ pub fn align_files(file1: &SubtitleFile, file2: &SubtitleFile)
 
 // Clone a subtitle and wrap its lines with formatting.
 fn clone_as(sub: &Subtitle, before: &str, after: &str) -> Subtitle {
+    let formatting = Regex::new(r"<[a-z/][^>]*>").unwrap();
     let lines = sub.lines.iter().map(|l| {
         // For now, strip out existing formatting.  We'll change this once
         // color works.
-        let cleaned = regex!(r"<[a-z/][^>]*>").replace_all(&l, "");
+        let cleaned = formatting.replace_all(&l, "");
         format!("{}{}{}", before, &cleaned, after)
     }).collect();
     Subtitle{index: sub.index, begin: sub.begin, end: sub.end, lines: lines}
@@ -211,7 +213,7 @@ pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile)
                 let mut new = clone_as(sub1, STYLE1B, STYLE1E);
                 let to_merge = clone_as(sub2, STYLE2B, STYLE2E);
                 let mut lines = to_merge.lines.clone();
-                lines.push_all(&new.lines);
+                lines.extend(new.lines);
                 new.lines = lines;
                 new
             }

@@ -1,7 +1,7 @@
 [package]
 
 name = "substudy"
-version = "0.0.5"
+version = "0.1.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
 description = "Tools for working with parallel, bilingual subtitles"
@@ -12,21 +12,13 @@ repository = "https://github.com/emk/substudy"
 readme = "README.md"
 keywords = ["text"]
 
-[features]
-# Allow access to unstable features when being built with a nightly compiler,
-# to keep travis-cargo happy and enable access to benchmarks if we want them.
-unstable = []
-
 [dependencies]
-docopt = "*"
-docopt_macros = "*"
-encoding = "*"
-uchardet = "*"
-peg = "*"
-rustc-serialize = "*"
-regex = "*"
-regex_macros = "*"
-log = "*"
+docopt = "0.6.76"
+encoding = "0.2.32"
+log = "0.3.3"
+rustc-serialize = "0.3.16"
+regex = "0.1.41"
+uchardet = "1.0.0"
 
 [[bin]]
 name = "substudy"

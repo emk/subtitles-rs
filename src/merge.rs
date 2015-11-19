@@ -1,5 +1,6 @@
-
 //! Tools for merge multiple subtitles into one.
+
+use regex::Regex;
 
 use srt::Subtitle;
 
@@ -8,11 +9,13 @@ static LINE_MAX: usize = 43;
 /// Merge several subtitles into a single subtitle.  Returns `None` if no
 /// subtitles have been supplied, or if the resulting subtitle has no text.
 pub fn merge_subtitles(subs: &[Subtitle]) -> Option<Subtitle> {
+    let space = Regex::new(r"\s+").unwrap();
+
     // Break text into words.
     let mut words = vec!();
     for sub in subs.iter() {
         for line in sub.lines.iter() {
-            for word in regex!(r"\s+").split(&line) {
+            for word in space.split(&line) {
                 words.push(word.to_string());
             }
         }

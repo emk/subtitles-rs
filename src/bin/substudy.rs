@@ -1,14 +1,11 @@
 //! Command-line iterface to substudy.
 
-#![feature(plugin)]
-
-#![plugin(docopt_macros)]
-
 extern crate rustc_serialize;
 extern crate docopt;
 
 extern crate substudy;
 
+use docopt::Docopt;
 use std::path::Path;
 
 use substudy::err::SubStudyResult;
@@ -16,7 +13,7 @@ use substudy::srt::SubtitleFile;
 use substudy::clean::clean_subtitle_file;
 use substudy::align::combine_files;
 
-docopt!{Args derive Debug, "
+const USAGE: &'static str = "
 Subtitle processing tools for students of foreign languages
 
 Usage: substudy clean <subtitles>
@@ -26,7 +23,16 @@ Usage: substudy clean <subtitles>
 For now, all subtitles must be in *.srt format. Many common encodings
 will be automatically detected, but try converting to UTF-8 if you
 have problems.
-"}
+";
+
+#[derive(Debug, RustcDecodable)]
+struct Args {
+    cmd_clean: bool,
+    cmd_combine: bool,
+    arg_subtitles: String,
+    arg_foreign_subtitles: String,
+    arg_native_subtitles: String,
+}
 
 // Choose and run the appropriate command.
 fn run(args: &Args) -> SubStudyResult<String> {
@@ -53,7 +59,9 @@ fn cmd_combine(path1: &Path, path2: &Path) -> SubStudyResult<String> {
 
 fn main() {
     // Parse our command-line arguments using docopt (very shiny).
-    let args: Args = Args::docopt().decode().unwrap_or_else(|e| e.exit());
+    let args: Args = Docopt::new(USAGE)
+        .and_then(|d| d.decode())
+        .unwrap_or_else(|e| e.exit());
 
     // Decide which command to run, and run it.
     print!("{}", run(&args).unwrap());

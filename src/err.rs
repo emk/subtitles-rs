@@ -4,7 +4,7 @@ use std::error::Error;
 use std::fmt;
 use std::io::Error as IoError;
 use uchardet::EncodingDetectorError;
-use srt::ParseError;
+use grammar::ParseError;
 
 /// Our library's error class.  This may grow new enumeration values.
 #[derive(Debug)]

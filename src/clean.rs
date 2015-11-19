@@ -4,19 +4,19 @@
 use regex::Regex;
 use srt::{Subtitle,SubtitleFile};
 
-// Used to remove the following common sorts of closed-caption clutter:
-//
-//     SPEAKER:
-//     ( sound effect )
-//     ♪ music ♪
-static CLUTTER: Regex = regex!(r"(\([^)]*\)|♪[^♪]*♪|[A-Z]{2,} ?:)");
-
-// Used to compress and normalize consecutive whitespace.
-static WHITESPACE: Regex = regex!(r"\s+");
-
 // Clean up a single subtitle line.
 fn clean_line(line: &str) -> String {
-    WHITESPACE.replace_all(&CLUTTER.replace_all(line, ""), " ")
+    // Used to remove the following common sorts of closed-caption clutter:
+    //
+    //     SPEAKER:
+    //     ( sound effect )
+    //     ♪ music ♪
+    let clutter = Regex::new(r"(\([^)]*\)|♪[^♪]*♪|[A-Z]{2,} ?:)").unwrap();
+
+    // Used to compress and normalize consecutive whitespace.
+    let whitespace = Regex::new(r"\s+").unwrap();
+
+    whitespace.replace_all(&clutter.replace_all(line, ""), " ")
         .trim().to_string()
 }
 

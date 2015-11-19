@@ -5,8 +5,7 @@ use std::io::Read;
 use std::path::Path;
 use err::{SubStudyError, SubStudyResult};
 use decode::smart_decode;
-
-pub use self::grammar::ParseError;
+use grammar;
 
 /// Format seconds using the standard SRT time format.
 pub fn format_time(time: f32) -> String {
@@ -39,7 +38,7 @@ impl Subtitle {
         format!("{}\n{} --> {}\n{}\n", self.index,
                 format_time(self.begin),
                 format_time(self.end),
-                self.lines.connect("\n"))
+                self.lines.join("\n"))
     }
 }
 
@@ -77,7 +76,7 @@ impl SubtitleFile {
         // include it here because Wikipedia says that SRT files files
         // default to various legacy encoding, but that the BOM can be used
         // for Unicode.
-        format!("\u{FEFF}{}", subs.connect("\n"))
+        format!("\u{FEFF}{}", subs.join("\n"))
     }
 }
 
@@ -131,58 +130,3 @@ Line 2.1
         assert_eq!(data, &srt.to_string());
     }
 }
-
-// Our parser expression grammar.  We'd like to move this to another file.
-#[allow(missing_docs)]
-peg! grammar{r#"
-use std::str::FromStr;
-use srt::{Subtitle,SubtitleFile};
-
-#[pub]
-subtitle_file -> SubtitleFile
-    = bom? blank_lines? result:subtitles blank_lines? {
-        SubtitleFile{subtitles: result}
-    }
-
-subtitles -> Vec<Subtitle>
-    = subs:subtitle ** blank_lines { subs }
-
-subtitle -> Subtitle
-    = index:digits newline t:times newline l:lines {
-        let (b, e) = t;
-        Subtitle{index: index, begin: b, end: e, lines: l}
-    }
-
-times -> (f32, f32)
-    = begin:time " --> " end:time { (begin, end) }
-
-time -> f32
-    = hh:digits ":" mm:digits ":" ss:comma_float {
-        (hh as f32)*3600.0 + (mm as f32)*60.0 + ss
-    }
-
-lines -> Vec<String>
-    = lines:line ** newline { lines }
-
-line -> String
-    = [^\r\n]+ { match_str.to_string() }
-
-digits -> usize
-    = [0-9]+ { FromStr::from_str(match_str).unwrap() }
-
-comma_float -> f32
-    = [0-9]+ "," [0-9]+ {
-        let fixed: String = match_str.replace(",", ".");
-        FromStr::from_str(&fixed).unwrap()
-    }
-
-bom
-    = "\uFEFF"
-
-newline
-    = "\r"? "\n"
-
-blank_lines
-    = newline+
-
-"#}

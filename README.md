@@ -12,9 +12,7 @@ work:
 
 ## Building `substudy`
 
-You'll need to install Rust and Cargo.  Note that Rust is currently
-undergoing library stabilization before version 1.0, and things are
-changing on an almost nighly basis.
+You'll need to install Rust and Cargo:
 
 ```sh
 curl https://static.rust-lang.org/rustup.sh | sudo bash
@@ -29,6 +27,15 @@ cargo build
 ```
 
 If this fails with the latest Rust, please feel free to submit an issue.
+
+If you have [`multirust` installed][multirust], you can use the new `cargo
+install` feature to install this program on your system:
+
+```rust
+multirust run nightly cargo install substudy
+```
+
+[multirust]: https://github.com/brson/multirust
 
 ## Running `substudy`
 

@@ -1,0 +1,57 @@
+// Generate using:
+//
+// ```sh
+// multirust update nightly-2015-11-11
+// multirust run nightly-2015-11-11 cargo install peg
+// multirust run nightly-2015-11-11 peg grammar.rustpeg > grammar.rs
+// ```
+
+use std::str::FromStr;
+use srt::{Subtitle,SubtitleFile};
+
+#[pub]
+subtitle_file -> SubtitleFile
+    = bom? blank_lines? result:subtitles blank_lines? {
+        SubtitleFile{subtitles: result}
+    }
+
+subtitles -> Vec<Subtitle>
+    = subs:subtitle ** blank_lines { subs }
+
+subtitle -> Subtitle
+    = index:digits newline t:times newline l:lines {
+        let (b, e) = t;
+        Subtitle{index: index, begin: b, end: e, lines: l}
+    }
+
+times -> (f32, f32)
+    = begin:time " --> " end:time { (begin, end) }
+
+time -> f32
+    = hh:digits ":" mm:digits ":" ss:comma_float {
+        (hh as f32)*3600.0 + (mm as f32)*60.0 + ss
+    }
+
+lines -> Vec<String>
+    = lines:line ** newline { lines }
+
+line -> String
+    = [^\r\n]+ { match_str.to_string() }
+
+digits -> usize
+    = [0-9]+ { FromStr::from_str(match_str).unwrap() }
+
+comma_float -> f32
+    = [0-9]+ "," [0-9]+ {
+        let fixed: String = match_str.replace(",", ".");
+        FromStr::from_str(&fixed).unwrap()
+    }
+
+bom
+    = "\uFEFF"
+
+newline
+    = "\r"? "\n"
+
+blank_lines
+    = newline+
