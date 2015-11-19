@@ -21,7 +21,7 @@ Features include:
 This is recommended for beginner and low-intermediate students of a foreign
 language, and it's especially useful in conjunction with [subs2srs][] and
 [Anki][], which can be used to create highly effective (and rather
-entertain) audio cards.
+entertaining) audio cards.
 
 [subs2srs]: http://learnanylanguage.wikia.com/wiki/Subs2srs
 [Anki]: http://ankisrs.net/
