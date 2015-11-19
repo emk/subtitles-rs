@@ -10,28 +10,21 @@ work:
 
 [![Build Status](https://travis-ci.org/emk/substudy.svg?branch=master)](https://travis-ci.org/emk/substudy)
 
-## Building `substudy`
+## Installing `substudy`
 
-You'll need to install Rust and Cargo:
-
-```sh
-curl https://static.rust-lang.org/rustup.sh | sudo bash
-```
-
-Next, you'll need to clone and build `substudy`:
+The easiest way to install `substudy` is using the `cargo install` command.
+To get access to this, you'll need a nightly build of Rust.  The easiest
+way to to this is to install [`multirust`][multirust] by running:
 
 ```sh
-git clone https://github.com/emk/substudy.git
-cd substudy
-cargo build
+curl -sf https://raw.githubusercontent.com/brson/multirust/master/blastoff.sh | sh
+multirust update nightly
 ```
 
-If this fails with the latest Rust, please feel free to submit an issue.
+Follow any extra installation instructions printed by `multirust`.  Once
+that is set up, you can then install `substudy` by running:
 
-If you have [`multirust` installed][multirust], you can use the new `cargo
-install` feature to install this program on your system:
-
-```rust
+```sh
 multirust run nightly cargo install substudy
 ```
 
@@ -56,7 +49,7 @@ have problems.
 So, for example, you could run:
 
 ``` sh
-target/substudy combine foreign.srt native.srt > bilingual.srt
+substudy combine foreign.srt native.srt > bilingual.srt
 ```
 
 ## Finding & preparing subtitles
@@ -80,6 +73,18 @@ same subtitle file should work fine with both.
 [VLC]: http://www.videolan.org/vlc/
 [Videostream]: http://www.getvideostream.com/
 [Chromecast]: http://www.google.com/chrome/devices/chromecast/
+
+## Building `substudy`
+
+Assuming you have `multirust` installed as described above, you can run:
+
+```sh
+git clone https://github.com/emk/substudy.git
+cd substudy
+cargo build
+```
+
+If this fails, please feel free to submit an issue.
 
 ## Using substudy as a library
 
