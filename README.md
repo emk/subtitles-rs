@@ -1,14 +1,29 @@
-[![Latest version](https://img.shields.io/crates/v/substudy.svg)](https://crates.io/crates/substudy) [![License](https://img.shields.io/crates/l/substudy.svg)](https://crates.io/crates/substudy)
+[![Latest version](https://img.shields.io/crates/v/substudy.svg)](https://crates.io/crates/substudy) [![License](https://img.shields.io/crates/l/substudy.svg)](https://crates.io/crates/substudy) [![Build Status](https://travis-ci.org/emk/substudy.svg?branch=master)](https://travis-ci.org/emk/substudy)
 
 This is an experimental tool to help language-learners exploit parallel
-subtitles in various ways.
+subtitles in various ways.  Among other things, it can generate bilingual
+subtitles:
 
-It's written using Rust, a programming language that's still under heavy
-development.  So it may be hard to get this working on any given day.  But
-if the following badge is green, there's a good chance everything will
-work:
+![Avatar with English and Spanish subtitles](https://s3.amazonaws.com/hosted-forum-images/substudy/avatar-bilingual-subs.jpg)
+[i]Avatar: The Last Airbender[/i], season 1, episode 1, with English and
+Spanish subtitles.
 
-[![Build Status](https://travis-ci.org/emk/substudy.svg?branch=master)](https://travis-ci.org/emk/substudy)
+Features include:
+
+1. Automatically detects and converts common encodings.
+2. Given subtitles in two different languages, tries to find the best
+   alignment.
+3. Adjusts subtitle timings to make subtitles visible sooner and keep them
+   around longer, so you have more time to read and listen.
+4. Tries to remove sound effects, speaker names and other common clutter.
+
+This is recommended for beginner and low-intermediate students of a foreign
+language, and it's especially useful in conjunction with [subs2srs][] and
+[Anki][], which can be used to create highly effective (and rather
+entertain) audio cards.
+
+[subs2srs]: http://learnanylanguage.wikia.com/wiki/Subs2srs
+[Anki]: http://ankisrs.net/
 
 ## Installing `substudy`
 
