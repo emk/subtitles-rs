@@ -27,16 +27,22 @@ keywords = ["text"]
 #
 # But it complained anyway, saying "cannot find -lswresample".  So we're
 # going to try just building ffmpeg from source.
-video = ["ffmpeg", "ffmpeg/build"]
+video = ["ffmpeg"]
 
 [dependencies]
 docopt = "0.6.76"
 encoding = "0.2.32"
-ffmpeg = { version = "~0.2.0", optional = true }
 log = "0.3.3"
 rustc-serialize = "0.3.16"
 regex = "0.1.41"
 uchardet = "1.0.0"
+
+[dependencies.ffmpeg]
+version = "~0.2.0"
+default-features = false
+features = ["codec", "device", "filter", "format",
+            "resampling", "software-scaling"]
+optional = true
 
 [[bin]]
 name = "substudy"

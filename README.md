@@ -125,14 +125,24 @@ stabilize them.
 
 ## EXPERIMENTAL: Building with video file support
 
-This doesn't _do_ anything yet, and it takes a long time, but you could try:
+This doesn't _do_ anything yet, but you could install `ffmpeg` using your
+system's package manager:
+
+```sh
+sudo apt-get install libavutil-dev libavcodec-dev libavdevice-dev \
+    libavformat-dev libavfilter-dev libswscale-dev libavresample-dev
+```
+
+..and then build `substudy` as follows:
 
 ```sh
 cargo build --features video
 ```
 
-This will attempt to compile and link ffmpeg, with varying degress of
-success.
+This will attempt to link in `ffmpeg`, with varying degrees of success.
+Which `ffmpeg` features we attempt to use is controlled by the `features`
+property under `[dependencies.ffmpeg]` in
+[our `Cargo.toml` file](Cargo.toml).
 
 ## Contributing
 
