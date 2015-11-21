@@ -116,17 +116,31 @@ stabilize them.
 
 Please feel welcome to send me a pull request or submit an issue!
 
-Things which I'd love to see `subs2srs` support include:
+Things which I'd love to see `substudy` support include:
 
-- Working with clean `*.srt` files.
 - Creating various sorts of parallel media: subtitles, Anki cards, etc.
+- Exracting audio and images corresponding to individual subtitles.
+- Automatic vobsub to `*.srt` conversion, using OCR and character
+  databases.  There are several open source Windows tools which tackle
+  this, but it should be theoretically possible to do a lot better.
 
 Things which I'll probably merge if they come with clean code and solid
 test suites:
 
-- Character set conversion.
+- Better character set conversion.
 - Various sorts of subtitle cleanups.
 - Formats other than `*.srt`.
+- Better algorithms for repairing timings and alignment.
+
+I'm happy to leave serious, interactive subtitle editing to
+[Subtitle Edit][], and to focus on cases related to language learning, and
+to things which are convenient to call from the command line.  I'd also be
+happy to have implementations of the most useful [subs2srs][] features in
+command-line form—it's a wonderful and useful program, but it has too many
+configuration options and it requires too much work using external
+utilities.
+
+[Subtitle Edit]: http://www.nikse.dk/subtitleedit/
 
 ## License
 
