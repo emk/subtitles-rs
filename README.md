@@ -110,7 +110,7 @@ all APIs are experimental and subject to change.  If you want to use
 it might be worth letting me know which APIs you're using so that I can
 stabilize them.
 
-[apidoc]: http://www.rust-ci.org/emk/substudy/doc/substudy/
+[apidoc]: http://emk.github.io/substudy/substudy/index.html
 
 ## Contributing
 

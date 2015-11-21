@@ -3,7 +3,7 @@
 //! things, please get in touch.
 //!
 //! For further details about how to use substudy, see [the main GitHub
-//! page](http://www.rust-ci.org/emk/substudy/doc/substudy/).
+//! page](http://github.com/emk/substudy).
 
 //#![deny(missing_docs)]
 
