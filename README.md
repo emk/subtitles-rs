@@ -125,12 +125,11 @@ stabilize them.
 
 ## EXPERIMENTAL: Building with video file support
 
-This doesn't _do_ anything yet, but you could install `ffmpeg` using your
-system's package manager:
+This doesn't _do_ anything yet, but you could install `avprobe` and
+`avconv` using your system's package manager:
 
 ```sh
-sudo apt-get install libavutil-dev libavcodec-dev libavdevice-dev \
-    libavformat-dev libavfilter-dev libswscale-dev libavresample-dev
+sudo apt-get install libav-tools
 ```
 
 ..and then build `substudy` as follows:
@@ -139,10 +138,13 @@ sudo apt-get install libavutil-dev libavcodec-dev libavdevice-dev \
 cargo build --features video
 ```
 
-This will attempt to link in `ffmpeg`, with varying degrees of success.
-Which `ffmpeg` features we attempt to use is controlled by the `features`
-property under `[dependencies.ffmpeg]` in
-[our `Cargo.toml` file](Cargo.toml).
+We tried linking to a very nice Rust `ffmpeg` library, but it turns out
+that there are two forks of the underlying `ffmpeg`, each with several
+different incompatible versions of key data structures, and getting it to
+work on common Ubuntu systems was [far too annoying][ffmpeg-issue].  So we
+decided to just call the command-line utilities.
+
+[ffmpeg-issue]: https://github.com/meh/rust-ffmpeg-sys/issues/12
 
 ## Contributing
 

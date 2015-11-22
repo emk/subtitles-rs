@@ -3,7 +3,7 @@
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use err::{SubStudyError, SubStudyResult};
+use err::Result;
 use decode::smart_decode;
 use grammar;
 
@@ -51,15 +51,12 @@ pub struct SubtitleFile {
 
 impl SubtitleFile {
     /// Parse raw subtitle text into an appropriate structure.
-    pub fn from_str(data: &str) -> SubStudyResult<SubtitleFile> {
-        match grammar::subtitle_file(data) {
-            Ok(file) => Ok(file),
-            Err(msg) => Err(SubStudyError::Parse(msg))
-        }
+    pub fn from_str(data: &str) -> Result<SubtitleFile> {
+        Ok(try!(grammar::subtitle_file(data)))
     }
 
     /// Parse the subtitle file found at the specified path.
-    pub fn from_path(path: &Path) -> SubStudyResult<SubtitleFile> {
+    pub fn from_path(path: &Path) -> Result<SubtitleFile> {
         let mut file = try!(File::open(path));
         let mut bytes = Vec::new();
         try!(file.read_to_end(&mut bytes));

@@ -13,36 +13,18 @@ readme = "README.md"
 keywords = ["text"]
 
 [features]
+default = ["video"]
 # Enable this to build experimental video support.
-#
-# We tried installing with:
-#
-#     sudo apt-get install libavutil-dev libavcodec-dev libavdevice-dev \
-#         libavformat-dev libavfilter-dev libswscale-dev libavresample-dev
-#
-# ...and:
-#
-#     ["ffmpeg/codec", "ffmpeg/device", "ffmpeg/filter", "ffmpeg/format",
-#      "ffmpeg/resampling", "ffmpeg/software-scaling"]
-#
-# But it complained anyway, saying "cannot find -lswresample".  So we're
-# going to try just building ffmpeg from source.
-video = ["ffmpeg"]
+video = []
 
 [dependencies]
 docopt = "0.6.76"
 encoding = "0.2.32"
 log = "0.3.3"
+num = "0.1.28"
 rustc-serialize = "0.3.16"
 regex = "0.1.41"
 uchardet = "1.0.0"
-
-[dependencies.ffmpeg]
-version = "~0.2.0"
-default-features = false
-features = ["codec", "device", "filter", "format",
-            "resampling", "software-scaling"]
-optional = true
 
 [[bin]]
 name = "substudy"

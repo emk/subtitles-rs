@@ -7,12 +7,13 @@
 
 //#![deny(missing_docs)]
 
-#[macro_use] extern crate log;
-extern crate regex;
-extern crate uchardet;
 extern crate encoding;
-#[cfg(feature="ffmpeg")]
-extern crate ffmpeg;
+#[macro_use] extern crate log;
+extern crate num;
+extern crate regex;
+extern crate rustc_serialize;
+extern crate uchardet;
+
 
 pub mod err;
 pub mod decode;
@@ -21,3 +22,5 @@ pub mod srt;
 pub mod clean;
 pub mod merge;
 pub mod align;
+#[cfg(feature="video")]
+pub mod video;
