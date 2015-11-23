@@ -151,6 +151,7 @@ impl Video {
         &self.metadata.streams
     }
 
+    /// Extract a still image from the specified time in the video.
     pub fn extract_image(&self, time: f32, path: &Path) -> Result<()> {
         let scale_filter =
             format!("scale=iw*min(1\\,min({}/iw\\,{}/ih)):-1", 240, 160);
@@ -160,6 +161,20 @@ impl Video {
             .arg("-vframes").arg("1")
             .arg("-filter_complex").arg(&scale_filter)
             .arg("-f").arg("image2")
+            .arg(path)
+            .output();
+        try!(cmd);
+        Ok(())
+    }
+
+    /// Extract a sound clip from the specified time in the video.
+    pub fn extract_audio(&self, time: f32, duration: f32, path: &Path) ->
+        Result<()>
+    {
+        let cmd = Command::new("avconv")
+            .arg("-i").arg(&self.path)
+            .arg("-ss").arg(format!("{}", time))
+            .arg("-t").arg(format!("{}", duration))
             .arg(path)
             .output();
         try!(cmd);

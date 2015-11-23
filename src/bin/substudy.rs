@@ -112,6 +112,10 @@ fn cmd_extract(media_path: &Path, sub_path: &Path, index: usize) ->
     let img_path = Path::new(&img_path_str);
     try!(video.extract_image(sub.midpoint(), &img_path));
 
+    let sound_path_str = format!("sub{}.mp3", index);
+    let sound_path = Path::new(&sound_path_str);
+    try!(video.extract_audio(sub.begin, sub.end - sub.begin, &sound_path));
+
     Ok(())
 }
 
