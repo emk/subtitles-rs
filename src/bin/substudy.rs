@@ -9,19 +9,20 @@ use docopt::Docopt;
 use std::path::Path;
 use std::process::exit;
 
-use substudy::err::{err_str, Result};
+use substudy::err::Result;
 use substudy::srt::SubtitleFile;
 use substudy::clean::clean_subtitle_file;
 use substudy::align::combine_files;
 use substudy::video;
+use substudy::export;
 
 const USAGE: &'static str = "
 Subtitle processing tools for students of foreign languages
 
-Usage: substudy clean <subtitles>
-       substudy combine <foreign-subtitles> <native-subtitles>
-       substudy tracks <media-file>
-       substudy extract <media-file> <subtitles> <index>
+Usage: substudy clean <subs>
+       substudy combine <foreign-subs> <native-subs>
+       substudy tracks <video>
+       substudy export <format> <video> <foreign-subs> [<native-subs>]
        substudy --help
 
 For now, all subtitles must be in *.srt format. Many common encodings
@@ -34,28 +35,37 @@ struct Args {
     cmd_clean: bool,
     cmd_combine: bool,
     cmd_tracks: bool,
-    cmd_extract: bool,
-    arg_subtitles: String,
-    arg_foreign_subtitles: String,
-    arg_native_subtitles: String,
-    arg_media_file: String,
-    arg_index: usize,
+    cmd_export: bool,
+    arg_subs: String,
+    arg_foreign_subs: String,
+    arg_native_subs: Option<String>,
+    arg_video: String,
 }
 
 // Choose and run the appropriate command.
 fn run(args: &Args) -> Result<()> {
     match *args {
-        Args{cmd_clean: true, arg_subtitles: ref path, ..} =>
+        Args{cmd_clean: true, arg_subs: ref path, ..} =>
             cmd_clean(&Path::new(path)),
-        Args{cmd_combine: true, arg_foreign_subtitles: ref path1,
-             arg_native_subtitles: ref path2, ..} =>
+        Args{cmd_combine: true, arg_foreign_subs: ref path1,
+             arg_native_subs: Some(ref path2), ..} =>
             cmd_combine(&Path::new(path1), &Path::new(path2)),
-        Args{cmd_tracks: true, arg_media_file: ref path, ..} =>
+        Args{cmd_tracks: true, arg_video: ref path, ..} =>
             cmd_tracks(&Path::new(path)),
-        Args{cmd_extract: true, arg_subtitles: ref sub_path,
-             arg_media_file: ref media_path, arg_index: index, ..} =>
-            cmd_extract(&Path::new(media_path), &Path::new(sub_path),
-                        index),
+        Args{cmd_export: true, arg_video: ref video_path,
+             arg_foreign_subs: ref foreign_path,
+             arg_native_subs: ref native_path, ..} => {
+            match native_path {
+                &None =>
+                    cmd_export(&Path::new(video_path),
+                               &Path::new(foreign_path),
+                               None),
+                &Some(ref native) =>
+                    cmd_export(&Path::new(video_path),
+                               &Path::new(foreign_path),
+                               Some(&Path::new(native))),
+            }
+        }
         _ => panic!("Unexpected argument combination: {:?}", args)
     }
 }
@@ -85,25 +95,25 @@ fn cmd_tracks(path: &Path) -> Result<()> {
     Ok(())
 }
 
-fn cmd_extract(media_path: &Path, sub_path: &Path, index: usize) ->
+fn cmd_export(video_path: &Path, foreign_sub_path: &Path,
+              native_sub_path: Option<&Path>) ->
     Result<()>
 {
-    let video = try!(video::Video::new(media_path));
-    let subs = clean_subtitle_file(&try!(SubtitleFile::from_path(sub_path)));
-    let sub = try!(subs.find(index).ok_or_else(|| {
-        err_str(format!("Can't find subtitle #{}", index))
-    }));
+    // Load our input files.
+    let video = try!(video::Video::new(video_path));
+    let foreign_subs =
+        clean_subtitle_file(&try!(SubtitleFile::from_path(foreign_sub_path)));
+    let native_subs = match native_sub_path {
+        None => None,
+        Some(p) => Some(clean_subtitle_file(&try!(SubtitleFile::from_path(p)))),
+    };
 
-    println!("{}", sub.to_string());
-    println!("Extracting at: {}", sub.midpoint());
-
-    let img_path_str = format!("sub{}.jpg", index);
-    let img_path = Path::new(&img_path_str);
-    try!(video.extract_image(sub.midpoint(), &img_path));
-
-    let sound_path_str = format!("sub{}.mp3", index);
-    let sound_path = Path::new(&sound_path_str);
-    try!(video.extract_audio(sub.begin, sub.end - sub.begin, &sound_path));
+    let request = export::ExportRequest {
+        video: video,
+        foreign_subtitles: foreign_subs,
+        native_subtitles: native_subs,
+    };
+    try!(export::export(&request));
 
     Ok(())
 }

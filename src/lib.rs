@@ -23,3 +23,4 @@ pub mod clean;
 pub mod merge;
 pub mod align;
 pub mod video;
+pub mod export;
