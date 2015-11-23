@@ -12,11 +12,6 @@ repository = "https://github.com/emk/substudy"
 readme = "README.md"
 keywords = ["text"]
 
-[features]
-default = ["video"]
-# Enable this to build experimental video support.
-video = []
-
 [dependencies]
 docopt = "0.6.76"
 encoding = "0.2.32"

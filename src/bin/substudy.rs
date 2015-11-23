@@ -13,22 +13,15 @@ use substudy::err::{err_str, Result};
 use substudy::srt::SubtitleFile;
 use substudy::clean::clean_subtitle_file;
 use substudy::align::combine_files;
-#[cfg(feature = "video")]
 use substudy::video;
 
-const USAGE_HEADER: &'static str = "
+const USAGE: &'static str = "
 Subtitle processing tools for students of foreign languages
 
 Usage: substudy clean <subtitles>
        substudy combine <foreign-subtitles> <native-subtitles>
-";
-
-const USAGE_VIDEO: &'static str = "
        substudy tracks <media-file>
        substudy extract <media-file> <subtitles> <index>
-";
-
-const USAGE_FOOTER: &'static str = "
        substudy --help
 
 For now, all subtitles must be in *.srt format. Many common encodings
@@ -57,10 +50,8 @@ fn run(args: &Args) -> Result<()> {
         Args{cmd_combine: true, arg_foreign_subtitles: ref path1,
              arg_native_subtitles: ref path2, ..} =>
             cmd_combine(&Path::new(path1), &Path::new(path2)),
-        #[cfg(feature = "video")]
         Args{cmd_tracks: true, arg_media_file: ref path, ..} =>
             cmd_tracks(&Path::new(path)),
-        #[cfg(feature = "video")]
         Args{cmd_extract: true, arg_subtitles: ref sub_path,
              arg_media_file: ref media_path, arg_index: index, ..} =>
             cmd_extract(&Path::new(media_path), &Path::new(sub_path),
@@ -82,7 +73,6 @@ fn cmd_combine(path1: &Path, path2: &Path) -> Result<()> {
     Ok(())
 }
 
-#[cfg(feature = "video")]
 fn cmd_tracks(path: &Path) -> Result<()> {
     let v = try!(video::Video::new(path));
     for stream in v.streams() {
@@ -95,7 +85,6 @@ fn cmd_tracks(path: &Path) -> Result<()> {
     Ok(())
 }
 
-#[cfg(feature = "video")]
 fn cmd_extract(media_path: &Path, sub_path: &Path, index: usize) ->
     Result<()>
 {
@@ -120,14 +109,8 @@ fn cmd_extract(media_path: &Path, sub_path: &Path, index: usize) ->
 }
 
 fn main() {
-    let mut usage = USAGE_HEADER.trim_right().to_owned();
-    if cfg!(feature = "video") {
-        usage.push_str(USAGE_VIDEO.trim_right());
-    }
-    usage.push_str(USAGE_FOOTER.trim_right());
-
     // Parse our command-line arguments using docopt (very shiny).
-    let args: Args = Docopt::new(usage)
+    let args: Args = Docopt::new(USAGE)
         .and_then(|d| d.decode())
         .unwrap_or_else(|e| e.exit());
 

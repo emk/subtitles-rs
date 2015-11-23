@@ -22,5 +22,4 @@ pub mod srt;
 pub mod clean;
 pub mod merge;
 pub mod align;
-#[cfg(feature="video")]
 pub mod video;
