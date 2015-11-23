@@ -2,10 +2,9 @@
 
 use encoding::label::encoding_from_whatwg_label;
 use encoding::types::DecoderTrap;
-use std::convert::From;
 use uchardet::detect_encoding_name;
 
-use err::{Error, Result};
+use err::{err_str, Result};
 
 /// Guess the encoding of a byte buffer and decode it to a string.
 pub fn smart_decode(bytes: &[u8]) -> Result<String> {
@@ -13,13 +12,12 @@ pub fn smart_decode(bytes: &[u8]) -> Result<String> {
     // valid ASCII data, or something hopelessly unsalvageable.
     let name = try!(detect_encoding_name(bytes))
         .unwrap_or("ascii".to_string());
-    let encoding = try!(encoding_from_whatwg_label(&name)
-        .ok_or_else(|| -> Error {
-            From::from(format!("Unknown encoding: {}", name))
-        }));
+    let encoding = try!(encoding_from_whatwg_label(&name).ok_or_else(|| {
+        err_str(format!("Unknown encoding: {}", name))
+    }));
     match encoding.decode(bytes, DecoderTrap::Strict) {
         Ok(result) => Ok(result),
-        Err(msg) => Err(From::from(msg.into_owned()))
+        Err(msg) => Err(err_str(msg.into_owned()))
     }
 }
 

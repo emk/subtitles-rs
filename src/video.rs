@@ -41,8 +41,9 @@ impl Fraction {
     {
         let s = try!(d.read_str());
         let re = Regex::new(r"^(\d+)/(\d+)$").unwrap();
-        let cap = try!(re.captures(&s)
-          .ok_or_else(|| d.error(&format!("Expected fraction: {}", &s))));
+        let cap = try!(re.captures(&s).ok_or_else(|| {
+            d.error(&format!("Expected fraction: {}", &s))
+        }));
         Ok((FromStr::from_str(cap.at(1).unwrap()).unwrap(),
             FromStr::from_str(cap.at(2).unwrap()).unwrap()))
     }
@@ -148,5 +149,20 @@ impl Video {
     /// List all the tracks in a video file.
     pub fn streams(&self) -> &[Stream] {
         &self.metadata.streams
+    }
+
+    pub fn extract_image(&self, time: f32, path: &Path) -> Result<()> {
+        let scale_filter =
+            format!("scale=iw*min(1\\,min({}/iw\\,{}/ih)):-1", 240, 160);
+        let cmd = Command::new("avconv")
+            .arg("-i").arg(&self.path)
+            .arg("-ss").arg(format!("{}", time))
+            .arg("-vframes").arg("1")
+            .arg("-filter_complex").arg(&scale_filter)
+            .arg("-f").arg("image2")
+            .arg(path)
+            .output();
+        try!(cmd);
+        Ok(())
     }
 }

@@ -40,6 +40,11 @@ impl Subtitle {
                 format_time(self.end),
                 self.lines.join("\n"))
     }
+
+    /// Calculate the midpoint time of this subtitle.
+    pub fn midpoint(&self) -> f32 {
+        self.begin + (self.end - self.begin) / 2.0
+    }
 }
 
 /// The contents of an SRT-format subtitle file.
@@ -74,6 +79,11 @@ impl SubtitleFile {
         // default to various legacy encoding, but that the BOM can be used
         // for Unicode.
         format!("\u{FEFF}{}", subs.join("\n"))
+    }
+
+    /// Find the subtitle with the given index.
+    pub fn find(&self, index: usize) -> Option<&Subtitle> {
+        self.subtitles.iter().find(|s| s.index == index)
     }
 }
 

@@ -7,8 +7,9 @@ extern crate substudy;
 
 use docopt::Docopt;
 use std::path::Path;
+use std::process::exit;
 
-use substudy::err::Result;
+use substudy::err::{err_str, Result};
 use substudy::srt::SubtitleFile;
 use substudy::clean::clean_subtitle_file;
 use substudy::align::combine_files;
@@ -24,6 +25,7 @@ Usage: substudy clean <subtitles>
 
 const USAGE_VIDEO: &'static str = "
        substudy tracks <media-file>
+       substudy extract <media-file> <subtitles> <index>
 ";
 
 const USAGE_FOOTER: &'static str = "
@@ -39,14 +41,16 @@ struct Args {
     cmd_clean: bool,
     cmd_combine: bool,
     cmd_tracks: bool,
+    cmd_extract: bool,
     arg_subtitles: String,
     arg_foreign_subtitles: String,
     arg_native_subtitles: String,
     arg_media_file: String,
+    arg_index: usize,
 }
 
 // Choose and run the appropriate command.
-fn run(args: &Args) -> Result<String> {
+fn run(args: &Args) -> Result<()> {
     match *args {
         Args{cmd_clean: true, arg_subtitles: ref path, ..} =>
             cmd_clean(&Path::new(path)),
@@ -56,32 +60,59 @@ fn run(args: &Args) -> Result<String> {
         #[cfg(feature = "video")]
         Args{cmd_tracks: true, arg_media_file: ref path, ..} =>
             cmd_tracks(&Path::new(path)),
+        #[cfg(feature = "video")]
+        Args{cmd_extract: true, arg_subtitles: ref sub_path,
+             arg_media_file: ref media_path, arg_index: index, ..} =>
+            cmd_extract(&Path::new(media_path), &Path::new(sub_path),
+                        index),
         _ => panic!("Unexpected argument combination: {:?}", args)
     }
 }
 
-fn cmd_clean(path: &Path) -> Result<String> {
+fn cmd_clean(path: &Path) -> Result<()> {
     let file1 = clean_subtitle_file(&try!(SubtitleFile::from_path(path)));
-    Ok(file1.to_string())
+    println!("{}", file1.to_string());
+    Ok(())
 }
 
-fn cmd_combine(path1: &Path, path2: &Path) -> Result<String> {
+fn cmd_combine(path1: &Path, path2: &Path) -> Result<()> {
     let file1 = clean_subtitle_file(&try!(SubtitleFile::from_path(path1)));
     let file2 = clean_subtitle_file(&try!(SubtitleFile::from_path(path2)));
-    Ok(combine_files(&file1, &file2).to_string())
+    println!("{}", combine_files(&file1, &file2).to_string());
+    Ok(())
 }
 
 #[cfg(feature = "video")]
-fn cmd_tracks(path: &Path) -> Result<String> {
+fn cmd_tracks(path: &Path) -> Result<()> {
     let v = try!(video::Video::new(path));
     for stream in v.streams() {
         let lang: &str = match stream.tags.get("language") {
             Some(ref code) => code,
             None => "unknown",
         };
-        println!("#{} {:?} ({})", stream.index, stream.codec_type, lang);
+        println!("#{} {} {:?}", stream.index, lang, stream.codec_type);
     }
-    Ok("".to_owned())
+    Ok(())
+}
+
+#[cfg(feature = "video")]
+fn cmd_extract(media_path: &Path, sub_path: &Path, index: usize) ->
+    Result<()>
+{
+    let video = try!(video::Video::new(media_path));
+    let subs = clean_subtitle_file(&try!(SubtitleFile::from_path(sub_path)));
+    let sub = try!(subs.find(index).ok_or_else(|| {
+        err_str(format!("Can't find subtitle #{}", index))
+    }));
+
+    println!("{}", sub.to_string());
+    println!("Extracting at: {}", sub.midpoint());
+
+    let img_path_str = format!("sub{}.jpg", index);
+    let img_path = Path::new(&img_path_str);
+    try!(video.extract_image(sub.midpoint(), &img_path));
+
+    Ok(())
 }
 
 fn main() {
@@ -97,8 +128,9 @@ fn main() {
         .unwrap_or_else(|e| e.exit());
 
     // Decide which command to run, and run it.
-    match run(&args) {
-        Ok(ref output) => print!("{}", output),
-        Err(ref err) => println!("{}", err),
+    if let Err(ref err) = run(&args) {
+        // Print any error and exit with an error status.
+        println!("{}", err);
+        exit(1);
     }
 }
