@@ -3,7 +3,6 @@
 use handlebars::Handlebars;
 use rustc_serialize::json::{ToJson, Json};
 use std::collections::BTreeMap;
-use std::convert::From;
 use std::ffi::OsStr;
 use std::fs;
 use std::io::Write;
@@ -80,18 +79,22 @@ fn write_all(path: &Path, data: &[u8]) -> Result<()> {
 
 /// Export flashcards and associated media files.
 pub fn export(request: &ExportRequest) -> Result<()> {
+    // Convert an OsStr to a String, losing any non-Unicode data, because we're
+    // not going to create _new_ files with non-Unicode names.
+    let path_str = |os_str: &OsStr| { os_str.to_string_lossy().into_owned() };
+    let stem = path_str(request.video.file_stem());
+
     // Construct a path `dir` which we'll use to store our output files.
     // This is much uglier than it ought to be because paths are not
     // necessarily valid Unicode strings on all OSes, so we need to jump
     // through extra hoops.
-    let mut dir_name = request.video.file_stem().to_owned();
-    let suffix: PathBuf = From::from("_review");
-    dir_name.push(&suffix);
-    let dir = Path::new("./").with_file_name(&dir_name);
+    let dir = Path::new("./").join(format!("{}_review", &stem));
     try!(fs::create_dir_all(&dir));
+    let media_path = |index: usize, ext: &str| -> PathBuf {
+        dir.join(format!("{}_{:03}.{}", stem, index, ext))
+    };
 
     // Start preparing information we'll pass to our HTML template.
-    let path_str = |os_str: &OsStr| { os_str.to_string_lossy().into_owned() };
     let mut bindings = ExportInfo {
         filename: path_str(request.video.file_name()),
         subtitles: vec!(),
@@ -103,10 +106,10 @@ pub fn export(request: &ExportRequest) -> Result<()> {
     for sub in subs {
         println!("Subtitle #{}: Extracting audio and video", sub.index);
 
-        let image_path = dir.join(format!("sub{}.jpg", sub.index));
+        let image_path = media_path(sub.index, "jpg");
         try!(request.video.extract_image(sub.midpoint(), &image_path));
 
-        let audio_path = dir.join(format!("sub{}.mp3", sub.index));
+        let audio_path = media_path(sub.index, "mp3");
         try!(request.video.extract_audio(sub.begin, sub.end - sub.begin,
                                          &audio_path));
 
