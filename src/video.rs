@@ -4,15 +4,17 @@ use num::rational::Ratio;
 use regex::Regex;
 use rustc_serialize::{Decodable, Decoder, json};
 use std::collections::BTreeMap;
+use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::result;
 use std::str::{FromStr, from_utf8};
 
-use err::{Error, Result};
+use err::{err_str, Error, Result};
 
 /// Individual streams inside a video are labelled with a codec type.
 #[derive(Debug, PartialEq, Eq)]
+#[allow(missing_docs)]
 pub enum CodecType {
     Audio,
     Video,
@@ -133,6 +135,13 @@ pub struct Video {
 impl Video {
     /// Create a new video file, given a path.
     pub fn new(path: &Path) -> Result<Video> {
+        // Ensure we have an actual file name before doing anything else.
+        try!(path.file_name().ok_or_else(|| {
+            err_str(format!("Video path does not have a filename: {}",
+                            path.to_string_lossy()))
+        }));
+
+        // Run our probe command.
         let cmd = Command::new("avprobe")
             .arg("-v").arg("quiet")
             .arg("-show_streams")
@@ -144,6 +153,11 @@ impl Video {
         let metadata = try!(json::decode(stdout));
 
         Ok(Video { path: path.to_owned(), metadata: metadata })
+    }
+
+    /// Get just the file name of this video file.
+    pub fn file_name(&self) -> &OsStr {
+        self.path.file_name().unwrap()
     }
 
     /// List all the tracks in a video file.

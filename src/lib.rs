@@ -5,15 +5,15 @@
 //! For further details about how to use substudy, see [the main GitHub
 //! page](http://github.com/emk/substudy).
 
-//#![deny(missing_docs)]
+#![warn(missing_docs)]
 
 extern crate encoding;
+extern crate handlebars;
 #[macro_use] extern crate log;
 extern crate num;
 extern crate regex;
 extern crate rustc_serialize;
 extern crate uchardet;
-
 
 pub mod err;
 pub mod decode;
