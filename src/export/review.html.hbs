@@ -16,7 +16,9 @@
         <audio id="audio-{{index}}" src="{{audio_path}}"></audio>
 
         <div class="text">
-          <p class="foreign">{{foreign_text}}</p>
+          {{#if foreign_text}}
+            <p class="foreign">{{foreign_text}}</p>
+          {{/if}}
           {{#if native_text}}
             <p class="native">{{native_text}}</p>
           {{/if}}

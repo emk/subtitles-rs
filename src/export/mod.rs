@@ -9,8 +9,10 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::str::from_utf8;
 
+use align::align_available_files;
 use err::Result;
-use srt::{Subtitle, SubtitleFile};
+use srt::SubtitleFile;
+use time::Period;
 use video::Video;
 
 /// Information about media file and associated subtitles that the user
@@ -36,7 +38,7 @@ struct SubtitleInfo {
     index: usize,
     image_path: String,
     audio_path: String,
-    foreign_text: String,
+    foreign_text: Option<String>,
     native_text: Option<String>,
 }
 
@@ -100,24 +102,34 @@ pub fn export(request: &ExportRequest) -> Result<()> {
         subtitles: vec!(),
     };
 
+    // Align our input files.
+    let aligned =
+        align_available_files(&request.foreign_subtitles,
+                              request.native_subtitles.as_ref());
+
     // TODO: Offer some way to specify which subs.
-    let subs: Vec<&Subtitle> = request.foreign_subtitles.subtitles.iter()
-        .take(6).collect();
-    for sub in subs {
-        println!("Subtitle #{}: Extracting audio and video", sub.index);
+    for sub in aligned.iter().enumerate() {
+        let (i, &(ref foreign, ref native)) = sub;
+        let index = i + 1;
+        let period = Period::from_union_opt(
+            foreign.as_ref().map(|s| s.period),
+            native.as_ref().map(|s| s.period),
+        ).expect("subtitle pair must not be empty").grow(0.5, 0.5);
 
-        let image_path = media_path(sub.index, "jpg");
-        try!(request.video.extract_image(sub.period.midpoint(), &image_path));
+        println!("Subtitle #{}: Extracting audio and video", index);
 
-        let audio_path = media_path(sub.index, "mp3");
-        try!(request.video.extract_audio(sub.period, &audio_path));
+        let image_path = media_path(index, "jpg");
+        try!(request.video.extract_image(period.midpoint(), &image_path));
+
+        let audio_path = media_path(index, "mp3");
+        try!(request.video.extract_audio(period, &audio_path));
 
         bindings.subtitles.push(SubtitleInfo {
-            index: sub.index,
+            index: index,
             image_path: path_str(image_path.file_name().unwrap()),
             audio_path: path_str(audio_path.file_name().unwrap()),
-            foreign_text: sub.lines.join(" "),
-            native_text: None,
+            foreign_text: foreign.as_ref().map(|s| s.plain_text()),
+            native_text: native.as_ref().map(|s| s.plain_text()),
         });
     }
 

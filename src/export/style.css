@@ -1,5 +1,5 @@
 .subtitle {
-  margin-bottom: 10px;
+  max-width: 800px;
   min-height: 80px;
   position: relative;
 }
@@ -18,4 +18,12 @@
 
 .subtitle .text {
   margin-left: 130px;
+}
+
+.subtitle .text p {
+  margin: 0 0 5px 0;
+}
+
+.subtitle .native {
+  font-style: italic;
 }

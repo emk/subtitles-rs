@@ -6,7 +6,7 @@ use std::path::Path;
 
 use err::Result;
 use decode::smart_decode;
-use clean::clean_subtitle_file;
+use clean::{clean_subtitle_file, strip_formatting};
 use grammar;
 use time::Period;
 
@@ -39,6 +39,11 @@ impl Subtitle {
                 format_time(self.period.begin()),
                 format_time(self.period.end()),
                 self.lines.join("\n"))
+    }
+
+    /// Return a plain-text version of this subtitle.
+    pub fn plain_text(&self) -> String {
+        strip_formatting(&self.lines.join(" "))
     }
 }
 

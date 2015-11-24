@@ -1,12 +1,11 @@
 //! Align two subtitle files.
 
-use regex::Regex;
 use std::cmp::Ordering;
 use time::MIN_SPACING;
 
 use srt::{Subtitle, SubtitleFile};
 use merge::merge_subtitles;
-use clean::clean_subtitle_file;
+use clean::{strip_formatting, clean_subtitle_file};
 
 use self::MatchQuality::{NoMatch, Nearby, Overlap};
 
@@ -192,11 +191,10 @@ pub fn align_available_files(file1: &SubtitleFile,
 
 // Clone a subtitle and wrap its lines with formatting.
 fn clone_as(sub: &Subtitle, before: &str, after: &str) -> Subtitle {
-    let formatting = Regex::new(r"<[a-z/][^>]*>").unwrap();
     let lines = sub.lines.iter().map(|l| {
         // For now, strip out existing formatting.  We'll change this once
         // color works.
-        let cleaned = formatting.replace_all(&l, "");
+        let cleaned = strip_formatting(&l);
         format!("{}{}{}", before, &cleaned, after)
     }).collect();
     Subtitle{index: sub.index, period: sub.period, lines: lines}
@@ -235,7 +233,7 @@ pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile)
     // Extend the time of each sub to account for increased text.  We rely
     // on clean_subtitle_file to clean up any remaining overlaps.
     for i in 0..subs.len() {
-        debug!("growing: {:?} ({})", subs[i].period, subs[i].lines.join(" "));
+        debug!("growing: {:?} ({})", subs[i].period, subs[i].plain_text());
         let mut wanted = subs[i].period.grow(2.0, 2.0);
         if i != 0 {
             debug!("  previous: {:?}", subs[i-1].period);

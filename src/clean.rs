@@ -5,6 +5,12 @@ use regex::Regex;
 use srt::{Subtitle,SubtitleFile};
 use err::Result;
 
+/// Remove the formatting from a subtitle.
+pub fn strip_formatting(line: &str) -> String {
+    let formatting = Regex::new(r"<[a-z/][^>]*>").unwrap();
+    formatting.replace_all(&line, "")
+}
+
 // Clean up a single subtitle line.
 fn clean_line(line: &str) -> String {
     // Used to remove the following common sorts of closed-caption clutter:
