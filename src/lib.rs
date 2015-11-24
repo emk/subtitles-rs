@@ -7,6 +7,7 @@
 
 #![warn(missing_docs)]
 
+#[cfg(test)] extern crate difference;
 extern crate encoding;
 extern crate handlebars;
 #[macro_use] extern crate log;
@@ -21,6 +22,7 @@ mod grammar;
 pub mod srt;
 pub mod clean;
 pub mod merge;
+pub mod time;
 pub mod align;
 pub mod video;
 pub mod export;

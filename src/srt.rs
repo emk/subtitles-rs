@@ -3,9 +3,12 @@
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
+
 use err::Result;
 use decode::smart_decode;
+use clean::clean_subtitle_file;
 use grammar;
+use time::Period;
 
 /// Format seconds using the standard SRT time format.
 pub fn format_time(time: f32) -> String {
@@ -22,11 +25,8 @@ pub struct Subtitle {
     /// with 1 on output.
     pub index: usize,
 
-    /// The start time of this subtitle, in seconds.
-    pub begin: f32,
-
-    /// The end time of this subtitle, in seconds.
-    pub end: f32,
+    /// The time period during which this subtitle is shown.
+    pub period: Period,
 
     /// The lines of text in this subtitle.
     pub lines: Vec<String>
@@ -36,14 +36,9 @@ impl Subtitle {
     /// Return a string representation of this subtitle.
     pub fn to_string(&self) -> String {
         format!("{}\n{} --> {}\n{}\n", self.index,
-                format_time(self.begin),
-                format_time(self.end),
+                format_time(self.period.begin()),
+                format_time(self.period.end()),
                 self.lines.join("\n"))
-    }
-
-    /// Calculate the midpoint time of this subtitle.
-    pub fn midpoint(&self) -> f32 {
-        self.begin + (self.end - self.begin) / 2.0
     }
 }
 
@@ -69,6 +64,12 @@ impl SubtitleFile {
         SubtitleFile::from_str(&data)
     }
 
+    /// Parse and normalize the subtitle file found at the specified path.
+    pub fn cleaned_from_path(path: &Path) -> Result<SubtitleFile> {
+        let raw = try!(SubtitleFile::from_path(path));
+        Ok(try!(clean_subtitle_file(&raw)))
+    }
+
     /// Convert subtitles to a string.
     pub fn to_string(&self) -> String {
         let subs: Vec<String> =
@@ -91,6 +92,7 @@ impl SubtitleFile {
 mod test {
     use std::path::Path;
     use srt::{SubtitleFile,Subtitle};
+    use time::Period;
 
     #[test]
     fn subtitle_file_from_path() {
@@ -100,8 +102,8 @@ mod test {
 
         let sub = &srt.subtitles[0];
         assert_eq!(16, sub.index);
-        assert_eq!(62.328, sub.begin);
-        assert_eq!(64.664, sub.end);
+        assert_eq!(62.328, sub.period.begin());
+        assert_eq!(64.664, sub.period.end());
         assert_eq!(vec!("¡Si! ¡Aang ha vuelto!".to_string()), sub.lines);
 
         let sub2 = &srt.subtitles[2];
@@ -112,7 +114,8 @@ mod test {
 
     #[test]
     fn subtitle_to_string() {
-        let sub = Subtitle{index: 4, begin: 61.5, end: 63.75,
+        let sub = Subtitle{index: 4,
+                           period: Period::new(61.5, 63.75).unwrap(),
                            lines: vec!("Line 1".to_string(),
                                        "<i>Line 2</i>".to_string())};
         let expected = r"4

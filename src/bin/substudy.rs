@@ -2,6 +2,7 @@
 
 extern crate rustc_serialize;
 extern crate docopt;
+extern crate env_logger;
 
 extern crate substudy;
 
@@ -11,7 +12,6 @@ use std::process::exit;
 
 use substudy::err::Result;
 use substudy::srt::SubtitleFile;
-use substudy::clean::clean_subtitle_file;
 use substudy::align::combine_files;
 use substudy::video;
 use substudy::export;
@@ -71,15 +71,15 @@ fn run(args: &Args) -> Result<()> {
 }
 
 fn cmd_clean(path: &Path) -> Result<()> {
-    let file1 = clean_subtitle_file(&try!(SubtitleFile::from_path(path)));
-    println!("{}", file1.to_string());
+    let file1 = try!(SubtitleFile::cleaned_from_path(path));
+    print!("{}", file1.to_string());
     Ok(())
 }
 
 fn cmd_combine(path1: &Path, path2: &Path) -> Result<()> {
-    let file1 = clean_subtitle_file(&try!(SubtitleFile::from_path(path1)));
-    let file2 = clean_subtitle_file(&try!(SubtitleFile::from_path(path2)));
-    println!("{}", combine_files(&file1, &file2).to_string());
+    let file1 = try!(SubtitleFile::cleaned_from_path(path1));
+    let file2 = try!(SubtitleFile::cleaned_from_path(path2));
+    print!("{}", combine_files(&file1, &file2).to_string());
     Ok(())
 }
 
@@ -101,11 +101,10 @@ fn cmd_export(video_path: &Path, foreign_sub_path: &Path,
 {
     // Load our input files.
     let video = try!(video::Video::new(video_path));
-    let foreign_subs =
-        clean_subtitle_file(&try!(SubtitleFile::from_path(foreign_sub_path)));
+    let foreign_subs = try!(SubtitleFile::cleaned_from_path(foreign_sub_path));
     let native_subs = match native_sub_path {
         None => None,
-        Some(p) => Some(clean_subtitle_file(&try!(SubtitleFile::from_path(p)))),
+        Some(p) => Some(try!(SubtitleFile::cleaned_from_path(p))),
     };
 
     let request = export::ExportRequest {
@@ -119,6 +118,8 @@ fn cmd_export(video_path: &Path, foreign_sub_path: &Path,
 }
 
 fn main() {
+    env_logger::init().unwrap();
+
     // Parse our command-line arguments using docopt (very shiny).
     let args: Args = Docopt::new(USAGE)
         .and_then(|d| d.decode())

@@ -2,6 +2,7 @@
 
 use regex::Regex;
 use std::cmp::Ordering;
+use time::MIN_SPACING;
 
 use srt::{Subtitle, SubtitleFile};
 use merge::merge_subtitles;
@@ -34,22 +35,10 @@ impl PartialOrd for MatchQuality {
 
 // Calculate the match quality of two subtitles.
 fn match_quality(sub1: &Subtitle, sub2: &Subtitle) -> MatchQuality {
-    assert!(sub1.begin < sub1.end);
-    assert!(sub2.begin < sub2.end);
-    if sub1.end + 2.0 < sub2.begin || sub2.end + 2.0 < sub1.begin {
-        NoMatch
-    } else if sub1.end <= sub2.begin {
-        let distance = (sub2.begin - sub1.end).abs();
-        assert!(0.0 <= distance && distance <= 2.0);
-        Nearby(distance)
-    } else if sub2.end <= sub1.begin {
-        let distance = (sub1.begin - sub2.end).abs();
-        assert!(0.0 <= distance && distance <= 2.0);
-        Nearby(distance)
-    } else {
-        let overlap = sub1.end.min(sub2.end) - sub1.begin.max(sub2.begin);
-        assert!(0.0 < overlap);
-        Overlap(overlap)
+    match sub1.period.distance(sub2.period) {
+        Some(distance) if distance > 2.0 => NoMatch,
+        Some(distance) => Nearby(distance),
+        None => Overlap(sub1.period.overlap(sub2.period)),
     }
 }
 
@@ -113,12 +102,16 @@ fn alignment(file1: &SubtitleFile, file2: &SubtitleFile) -> Alignment {
     while i1 < subs1.len() && i2 < subs2.len() {
         debug!("subs1: {} matches {:?}, subs2: {} matches {:?}",
                i1, matches1[i1], i2, matches2[i2]);
-        if subs1[i1].begin < subs2[i2].begin && matches1[i1] != Some(i2) {
+        if subs1[i1].period.begin() < subs2[i2].period.begin() &&
+            matches1[i1] != Some(i2)
+        {
             // Subs1 has an item which doesn't match subs2.
             debug!("unmatched: [{}], []", i1);
             alignment.push((vec!(i1), vec!()));
             i1 += 1;
-        } else if subs2[i2].begin < subs1[i1].begin && matches2[i2] != Some(i1) {
+        } else if subs2[i2].period.begin() < subs1[i1].period.begin() &&
+            matches2[i2] != Some(i1)
+        {
             // Subs2 has an item which doesn't match subs1.
             debug!("unmatched: [], [{}]", i2);
             alignment.push((vec!(), vec!(i2)));
@@ -206,7 +199,7 @@ fn clone_as(sub: &Subtitle, before: &str, after: &str) -> Subtitle {
         let cleaned = formatting.replace_all(&l, "");
         format!("{}{}{}", before, &cleaned, after)
     }).collect();
-    Subtitle{index: sub.index, begin: sub.begin, end: sub.end, lines: lines}
+    Subtitle{index: sub.index, period: sub.period, lines: lines}
 }
 
 static STYLE1B: &'static str = "<font color=\"yellow\">";
@@ -233,29 +226,39 @@ pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile)
             }
         }
     }).collect();
+
+    // Restore our invariants, which may have been thrown off by weird matches.
+    // TODO: Print out weird matches and analyze.
+    subs = clean_subtitle_file(&SubtitleFile{subtitles: subs}).unwrap()
+        .subtitles;
+
     // Extend the time of each sub to account for increased text.  We rely
     // on clean_subtitle_file to clean up any remaining overlaps.
     for i in 0..subs.len() {
-        if i+1 == subs.len() {
-            subs[i].end += 2.0;
-        } else {
-            // Extend forward into any unused space, but don't intefere with
-            // the buffer we want to add before the next subtitle.
-            let wanted = (subs[i].end + 2.0).min(subs[i+1].begin - 2.001);
-            subs[i].end = subs[i].end.max(wanted);
+        debug!("growing: {:?} ({})", subs[i].period, subs[i].lines.join(" "));
+        let mut wanted = subs[i].period.grow(2.0, 2.0);
+        if i != 0 {
+            debug!("  previous: {:?}", subs[i-1].period);
+            wanted.begin_after(subs[i-1].period.end()).unwrap();
         }
-
-        if i == 0 {
-            subs[i].begin = (subs[i].begin - 2.0).max(0.0);
-        } else {
-            subs[i].begin = (subs[i].begin - 2.0).max(subs[i-1].end + 0.001);
+        if i+1 < subs.len() {
+            // Extend forward into any unused space, but don't intefere
+            // with the buffer we want to add before the next subtitle (or
+            // allow that space to cut back into space which was originally
+            // ours).
+            debug!("  next: {:?}", subs[i+1].period);
+            let limit = (subs[i+1].period.begin() - 2.0)
+                .max(subs[i].period.end() + MIN_SPACING);
+            wanted.end_before(limit).unwrap();
         }
+        subs[i].period = wanted;
     }
-    clean_subtitle_file(&SubtitleFile{subtitles: subs})
+    clean_subtitle_file(&SubtitleFile{subtitles: subs}).unwrap()
 }
 
 #[test]
 fn test_combine_files() {
+    use difference::assert_diff;
     use std::path::Path;
 
     // Load sample subtitles.
@@ -265,6 +268,7 @@ fn test_combine_files() {
     let srt_en = SubtitleFile::from_path(&path_en).unwrap();
     let path_combined = Path::new("fixtures/combined.srt");
     let expected = SubtitleFile::from_path(&path_combined).unwrap();
-    assert_eq!(expected.to_string(),
-               combine_files(&srt_es, &srt_en).to_string());
+    assert_diff(&expected.to_string(),
+                &combine_files(&srt_es, &srt_en).to_string(),
+                "\n", 0);
 }

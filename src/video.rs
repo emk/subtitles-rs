@@ -11,6 +11,7 @@ use std::result;
 use std::str::{FromStr, from_utf8};
 
 use err::{err_str, Error, Result};
+use time::Period;
 
 /// Individual streams inside a video are labelled with a codec type.
 #[derive(Debug, PartialEq, Eq)]
@@ -187,14 +188,14 @@ impl Video {
         Ok(())
     }
 
-    /// Extract a sound clip from the specified time in the video.
-    pub fn extract_audio(&self, time: f32, duration: f32, path: &Path) ->
+    /// Extract a sound clip from the specified time period in the video.
+    pub fn extract_audio(&self, period: Period, path: &Path) ->
         Result<()>
     {
         let cmd = Command::new("avconv")
             .arg("-i").arg(&self.path)
-            .arg("-ss").arg(format!("{}", time))
-            .arg("-t").arg(format!("{}", duration))
+            .arg("-ss").arg(format!("{}", period.begin()))
+            .arg("-t").arg(format!("{}", period.duration()))
             .arg(path)
             .output();
         try!(cmd);

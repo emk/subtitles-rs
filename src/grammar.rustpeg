@@ -7,7 +7,9 @@
 // ```
 
 use std::str::FromStr;
+
 use srt::{Subtitle,SubtitleFile};
+use time::Period;
 
 #[pub]
 subtitle_file -> SubtitleFile
@@ -19,13 +21,17 @@ subtitles -> Vec<Subtitle>
     = subs:subtitle ** blank_lines { subs }
 
 subtitle -> Subtitle
-    = index:digits newline t:times newline l:lines {
-        let (b, e) = t;
-        Subtitle{index: index, begin: b, end: e, lines: l}
+    = index:digits newline p:time_period newline l:lines {
+        Subtitle{index: index, period: p, lines: l}
     }
 
-times -> (f32, f32)
-    = begin:time " --> " end:time { (begin, end) }
+time_period -> Period
+    = begin:time " --> " end:time {?
+        match Period::new(begin, end) {
+          Ok(p) => Ok(p),
+          Err(_) => Err("invalid time period"),
+        }
+    }
 
 time -> f32
     = hh:digits ":" mm:digits ":" ss:comma_float {

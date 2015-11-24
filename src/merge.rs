@@ -45,8 +45,9 @@ pub fn merge_subtitles(subs: &[Subtitle]) -> Option<Subtitle> {
     }
 
     if lines.is_empty() { return None; }
-    Some(Subtitle{index: subs[0].index, begin: subs[0].begin,
-                  end: subs[subs.len()-1].end, lines: lines})
+    Some(Subtitle{index: subs[0].index,
+                  period: subs[0].period.union(subs[subs.len()-1].period),
+                  lines: lines})
 }
 
 #[cfg(test)]

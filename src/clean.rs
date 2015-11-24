@@ -3,6 +3,7 @@
 
 use regex::Regex;
 use srt::{Subtitle,SubtitleFile};
+use err::Result;
 
 // Clean up a single subtitle line.
 fn clean_line(line: &str) -> String {
@@ -22,14 +23,12 @@ fn clean_line(line: &str) -> String {
 
 // Clean up a subtitle, or discard it if it looks useless.
 fn clean_subtitle(sub: &Subtitle) -> Option<Subtitle> {
-    if sub.end <= sub.begin { return None; }
     let lines: Vec<String> = sub.lines.iter()
         .map(|l| clean_line(&l))
         .filter(|l| l.len() > 0)
         .map(|l| l.to_string()).collect();
     if lines.len() == 0 { return None; }
-    Some(Subtitle{index: sub.index, begin: sub.begin, end: sub.end,
-                  lines: lines})
+    Some(Subtitle{index: sub.index, period: sub.period, lines: lines})
 }
 
 /// Clean up various issues with subtitle files, including:
@@ -38,18 +37,19 @@ fn clean_subtitle(sub: &Subtitle) -> Option<Subtitle> {
 /// * Overlapping subtitles.
 /// * Sound effects.
 /// * Music symbols.
-pub fn clean_subtitle_file(file: &SubtitleFile) -> SubtitleFile {
+pub fn clean_subtitle_file(file: &SubtitleFile) -> Result<SubtitleFile> {
     // Clean individual subtitles and sort.
     let mut subs: Vec<Subtitle> =
         file.subtitles.iter().filter_map(clean_subtitle).collect();
-    subs.sort_by(|a, b| { a.begin.partial_cmp(&b.begin).unwrap() });
+    subs.sort_by(|a, b| {
+        a.period.begin().partial_cmp(&b.period.begin()).unwrap()
+    });
 
     // Fix overlaps.
     if subs.len() >= 2 {
         for i in 0..subs.len()-1 {
-            if subs[i].end > subs[i+1].begin {
-                subs[i].end = subs[i+1].begin - 0.001;
-            }
+            let limit = subs[i+1].period.begin();
+            try!(subs[i].period.end_before(limit));
         }
     }
 
@@ -57,7 +57,7 @@ pub fn clean_subtitle_file(file: &SubtitleFile) -> SubtitleFile {
     for (i, ref mut sub) in subs.iter_mut().enumerate() {
         sub.index = i+1;
     }
-    SubtitleFile{subtitles: subs}
+    Ok(SubtitleFile{subtitles: subs})
 }
 
 #[test]
@@ -78,10 +78,6 @@ They've arrived.
 18
 00:01:02,328 --> 00:01:03,162
 JOE: Hey! ( waves arms )
-
-51
-00:02:35,636 --> 00:02:32,895
-Negative length.
 
 53
 00:02:47,965 --> 00:02:50,684
@@ -109,5 +105,5 @@ Overlapping.
 Out of order.
 ";
 
-    assert_eq!(cleaned, &clean_subtitle_file(&dirty).to_string());
+    assert_eq!(cleaned, &clean_subtitle_file(&dirty).unwrap().to_string());
 }

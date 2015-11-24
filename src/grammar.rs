@@ -2,6 +2,7 @@
 #![allow(non_snake_case, unused)]
 use std::str::FromStr;
 use srt::{Subtitle, SubtitleFile};
+use time::Period;
 use self::RuleResult::{Matched, Failed};
 fn escape_default(s: &str) -> String {
     s.chars().flat_map(|c| c.escape_default()).collect()
@@ -244,9 +245,9 @@ fn parse_subtitle<'input>(input: &'input str, state: &mut ParseState<'input>,
                             Matched(pos, _) => {
                                 {
                                     let seq_res =
-                                        parse_times(input, state, pos);
+                                        parse_time_period(input, state, pos);
                                     match seq_res {
-                                        Matched(pos, t) => {
+                                        Matched(pos, p) => {
                                             {
                                                 let seq_res =
                                                     parse_newline(input,
@@ -267,15 +268,10 @@ fn parse_subtitle<'input>(input: &'input str, state: &mut ParseState<'input>,
                                                                             &input[start_pos..pos];
                                                                         Matched(pos,
                                                                                 {
-                                                                                    let (b,
-                                                                                         e) =
-                                                                                        t;
                                                                                     Subtitle{index:
                                                                                                  index,
-                                                                                             begin:
-                                                                                                 b,
-                                                                                             end:
-                                                                                                 e,
+                                                                                             period:
+                                                                                                 p,
                                                                                              lines:
                                                                                                  l,}
                                                                                 })
@@ -303,8 +299,9 @@ fn parse_subtitle<'input>(input: &'input str, state: &mut ParseState<'input>,
         }
     }
 }
-fn parse_times<'input>(input: &'input str, state: &mut ParseState<'input>,
-                       pos: usize) -> RuleResult<(f32, f32)> {
+fn parse_time_period<'input>(input: &'input str,
+                             state: &mut ParseState<'input>, pos: usize)
+ -> RuleResult<Period> {
     {
         let start_pos = pos;
         {
@@ -323,7 +320,23 @@ fn parse_times<'input>(input: &'input str, state: &mut ParseState<'input>,
                                             {
                                                 let match_str =
                                                     &input[start_pos..pos];
-                                                Matched(pos, { (begin, end) })
+                                                match {
+                                                          match Period::new(begin,
+                                                                            end)
+                                                              {
+                                                              Ok(p) => Ok(p),
+                                                              Err(_) =>
+                                                              Err("invalid time period"),
+                                                          }
+                                                      } {
+                                                    Ok(res) =>
+                                                    Matched(pos, res),
+                                                    Err(expected) => {
+                                                        state.mark_failure(pos,
+                                                                           expected);
+                                                        Failed
+                                                    }
+                                                }
                                             }
                                         }
                                         Failed => Failed,

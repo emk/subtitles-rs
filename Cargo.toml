@@ -15,12 +15,16 @@ keywords = ["text"]
 [dependencies]
 docopt = "0.6.76"
 encoding = "0.2.32"
+env_logger = "0.3.2"
 handlebars = "0.11.3"
 log = "0.3.3"
 num = "0.1.28"
 rustc-serialize = "0.3.16"
 regex = "0.1.41"
 uchardet = "1.0.0"
+
+[dev-dependencies]
+difference = "0.4.1"
 
 [[bin]]
 name = "substudy"

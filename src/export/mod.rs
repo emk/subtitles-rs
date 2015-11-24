@@ -107,11 +107,10 @@ pub fn export(request: &ExportRequest) -> Result<()> {
         println!("Subtitle #{}: Extracting audio and video", sub.index);
 
         let image_path = media_path(sub.index, "jpg");
-        try!(request.video.extract_image(sub.midpoint(), &image_path));
+        try!(request.video.extract_image(sub.period.midpoint(), &image_path));
 
         let audio_path = media_path(sub.index, "mp3");
-        try!(request.video.extract_audio(sub.begin, sub.end - sub.begin,
-                                         &audio_path));
+        try!(request.video.extract_audio(sub.period, &audio_path));
 
         bindings.subtitles.push(SubtitleInfo {
             index: sub.index,
