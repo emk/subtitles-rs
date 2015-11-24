@@ -160,6 +160,12 @@ impl Video {
         self.path.file_name().unwrap()
     }
 
+    /// Get just the file stem of this video file, stripped of any
+    /// extensions.
+    pub fn file_stem(&self) -> &OsStr {
+        self.path.file_stem().unwrap()
+    }
+
     /// List all the tracks in a video file.
     pub fn streams(&self) -> &[Stream] {
         &self.metadata.streams

@@ -1,0 +1,21 @@
+.subtitle {
+  margin-bottom: 10px;
+  min-height: 80px;
+  position: relative;
+}
+
+.subtitle .thumbnail, .subtitle .play-button {
+  max-width: 120px;
+  max-height: 80px;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.subtitle .play-button {
+  z-index: 1;
+}
+
+.subtitle .text {
+  margin-left: 130px;
+}

@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <title>Subtitles from {{filename}}</title>
+    <meta charset="UTF-8">
+    <link href="style.css" rel="stylesheet" type="text/css">
+    <style >
+    </style>
+  </head>
+  <body>
+    <h1>Subtitles from {{filename}}</h1>
+
+    {{#each subtitles}}
+      <div class="subtitle">
+        <img class="thumbnail" src="{{image_path}}">
+        <img class="play-button" src="play.svg"
+             onclick="document.getElementById('audio-{{index}}').play()">
+        
+        <audio id="audio-{{index}}" src="{{audio_path}}"></audio>
+
+        <div class="text">
+          <p class="foreign">{{foreign_text}}</p>
+          {{#if native_text}}
+            <p class="native">{{native_text}}</p>
+          {{/if}}
+        </div>
+      </div>
+    {{/each}}
+  </body>
+</html>
