@@ -120,6 +120,53 @@ fn test_stream_decode() {
     assert_eq!(CodecType::Audio, stream.codec_type);
 }
 
+/// What kind of data do we want to extract, and from what position in the
+/// video clip?
+pub enum ExtractionSpec {
+    /// Extract an image at the specified time.
+    Image(f32),
+    /// Extract an audio clip covering the specified period.
+    Audio(Period),
+}
+
+impl ExtractionSpec {
+    /// Figure out what ffmpeg/avconv args we would need to extract the
+    /// requested data.
+    fn add_args(&self, cmd: &mut Command) {
+        match self {
+            &ExtractionSpec::Image(time) => {
+                let scale_filter =
+                    format!("scale=iw*min(1\\,min({}/iw\\,{}/ih)):-1",
+                            240, 160);
+                cmd.arg("-ss").arg(format!("{}", time))
+                    .arg("-vframes").arg("1")
+                    /* .arg("-filter_complex").arg(&scale_filter) */
+                    .arg("-f").arg("image2");
+            }
+            &ExtractionSpec::Audio(period) => {
+                cmd.arg("-ss").arg(format!("{}", period.begin()))
+                    .arg("-t").arg(format!("{}", period.duration()));
+            }
+        }
+    }
+}
+
+/// Information about what kind of data we want to extract.
+pub struct Extraction {
+    /// The path to extract to.
+    pub path: PathBuf,
+    /// What kind of data to extract.
+    pub spec: ExtractionSpec,
+}
+
+impl Extraction {
+    /// Add the necessary args to `cmd` to perform this extraction.
+    fn add_args(&self, cmd: &mut Command) {
+        self.spec.add_args(cmd);
+        cmd.arg(self.path.clone());
+    }
+}
+
 /// Metadata associated with a video.
 #[derive(Debug, RustcDecodable)]
 struct Metadata {
@@ -172,33 +219,21 @@ impl Video {
         &self.metadata.streams
     }
 
-    /// Extract a still image from the specified time in the video.
-    pub fn extract_image(&self, time: f32, path: &Path) -> Result<()> {
-        let scale_filter =
-            format!("scale=iw*min(1\\,min({}/iw\\,{}/ih)):-1", 240, 160);
-        let cmd = Command::new("avconv")
-            .arg("-i").arg(&self.path)
-            .arg("-ss").arg(format!("{}", time))
-            .arg("-vframes").arg("1")
-            .arg("-filter_complex").arg(&scale_filter)
-            .arg("-f").arg("image2")
-            .arg(path)
-            .output();
-        try!(cmd);
-        Ok(())
-    }
-
-    /// Extract a sound clip from the specified time period in the video.
-    pub fn extract_audio(&self, period: Period, path: &Path) ->
-        Result<()>
-    {
-        let cmd = Command::new("avconv")
-            .arg("-i").arg(&self.path)
-            .arg("-ss").arg(format!("{}", period.begin()))
-            .arg("-t").arg(format!("{}", period.duration()))
-            .arg(path)
-            .output();
-        try!(cmd);
+    /// Perform a list of extractions as efficiently as possible.  We use a
+    /// batch interface to avoid making many passes through the file.
+    pub fn extract(&self, extractions: &[Extraction]) -> Result<()> {
+        let total = (extractions.len() + 1) as f32;
+        let chunk_size = 10;
+        for (i, chunk) in extractions.chunks(chunk_size).enumerate() {
+            let done = (chunk_size*i + 1) as f32;
+            println!("Extracting: {}%", 100.0*done/total);
+            let mut cmd = Command::new("avconv");
+            cmd.arg("-i").arg(&self.path);
+            for e in chunk {
+                e.add_args(&mut cmd);
+            }
+            try!(cmd.output());
+        }
         Ok(())
     }
 }

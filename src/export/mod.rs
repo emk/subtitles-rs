@@ -13,7 +13,7 @@ use align::align_available_files;
 use err::Result;
 use srt::SubtitleFile;
 use time::Period;
-use video::Video;
+use video::{Extraction, ExtractionSpec, Video};
 
 /// Information about media file and associated subtitles that the user
 /// wants to export.
@@ -96,6 +96,9 @@ pub fn export(request: &ExportRequest) -> Result<()> {
         dir.join(format!("{}_{:03}.{}", stem, index, ext))
     };
 
+    // Start preparing our export request.
+    let mut extractions: Vec<Extraction> = vec!();
+
     // Start preparing information we'll pass to our HTML template.
     let mut bindings = ExportInfo {
         filename: path_str(request.video.file_name()),
@@ -116,13 +119,17 @@ pub fn export(request: &ExportRequest) -> Result<()> {
             native.as_ref().map(|s| s.period),
         ).expect("subtitle pair must not be empty").grow(0.5, 0.5);
 
-        println!("Subtitle #{}: Extracting audio and video", index);
-
         let image_path = media_path(index, "jpg");
-        try!(request.video.extract_image(period.midpoint(), &image_path));
+        extractions.push(Extraction {
+            path: image_path.clone(),
+            spec: ExtractionSpec::Image(period.midpoint()),
+        });
 
         let audio_path = media_path(index, "mp3");
-        try!(request.video.extract_audio(period, &audio_path));
+        extractions.push(Extraction {
+            path: audio_path.clone(),
+            spec: ExtractionSpec::Audio(period),
+        });
 
         bindings.subtitles.push(SubtitleInfo {
             index: index,
@@ -137,13 +144,15 @@ pub fn export(request: &ExportRequest) -> Result<()> {
     try!(write_all(&dir.join("style.css"), &include_bytes!("style.css")[..]));
     try!(write_all(&dir.join("play.svg"), &include_bytes!("play.svg")[..]));
 
-
     // Render and write out our HTML.
     let template = try!(from_utf8(include_bytes!("review.html.hbs")));
     let mut handlebars = Handlebars::new();
     try!(handlebars.register_template_string("review", template.to_owned()));
     let html = try!(handlebars.render("review", &bindings));
     try!(write_all(&dir.join("index.html"), html.as_bytes()));
+
+    // Extract our media files.
+    try!(request.video.extract(&extractions));
 
     Ok(())
 }
