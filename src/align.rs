@@ -166,8 +166,8 @@ fn test_alignment() {
 }
 
 /// Align two subtitle files, merging subtitles as necessary.
-pub fn align_files(file1: &SubtitleFile, file2: &SubtitleFile)
-                   -> Vec<(Option<Subtitle>, Option<Subtitle>)>
+pub fn align_files(file1: &SubtitleFile, file2: &SubtitleFile) ->
+    Vec<(Option<Subtitle>, Option<Subtitle>)>
 {
     fn merge(file: &SubtitleFile, indices: &[usize]) -> Option<Subtitle> {
         let mut subs = vec!();
@@ -181,6 +181,20 @@ pub fn align_files(file1: &SubtitleFile, file2: &SubtitleFile)
         (merge(file1, &indices1),
          merge(file2, &indices2))
     }).collect()
+}
+
+/// If we have two files, align them.  If one is missing, just return its
+/// subtitles by themselves.
+pub fn align_available_files(file1: &SubtitleFile,
+                             file2_opt: Option<&SubtitleFile>) ->
+    Vec<(Option<Subtitle>, Option<Subtitle>)>
+{
+    match file2_opt {
+        Some(ref file2) => align_files(file1, file2),
+        None => file1.subtitles.iter().cloned().map(|s| {
+            (Some(s), None)
+        }).collect(),
+    }
 }
 
 // Clone a subtitle and wrap its lines with formatting.
