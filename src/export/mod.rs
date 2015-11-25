@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use std::str::from_utf8;
 
 use align::align_available_files;
-use err::Result;
+use err::{err_str, Result};
 use srt::SubtitleFile;
 use time::Period;
 use video::{Extraction, ExtractionSpec, Video};
@@ -89,8 +89,13 @@ pub fn export(request: &ExportRequest) -> Result<()> {
     // Construct a path `dir` which we'll use to store our output files.
     // This is much uglier than it ought to be because paths are not
     // necessarily valid Unicode strings on all OSes, so we need to jump
-    // through extra hoops.
+    // through extra hoops.  We test for a directory's existence using the
+    // `metadata` call, which is the only way to do it in stable Rust.
     let dir = Path::new("./").join(format!("{}_review", &stem));
+    if fs::metadata(&dir).is_ok() {
+        return Err(err_str(format!("Directory already exists: {}",
+                                   &dir.to_string_lossy())));
+    }
     try!(fs::create_dir_all(&dir));
     let media_path = |index: usize, ext: &str| -> PathBuf {
         dir.join(format!("{}_{:03}.{}", stem, index, ext))

@@ -64,8 +64,10 @@ To get a list of supported commands, run `target/substudy --help`:
 ```
 Subtitle processing tools for students of foreign languages
 
-Usage: substudy clean <subtitles>
-       substudy combine <foreign-subtitles> <native-subtitles>
+Usage: substudy clean <subs>
+       substudy combine <foreign-subs> <native-subs>
+       substudy export review <video> <foreign-subs> [<native-subs>]
+       substudy tracks <video>
        substudy --help
 
 For now, all subtitles must be in *.srt format. Many common encodings
@@ -148,6 +150,9 @@ sudo apt-add-repository -r ppa:mc3man/trusty-media
 
 Once `ffmpeg` is installed, you should be able to access the video-related
 features of `substudy`.
+
+**Note:** In this version of substudy, we always use the default audio
+track chosen by ffmpeg.  We plan to get smarter about this soon.
 
 We tried linking to a very nice Rust `ffmpeg` library, but it turns out
 that there are two forks of the underlying `ffmpeg`, each with several
