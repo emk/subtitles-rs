@@ -22,7 +22,7 @@ Subtitle processing tools for students of foreign languages
 Usage: substudy clean <subs>
        substudy combine <foreign-subs> <native-subs>
        substudy tracks <video>
-       substudy export <format> <video> <foreign-subs> [<native-subs>]
+       substudy export review <video> <foreign-subs> [<native-subs>]
        substudy --help
 
 For now, all subtitles must be in *.srt format. Many common encodings
