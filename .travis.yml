@@ -10,7 +10,6 @@ matrix:
   include:
   - rust: stable
   - os: osx
-matrix:
   allow_failures:
   - os: osx
 after_success: |
