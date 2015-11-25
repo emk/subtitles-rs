@@ -4,10 +4,20 @@ rust:
 - stable
 - beta
 - nightly
+os:
+- linux
+matrix:
+  include:
+  - rust: stable
+  - os: osx
+matrix:
+  allow_failures:
+  - os: osx
 after_success: |
   [ $TRAVIS_BRANCH = master ] &&
   [ $TRAVIS_PULL_REQUEST = false ] &&
   [ $TRAVIS_RUST_VERSION = stable ] &&
+  [ $TRAVIS_OS_NAME = linux ] &&
   cargo doc &&
   echo "<meta http-equiv=refresh content=0;url=`echo $TRAVIS_REPO_SLUG | cut -d '/' -f 2`/index.html>" > target/doc/index.html &&
   pip install --user ghp-import &&
