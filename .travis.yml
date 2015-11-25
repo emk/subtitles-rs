@@ -9,7 +9,7 @@ os:
 matrix:
   include:
   - rust: stable
-  - os: osx
+    os: osx
   allow_failures:
   - os: osx
 after_success: |
