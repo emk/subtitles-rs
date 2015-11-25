@@ -1,5 +1,6 @@
 //! SRT-format subtitle support.
 
+use cld2;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
@@ -91,10 +92,20 @@ impl SubtitleFile {
     pub fn find(&self, index: usize) -> Option<&Subtitle> {
         self.subtitles.iter().find(|s| s.index == index)
     }
+
+    /// Detect the language used in these subtitles.
+    pub fn detect_language(&self) -> (Option<cld2::Lang>, cld2::Reliability) {
+        let subs: Vec<_> = self.subtitles.iter()
+            .map(|s| s.plain_text())
+            .collect();
+        let text = subs.join("\n");
+        cld2::detect_language(&text, cld2::Format::Text)
+    }
 }
 
 #[cfg(test)]
 mod test {
+    use cld2;
     use std::path::Path;
     use srt::{SubtitleFile,Subtitle};
     use time::Period;
@@ -143,5 +154,18 @@ Line 2.1
 ";
         let srt = SubtitleFile::from_str(data).unwrap();
         assert_eq!(data, &srt.to_string());
+    }
+
+    #[test]
+    fn detect_language() {
+        let path_es = Path::new("fixtures/sample.es.srt");
+        let srt_es = SubtitleFile::from_path(&path_es).unwrap();
+        assert_eq!((Some(cld2::Lang("es")), cld2::Reliable),
+                   srt_es.detect_language());
+
+        let path_en = Path::new("fixtures/sample.en.srt");
+        let srt_en = SubtitleFile::from_path(&path_en).unwrap();
+        assert_eq!((Some(cld2::Lang("en")), cld2::Reliable),
+                   srt_en.detect_language());
     }
 }

@@ -7,6 +7,7 @@
 
 #![warn(missing_docs)]
 
+extern crate cld2;
 #[cfg(test)] extern crate difference;
 extern crate encoding;
 extern crate handlebars;
