@@ -125,18 +125,29 @@ stabilize them.
 
 ## EXPERIMENTAL: Building with video file support
 
-This doesn't _do_ anything yet, but you could install `avprobe` and
-`avconv` using your system's package manager:
+We have experimental support for extracting audio and images from video
+files!
+
+You'll need to install [version 2.8.1 or newer of `ffmpeg`][ffmpeg].  You
+probably don't want to try older versions, or to use `libav` (which has a
+bad memory leak that may cause it to take up 10+ GB of memory before
+crashing your system).  If you're running Ubuntu 14.04 LTS, you could run:
 
 ```sh
-sudo apt-get install libav-tools
+sudo apt-add-repository ppa:mc3man/trusty-media
+sudo apt-get update
+sudo apt-get install ffmpeg
 ```
 
-..and then build `substudy` as follows:
+You might want to remove this external package repository before applying
+other updates to your system, to avoid conflicts:
 
 ```sh
-cargo build --features video
+sudo apt-add-repository -r ppa:mc3man/trusty-media
 ```
+
+Once `ffmpeg` is installed, you should be able to access the video-related
+features of `substudy`.
 
 We tried linking to a very nice Rust `ffmpeg` library, but it turns out
 that there are two forks of the underlying `ffmpeg`, each with several
@@ -144,6 +155,7 @@ different incompatible versions of key data structures, and getting it to
 work on common Ubuntu systems was [far too annoying][ffmpeg-issue].  So we
 decided to just call the command-line utilities.
 
+[ffmpeg]: https://ffmpeg.org/download.html
 [ffmpeg-issue]: https://github.com/meh/rust-ffmpeg-sys/issues/12
 
 ## Contributing

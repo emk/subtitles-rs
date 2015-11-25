@@ -130,21 +130,42 @@ pub enum ExtractionSpec {
 }
 
 impl ExtractionSpec {
-    /// Figure out what ffmpeg/avconv args we would need to extract the
-    /// requested data.
-    fn add_args(&self, cmd: &mut Command) {
+    /// The earliest time at which we might need to extract data.
+    fn earliest_time(&self) -> f32 {
+        match self {
+            &ExtractionSpec::Image(time) => time,
+            &ExtractionSpec::Audio(period) => period.begin(),
+        }
+    }
+
+    /// Can we combine this extraction with others in a giant batch
+    /// request?
+    fn can_be_batched(&self) -> bool {
+        match self {
+            // Batch processing of images requires decoding the whole
+            // video, but we can do a "fast seek" and extract one image
+            // extremely quickly.
+            &ExtractionSpec::Image(_) => false,
+            _ => true,
+        }
+    }
+
+    /// Figure out what ffmpeg args we would need to extract the requested
+    /// data.  Assume that the "fast seek" feature has been used to start
+    /// decoding at `time_base`.
+    fn add_args(&self, cmd: &mut Command, time_base: f32) {
         match self {
             &ExtractionSpec::Image(time) => {
                 let scale_filter =
                     format!("scale=iw*min(1\\,min({}/iw\\,{}/ih)):-1",
                             240, 160);
-                cmd.arg("-ss").arg(format!("{}", time))
+                cmd.arg("-ss").arg(format!("{}", time - time_base))
                     .arg("-vframes").arg("1")
-                    /* .arg("-filter_complex").arg(&scale_filter) */
+                    .arg("-filter_complex").arg(&scale_filter)
                     .arg("-f").arg("image2");
             }
             &ExtractionSpec::Audio(period) => {
-                cmd.arg("-ss").arg(format!("{}", period.begin()))
+                cmd.arg("-ss").arg(format!("{}", period.begin() - time_base))
                     .arg("-t").arg(format!("{}", period.duration()));
             }
         }
@@ -161,8 +182,8 @@ pub struct Extraction {
 
 impl Extraction {
     /// Add the necessary args to `cmd` to perform this extraction.
-    fn add_args(&self, cmd: &mut Command) {
-        self.spec.add_args(cmd);
+    fn add_args(&self, cmd: &mut Command, time_base: f32) {
+        self.spec.add_args(cmd, time_base);
         cmd.arg(self.path.clone());
     }
 }
@@ -190,7 +211,7 @@ impl Video {
         }));
 
         // Run our probe command.
-        let cmd = Command::new("avprobe")
+        let cmd = Command::new("ffprobe")
             .arg("-v").arg("quiet")
             .arg("-show_streams")
             .arg("-of").arg("json")
@@ -219,20 +240,57 @@ impl Video {
         &self.metadata.streams
     }
 
+    /// Create an extraction command using the specified `time_base`.  This
+    /// allows us to start extractions at any arbitrary point in the video
+    /// rapidly.
+    fn extract_command(&self, time_base: f32) -> Command {
+        let mut cmd = Command::new("ffmpeg");
+        cmd.arg("-ss").arg(format!("{}", time_base));
+        cmd.arg("-i").arg(&self.path);
+        cmd
+    }
+
+    /// Perform a single extraction.
+    fn extract_one(&self, extraction: &Extraction) -> Result<()> {
+        let time_base = extraction.spec.earliest_time();
+        let mut cmd = self.extract_command(time_base);
+        extraction.add_args(&mut cmd, time_base);
+        try!(cmd.output());
+        Ok(())
+    }
+
+    /// Perform a batch extraction.  We assume that the extractions are
+    /// sorted in temporal order.
+    fn extract_batch(&self, extractions: &[&Extraction]) ->  Result<()> {
+        // Bail early if we have nothing to extract
+        if extractions.is_empty() { return Ok(()); }
+        let time_base = extractions[0].spec.earliest_time();
+
+        // Build and run our batch extraction command.
+        let mut cmd = self.extract_command(time_base);
+        for e in extractions {
+            assert!(e.spec.can_be_batched());
+            e.add_args(&mut cmd, time_base);
+        }
+        try!(cmd.output());
+        Ok(())
+    }
+
     /// Perform a list of extractions as efficiently as possible.  We use a
-    /// batch interface to avoid making many passes through the file.
+    /// batch interface to avoid making too many passes through the file.
+    /// We assume that the extractions are sorted in temporal order.
     pub fn extract(&self, extractions: &[Extraction]) -> Result<()> {
-        let total = (extractions.len() + 1) as f32;
-        let chunk_size = 10;
-        for (i, chunk) in extractions.chunks(chunk_size).enumerate() {
-            let done = (chunk_size*i + 1) as f32;
-            println!("Extracting: {}%", 100.0*done/total);
-            let mut cmd = Command::new("avconv");
-            cmd.arg("-i").arg(&self.path);
-            for e in chunk {
-                e.add_args(&mut cmd);
+        let mut batch: Vec<&Extraction> = vec!();
+        for e in extractions {
+            if e.spec.can_be_batched() {
+                batch.push(e);
+            } else {
+                try!(self.extract_one(e));
             }
-            try!(cmd.output());
+        }
+
+        for chunk in batch.chunks(20) {
+            try!(self.extract_batch(chunk));
         }
         Ok(())
     }
