@@ -11,6 +11,7 @@ use std::result;
 use std::str::{FromStr, from_utf8};
 
 use err::{err_str, Error, Result};
+use lang::Lang;
 use time::Period;
 
 /// Individual streams inside a video are labelled with a codec type.
@@ -93,6 +94,15 @@ pub struct Stream {
     pub tags: BTreeMap<String, String>,
 }
 
+impl Stream {
+    /// Return the language associated with this stream, if we can figure
+    /// it out.
+    pub fn language(&self) -> Option<Lang> {
+        self.tags.get("language")
+            .and_then(|lang| Lang::iso639(lang).ok())
+    }
+}
+
 #[test]
 fn test_stream_decode() {
     let json = "
@@ -118,6 +128,8 @@ fn test_stream_decode() {
 ";
     let stream: Stream = json::decode(json).unwrap();
     assert_eq!(CodecType::Audio, stream.codec_type);
+    assert_eq!(Some(Lang::iso639("en").unwrap()),
+               stream.language())
 }
 
 /// What kind of data do we want to extract, and from what position in the
