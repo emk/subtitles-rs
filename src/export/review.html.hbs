@@ -17,10 +17,10 @@
 
         <div class="text">
           {{#if foreign_text}}
-            <p class="foreign">{{foreign_text}}</p>
+            <p class="foreign" lang="{{../../foreign_lang}}">{{foreign_text}}</p>
           {{/if}}
           {{#if native_text}}
-            <p class="native">{{native_text}}</p>
+            <p class="native" lang="{{../../native_lang}}">{{native_text}}</p>
           {{/if}}
         </div>
       </div>

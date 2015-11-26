@@ -11,6 +11,7 @@ use std::str::from_utf8;
 
 use align::align_available_files;
 use err::{err_str, Result};
+use lang::Lang;
 use srt::SubtitleFile;
 use time::Period;
 use video::{Extraction, ExtractionSpec, Video};
@@ -33,7 +34,6 @@ pub struct ExportRequest {
 /// Information about a subtitle for use by our Handlebars HTML template.
 /// This needs to implement `ToJson`, because that's what Handlebars wants
 /// as input.
-#[derive(RustcEncodable)]
 struct SubtitleInfo {
     index: usize,
     image_path: String,
@@ -49,18 +49,17 @@ impl ToJson for SubtitleInfo {
         m.insert("image_path".to_string(), self.image_path.to_json());
         m.insert("audio_path".to_string(), self.audio_path.to_json());
         m.insert("foreign_text".to_string(), self.foreign_text.to_json());
-        if let &Some(ref s) = &self.native_text {
-            m.insert("native_text".to_string(), s.to_json());
-        }
+        m.insert("native_text".to_string(), self.native_text.to_json());
         m.to_json()
     }
 }
 
 /// Export-related information for use by our Handlebars HTML template.
-#[derive(RustcEncodable)]
 struct ExportInfo {
     filename: String,
     subtitles: Vec<SubtitleInfo>,
+    foreign_lang: Option<Lang>,
+    native_lang: Option<Lang>,
 }
 
 impl ToJson for ExportInfo {
@@ -68,6 +67,8 @@ impl ToJson for ExportInfo {
         let mut m: BTreeMap<String, Json> = BTreeMap::new();
         m.insert("filename".to_string(), self.filename.to_json());
         m.insert("subtitles".to_string(), self.subtitles.to_json());
+        m.insert("foreign_lang".to_string(), self.foreign_lang.to_json());
+        m.insert("native_lang".to_string(), self.native_lang.to_json());
         m.to_json()
     }
 }
@@ -104,10 +105,17 @@ pub fn export(request: &ExportRequest) -> Result<()> {
     // Start preparing our export request.
     let mut extractions: Vec<Extraction> = vec!();
 
+    // Figure out the languages of our subtitles.
+    let foreign_lang = request.foreign_subtitles.detect_language();
+    let native_lang = request.native_subtitles.as_ref()
+        .and_then(|s| s.detect_language());
+
     // Start preparing information we'll pass to our HTML template.
     let mut bindings = ExportInfo {
         filename: path_str(request.video.file_name()),
         subtitles: vec!(),
+        foreign_lang: foreign_lang,
+        native_lang: native_lang,
     };
 
     // Align our input files.

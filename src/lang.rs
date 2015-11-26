@@ -1,6 +1,7 @@
 //! Naming and identifying languages.  We use 
 
 use cld2;
+use rustc_serialize::json::{ToJson, Json};
 use std::ascii::AsciiExt;
 use std::collections::HashMap;
 use std::fmt;
@@ -137,5 +138,11 @@ impl fmt::Debug for Lang {
 impl fmt::Display for Lang {
     fn fmt(&self, f: &mut fmt::Formatter) -> result::Result<(), fmt::Error> {
         write!(f, "{}", self.as_str())
+    }
+}
+
+impl ToJson for Lang {
+    fn to_json(&self) -> Json {
+        self.as_str().to_json()
     }
 }
