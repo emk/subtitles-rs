@@ -202,13 +202,13 @@ pub trait ToTimestamp {
 
 impl ToTimestamp for f32 {
     fn to_timestamp(&self) -> String {
-        format!("{:09.4}", *self)
+        format!("{:09.3}", *self)
     }
 }
 
 impl ToTimestamp for Period {
     fn to_timestamp(&self) -> String {
-        format!("{:09.4}-{:09.4}", self.begin(), self.end())
+        format!("{:09.3}-{:09.3}", self.begin(), self.end())
     }
 }
 
