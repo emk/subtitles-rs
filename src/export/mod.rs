@@ -105,10 +105,12 @@ pub fn export(request: &ExportRequest) -> Result<()> {
     // Start preparing our export request.
     let mut extractions: Vec<Extraction> = vec!();
 
-    // Figure out the languages of our subtitles.
+    // Figure out the languages of our subtitles, and decide which stream
+    // to use.
     let foreign_lang = request.foreign_subtitles.detect_language();
     let native_lang = request.native_subtitles.as_ref()
         .and_then(|s| s.detect_language());
+    let stream = foreign_lang.and_then(|l| request.video.audio_for(l));
 
     // Start preparing information we'll pass to our HTML template.
     let mut bindings = ExportInfo {
@@ -141,7 +143,7 @@ pub fn export(request: &ExportRequest) -> Result<()> {
         let audio_path = media_path(index, "mp3");
         extractions.push(Extraction {
             path: audio_path.clone(),
-            spec: ExtractionSpec::Audio(period),
+            spec: ExtractionSpec::Audio(stream, period),
         });
 
         bindings.subtitles.push(SubtitleInfo {

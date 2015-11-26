@@ -137,8 +137,8 @@ fn test_stream_decode() {
 pub enum ExtractionSpec {
     /// Extract an image at the specified time.
     Image(f32),
-    /// Extract an audio clip covering the specified period.
-    Audio(Period),
+    /// Extract an audio clip covering the specified stream and period.
+    Audio(Option<usize>, Period),
 }
 
 impl ExtractionSpec {
@@ -146,7 +146,7 @@ impl ExtractionSpec {
     fn earliest_time(&self) -> f32 {
         match self {
             &ExtractionSpec::Image(time) => time,
-            &ExtractionSpec::Audio(period) => period.begin(),
+            &ExtractionSpec::Audio(_, period) => period.begin(),
         }
     }
 
@@ -176,7 +176,10 @@ impl ExtractionSpec {
                     .arg("-filter_complex").arg(&scale_filter)
                     .arg("-f").arg("image2");
             }
-            &ExtractionSpec::Audio(period) => {
+            &ExtractionSpec::Audio(stream, period) => {
+                if let Some(sid) = stream {
+                    cmd.arg("-map").arg(format!("0:{}", sid));
+                }
                 cmd.arg("-ss").arg(format!("{}", period.begin() - time_base))
                     .arg("-t").arg(format!("{}", period.duration()));
             }
@@ -250,6 +253,14 @@ impl Video {
     /// List all the tracks in a video file.
     pub fn streams(&self) -> &[Stream] {
         &self.metadata.streams
+    }
+
+    /// Choose the best audio for the specified language.
+    pub fn audio_for(&self, lang: Lang) -> Option<usize> {
+        self.streams().iter().position(|s| {
+            s.codec_type == CodecType::Audio &&
+                s.language() == Some(lang)
+        })
     }
 
     /// Create an extraction command using the specified `time_base`.  This
