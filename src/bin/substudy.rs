@@ -86,11 +86,10 @@ fn cmd_combine(path1: &Path, path2: &Path) -> Result<()> {
 fn cmd_tracks(path: &Path) -> Result<()> {
     let v = try!(video::Video::new(path));
     for stream in v.streams() {
-        let lang: &str = match stream.tags.get("language") {
-            Some(ref code) => code,
-            None => "unknown",
-        };
-        println!("#{} {} {:?}", stream.index, lang, stream.codec_type);
+        let lang = stream.language();
+        let lang_str = lang.map(|l| l.as_str().to_owned())
+            .unwrap_or("??".to_owned());
+        println!("#{} {} {:?}", stream.index, &lang_str, stream.codec_type);
     }
     Ok(())
 }
