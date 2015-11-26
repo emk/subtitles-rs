@@ -184,3 +184,38 @@ impl Period {
         (self.end.min(other.end) - self.begin.max(other.begin)).max(0.0)
     }
 }
+
+/// Convert a time to a timestamp string.  This is mostly used for giving
+/// files semi-unique names so that we can dump files from multiple,
+/// related export runs into a single directory without too much chance of
+/// them overwriting each other unless they're basically the same file.
+pub trait ToTimestamp {
+    /// Convert to a string describing this time.
+    fn to_timestamp(&self) -> String;
+
+    /// Convert to a string describing this time, replacing periods with
+    /// "_".
+    fn to_file_timestamp(&self) -> String {
+        self.to_timestamp().replace(".", "_")
+    }
+}
+
+impl ToTimestamp for f32 {
+    fn to_timestamp(&self) -> String {
+        format!("{:09.4}", *self)
+    }
+}
+
+impl ToTimestamp for Period {
+    fn to_timestamp(&self) -> String {
+        format!("{:09.4}-{:09.4}", self.begin(), self.end())
+    }
+}
+
+#[test]
+fn test_timestamp() {
+    assert_eq!("00010.500", (10.5).to_timestamp());
+    let period = Period::new(10.0, 20.0).unwrap();
+    assert_eq!("00010.000-00020.000", period.to_timestamp());
+    assert_eq!("00010_000-00020_000", period.to_file_timestamp());
+}

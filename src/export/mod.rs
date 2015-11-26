@@ -13,7 +13,7 @@ use align::align_available_files;
 use err::{err_str, Result};
 use lang::Lang;
 use srt::SubtitleFile;
-use time::Period;
+use time::{Period, ToTimestamp};
 use video::{Extraction, ExtractionSpec, Video};
 
 /// Information about media file and associated subtitles that the user
@@ -98,8 +98,8 @@ pub fn export(request: &ExportRequest) -> Result<()> {
                                    &dir.to_string_lossy())));
     }
     try!(fs::create_dir_all(&dir));
-    let media_path = |index: usize, ext: &str| -> PathBuf {
-        dir.join(format!("{}_{:03}.{}", stem, index, ext))
+    let media_path = |timestamp: &ToTimestamp, ext: &str| -> PathBuf {
+        dir.join(format!("{}_{}.{}", stem, timestamp.to_file_timestamp(), ext))
     };
 
     // Start preparing our export request.
@@ -134,13 +134,13 @@ pub fn export(request: &ExportRequest) -> Result<()> {
             native.as_ref().map(|s| s.period),
         ).expect("subtitle pair must not be empty").grow(0.5, 0.5);
 
-        let image_path = media_path(index, "jpg");
+        let image_path = media_path(&period.midpoint(), "jpg");
         extractions.push(Extraction {
             path: image_path.clone(),
             spec: ExtractionSpec::Image(period.midpoint()),
         });
 
-        let audio_path = media_path(index, "mp3");
+        let audio_path = media_path(&period, "mp3");
         extractions.push(Extraction {
             path: audio_path.clone(),
             spec: ExtractionSpec::Audio(stream, period),
