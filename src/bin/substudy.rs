@@ -21,6 +21,7 @@ Subtitle processing tools for students of foreign languages
 
 Usage: substudy clean <subs>
        substudy combine <foreign-subs> <native-subs>
+       substudy export csv <video> <foreign-subs> [<native-subs>]
        substudy export review <video> <foreign-subs> [<native-subs>]
        substudy list tracks <video>
        substudy --help
@@ -34,8 +35,10 @@ have problems.
 struct Args {
     cmd_clean: bool,
     cmd_combine: bool,
-    cmd_tracks: bool,
     cmd_export: bool,
+    cmd_csv: bool,
+    cmd_review: bool,
+    cmd_tracks: bool,
     arg_subs: String,
     arg_foreign_subs: String,
     arg_native_subs: Option<String>,
@@ -50,22 +53,24 @@ fn run(args: &Args) -> Result<()> {
         Args{cmd_combine: true, arg_foreign_subs: ref path1,
              arg_native_subs: Some(ref path2), ..} =>
             cmd_combine(&Path::new(path1), &Path::new(path2)),
-        Args{cmd_tracks: true, arg_video: ref path, ..} =>
-            cmd_tracks(&Path::new(path)),
-        Args{cmd_export: true, arg_video: ref video_path,
+        Args{cmd_review: true,
+             arg_video: ref video_path,
              arg_foreign_subs: ref foreign_path,
              arg_native_subs: ref native_path, ..} => {
-            match native_path {
-                &None =>
-                    cmd_export(&Path::new(video_path),
-                               &Path::new(foreign_path),
-                               None),
-                &Some(ref native) =>
-                    cmd_export(&Path::new(video_path),
-                               &Path::new(foreign_path),
-                               Some(&Path::new(native))),
-            }
+            cmd_export("review", &Path::new(video_path),
+                       &Path::new(foreign_path),
+                       native_path.as_ref().map(|p| Path::new(p)))
         }
+        Args{cmd_csv: true,
+             arg_video: ref video_path,
+             arg_foreign_subs: ref foreign_path,
+             arg_native_subs: ref native_path, ..} => {
+            cmd_export("csv", &Path::new(video_path),
+                       &Path::new(foreign_path),
+                       native_path.as_ref().map(|p| Path::new(p)))
+        }
+        Args{cmd_tracks: true, arg_video: ref path, ..} =>
+            cmd_tracks(&Path::new(path)),
         _ => panic!("Unexpected argument combination: {:?}", args)
     }
 }
@@ -94,7 +99,7 @@ fn cmd_tracks(path: &Path) -> Result<()> {
     Ok(())
 }
 
-fn cmd_export(video_path: &Path, foreign_sub_path: &Path,
+fn cmd_export(kind: &str, video_path: &Path, foreign_sub_path: &Path,
               native_sub_path: Option<&Path>) ->
     Result<()>
 {
@@ -107,8 +112,12 @@ fn cmd_export(video_path: &Path, foreign_sub_path: &Path,
     };
 
     let mut exporter =
-        try!(export::Exporter::new(video, foreign_subs, native_subs, "review"));
-    try!(export::export_review(&mut exporter));
+        try!(export::Exporter::new(video, foreign_subs, native_subs, kind));
+    match kind {
+        "csv" => try!(export::export_csv(&mut exporter)),
+        "review" => try!(export::export_review(&mut exporter)),
+        _ => panic!("Uknown export type: {}", kind),
+    }
 
     Ok(())
 }

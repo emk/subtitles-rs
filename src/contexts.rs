@@ -67,7 +67,7 @@ impl<'a, T> Context<&'a Option<T>> {
         OptContext {
             prev: self.prev.and_then(|t| t.as_ref()),
             curr: self.curr.as_ref(),
-            next: self.prev.and_then(|t| t.as_ref()),
+            next: self.next.and_then(|t| t.as_ref()),
         }
     }
 }
