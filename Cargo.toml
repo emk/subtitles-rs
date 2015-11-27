@@ -1,12 +1,13 @@
 [package]
 
 name = "substudy"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
 description = "Tools for working with parallel, bilingual subtitles"
 license = "Unlicense"
 
+homepage = "https://github.com/emk/substudy"
 documentation = "http://www.rust-ci.org/emk/substudy/doc/substudy/"
 repository = "https://github.com/emk/substudy"
 readme = "README.md"
