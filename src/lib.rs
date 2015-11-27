@@ -8,6 +8,7 @@
 #![warn(missing_docs)]
 
 extern crate cld2;
+extern crate csv;
 #[cfg(test)] extern crate difference;
 extern crate encoding;
 extern crate handlebars;
@@ -19,6 +20,7 @@ extern crate rustc_serialize;
 extern crate uchardet;
 
 pub mod err;
+pub mod contexts;
 pub mod decode;
 mod grammar;
 pub mod lang;

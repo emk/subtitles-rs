@@ -7,9 +7,10 @@ use std::fmt::Write as fmt_Write;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use align::align_available_files;
 use err::{err_str, Result};
 use lang::Lang;
-use srt::SubtitleFile;
+use srt::{Subtitle, SubtitleFile};
 use time::{Period, ToTimestamp};
 use video::{Extraction, ExtractionSpec, Video};
 
@@ -119,6 +120,12 @@ impl Exporter {
     /// Get data related to the native language.
     pub fn native(&self) -> Option<&LanguageResources> {
         self.native.as_ref()
+    }
+
+    /// Align our two sets of subtitles.
+    pub fn align(&self) -> Vec<(Option<Subtitle>, Option<Subtitle>)> {
+        align_available_files(&self.foreign.subtitles,
+                              self.native.as_ref().map(|n| &n.subtitles))
     }
 
     /// Construct a path to an extracted media file, including timestamps

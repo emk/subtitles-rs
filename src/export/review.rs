@@ -5,7 +5,6 @@ use rustc_serialize::json::{ToJson, Json};
 use std::collections::BTreeMap;
 use std::str::from_utf8;
 
-use align::align_available_files;
 use err::Result;
 use export::Exporter;
 use lang::Lang;
@@ -64,12 +63,8 @@ pub fn export_review(exporter: &mut Exporter) -> Result<()> {
         native_lang: exporter.native().and_then(|n| n.language)
     };
 
-    // Align our input files.
-    let aligned =
-        align_available_files(&exporter.foreign().subtitles,
-                              exporter.native().map(|n| &n.subtitles));
-
-    // TODO: Offer some way to specify which subs.
+    // Align our input files and iterate.
+    let aligned = exporter.align();
     for sub in aligned.iter().enumerate() {
         let (i, &(ref foreign, ref native)) = sub;
         let index = i + 1;
