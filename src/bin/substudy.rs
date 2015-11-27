@@ -106,12 +106,9 @@ fn cmd_export(video_path: &Path, foreign_sub_path: &Path,
         Some(p) => Some(try!(SubtitleFile::cleaned_from_path(p))),
     };
 
-    let request = export::ExportRequest {
-        video: video,
-        foreign_subtitles: foreign_subs,
-        native_subtitles: native_subs,
-    };
-    try!(export::export(&request));
+    let mut exporter =
+        try!(export::Exporter::new(video, foreign_subs, native_subs, "review"));
+    try!(export::export_review(&mut exporter));
 
     Ok(())
 }
