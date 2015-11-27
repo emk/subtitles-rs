@@ -102,6 +102,12 @@ impl Exporter {
         })
     }
 
+    /// The base name of this file, with the directory and file extension
+    /// removed.
+    pub fn file_stem(&self) -> &str {
+        &self.file_stem
+    }
+
     /// Return a title for this video.
     pub fn title(&self) -> &str {
         &self.file_stem

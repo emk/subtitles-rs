@@ -7,6 +7,21 @@ use err::{err_str, Result};
 /// in *.srt subtitle files.
 pub const MIN_SPACING: f32 = 0.001;
 
+/// Converts a time to a pretty, human-readable format.
+///
+/// ```
+/// use substudy::time::seconds_to_hhmmss;
+/// assert_eq!("3:02:01.001", seconds_to_hhmmss(3.0*3600.0+2.0*60.0+1.001));
+/// ```
+pub fn seconds_to_hhmmss(time: f32) -> String {
+    let mut seconds = time;
+    let hours = (seconds / 3600.0).floor() as u32;
+    seconds %= 3600.0;
+    let mins = (seconds / 60.0).floor() as u32;
+    seconds %= 60.0;
+    format!("{}:{:02}:{:06.3}", hours, mins, seconds)
+}
+
 /// A period of time, in seconds.  The beginning is guaranteed to be less
 /// than the end, and all times are positive.  This is lightweight
 /// structure which implements `Copy`, so it can be passed by value.
