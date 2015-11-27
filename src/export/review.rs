@@ -83,16 +83,16 @@ pub fn export_review(exporter: &mut Exporter) -> Result<()> {
 
         bindings.subtitles.push(SubtitleInfo {
             index: index,
-            image_path: image_path.file_name().unwrap().to_string_lossy().into_owned(),
-            audio_path: audio_path.file_name().unwrap().to_string_lossy().into_owned(),
+            image_path: image_path,
+            audio_path: audio_path,
             foreign_text: foreign.as_ref().map(|s| s.plain_text()),
             native_text: native.as_ref().map(|s| s.plain_text()),
         });
     }
 
     // Write out our support files.
-    try!(exporter.export_data_file("style.css", &include_bytes!("style.css")[..]));
-    try!(exporter.export_data_file("play.svg", &include_bytes!("play.svg")[..]));
+    try!(exporter.export_data_file("style.css", include_bytes!("style.css")));
+    try!(exporter.export_data_file("play.svg", include_bytes!("play.svg")));
 
     // Render and write out our HTML.
     let template = try!(from_utf8(include_bytes!("review.html.hbs")));

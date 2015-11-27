@@ -138,20 +138,20 @@ impl Exporter {
 
     /// Schedule an export of the image at the specified time code.
     /// Returns the path to which the image will be written.
-    pub fn schedule_image_export(&mut self, time: f32) -> PathBuf {
+    pub fn schedule_image_export(&mut self, time: f32) -> String {
         let path = self.media_path(time, None, "jpg");
         self.extractions.push(Extraction {
             path: path.clone(),
             spec: ExtractionSpec::Image(time),
         });
-        path
+        os_str_to_string(path.file_name().unwrap())
     }
 
     /// Schedule an export of the audio at the specified time period.
     /// Returns the path to which the audio will be written.
     pub fn schedule_audio_export(&mut self, lang: Option<Lang>,
                                  period: Period) ->
-        PathBuf
+        String
     {
         let path = self.media_path(period, lang, "mp3");
         let stream = lang.and_then(|l| self.video.audio_for(l));
@@ -159,7 +159,7 @@ impl Exporter {
             path: path.clone(),
             spec: ExtractionSpec::Audio(stream, period),
         });
-        path
+        os_str_to_string(path.file_name().unwrap())
     }
 
     /// Write a raw chunk of bytes to a file in our export directory.
