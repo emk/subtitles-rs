@@ -92,6 +92,8 @@ sudo apt-get update
 Once `ffmpeg` is installed, you should be able to access the video-related
 features of `substudy`.
 
+[ffmpeg]: https://ffmpeg.org/download.html
+
 ## Building `substudy`
 
 Assuming you have `multirust` installed as described above, you can run:
