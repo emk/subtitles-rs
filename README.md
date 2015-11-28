@@ -140,6 +140,7 @@ configuration options and it requires too much work using external
 utilities.
 
 [Subtitle Edit]: http://www.nikse.dk/subtitleedit/
+[subs2srs]: http://subs2srs.sourceforge.net/
 
 ## License
 
