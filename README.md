@@ -2,29 +2,40 @@
 
 This is an experimental tool to help language-learners exploit parallel
 subtitles in various ways.  Among other things, it can generate bilingual
-subtitles:
+subtitles, review pages, and decks of Anki cards:
 
-![Avatar with English and Spanish subtitles](https://s3.amazonaws.com/hosted-forum-images/substudy/avatar-bilingual-subs.jpg)
+<a href="http://www.randomhacks.net/substudy/#bilingual">
+<img src="http://www.randomhacks.net//images/substudy/bilingual-subtitles.jpg"
+     width="320" height="240"
+     alt="Fleet of ships on TV, with subtitles in English and Spanish"
+     title="TV with bilingual subtitles">
+</a>
+<a href="http://www.randomhacks.net/substudy/#anki">
+<img src="http://www.randomhacks.net//images/substudy/anki.png"
+     width="320" height="240"
+     alt="Flash card with image and audio on front, bilingual subtitles on back"
+     title="Studying subtitles with Anki">
+</a>
 
-(_Avatar: The Last Airbender_, season 1, episode 1, with English and
-Spanish subtitles.)
+Here's the documentation:
 
-Features include:
+- [Overview and user documentation][docs]
+- [API documentation (unstable)][apidocs]
 
-1. Automatically detects and converts common encodings.
-2. Given subtitles in two different languages, tries to find the best
-   alignment.
-3. Adjusts subtitle timings to make subtitles visible sooner and keep them
-   around longer, so you have more time to read and listen.
-4. Tries to remove sound effects, speaker names and other common clutter.
+Example usage:
 
-This is recommended for beginner and low-intermediate students of a foreign
-language, and it's especially useful in conjunction with [subs2srs][] and
-[Anki][], which can be used to create highly effective (and rather
-entertaining) audio cards.
+```sh
+# Create a bilingual subtitle file.
+substudy combine episode_01_01.es.srt episode_01_01.en.srt \
+    > episode_01_01.bilingual.srt
 
-[subs2srs]: http://learnanylanguage.wikia.com/wiki/Subs2srs
-[Anki]: http://ankisrs.net/
+# Export images, audio clips and subtitles as a web page.
+substudy export review episode_01_01.mkv \
+    episode_01_01.es.srt episode_01_01.en.srt
+```
+
+[docs]: http://www.randomhacks.net/substudy/
+[apidocs]: http://docs.randomhacks.net/substudy/substudy/index.html
 
 ## Installing `substudy`
 
@@ -57,6 +68,30 @@ multirust run nightly cargo install substudy
 
 [multirust]: https://github.com/brson/multirust
 
+### Installing ffmpeg
+
+To use the video-related features, you'll need to install
+[version 2.8.1 or newer of `ffmpeg`][ffmpeg].  You may have problems with
+older versions or with the `libav` fork.  If you're running Ubuntu 14.04
+LTS, you could run:
+
+```sh
+sudo apt-add-repository ppa:mc3man/trusty-media
+sudo apt-get update
+sudo apt-get install ffmpeg
+```
+
+You might want to remove this external package repository before applying
+other updates to your system, to avoid conflicts:
+
+```sh
+sudo apt-add-repository -r ppa:mc3man/trusty-media
+sudo apt-get update
+```
+
+Once `ffmpeg` is installed, you should be able to access the video-related
+features of `substudy`.
+
 ## Running `substudy`
 
 To get a list of supported commands, run `target/substudy --help`:
@@ -81,28 +116,6 @@ So, for example, you could run:
 substudy combine foreign.srt native.srt > bilingual.srt
 ```
 
-## Finding & preparing subtitles
-
-The simplest tool for extracting subtitles from DVDs is [Handbrake][].  If
-you can't find what you need on the DVD, another good source of subtitles
-is [opensubtitles.org][].  To OCR, convert, realign and otherwise clean up
-subtitles, the open source Windows application [Subtitle Edit][] is an
-excellent choice, and it runs fine in a Windows VM.
-
-[Handbrake]: https://handbrake.fr/
-[opensubtitles.org]: http://www.opensubtitles.org/en/search
-[Subtitle Edit]: http://www.nikse.dk/subtitleedit/
-
-## Watching video with bilingual SRT subtitles
-
-My favorite tools are [VLC][], for watching on my computer, and
-[Videostream][], for streaming videos to my TV using a [Chromecast][].  The
-same subtitle file should work fine with both.
-
-[VLC]: http://www.videolan.org/vlc/
-[Videostream]: http://www.getvideostream.com/
-[Chromecast]: http://www.google.com/chrome/devices/chromecast/
-
 ## Building `substudy`
 
 Assuming you have `multirust` installed as described above, you can run:
@@ -117,51 +130,11 @@ If this fails, please feel free to submit an issue.
 
 ## Using substudy as a library
 
-You can find [API documentation on the Rust CI site][apidoc].  Note that
+You can find [API documentation on the Rust CI site][apidocs].  Note that
 all APIs are experimental and subject to change.  If you want to use
 `substudy` as a library in your own tools, you're encouraged to do so, but
 it might be worth letting me know which APIs you're using so that I can
 stabilize them.
-
-[apidoc]: http://emk.github.io/substudy/substudy/index.html
-
-## EXPERIMENTAL: Building with video file support
-
-We have experimental support for extracting audio and images from video
-files!
-
-You'll need to install [version 2.8.1 or newer of `ffmpeg`][ffmpeg].  You
-probably don't want to try older versions, or to use `libav` (which has a
-bad memory leak that may cause it to take up 10+ GB of memory before
-crashing your system).  If you're running Ubuntu 14.04 LTS, you could run:
-
-```sh
-sudo apt-add-repository ppa:mc3man/trusty-media
-sudo apt-get update
-sudo apt-get install ffmpeg
-```
-
-You might want to remove this external package repository before applying
-other updates to your system, to avoid conflicts:
-
-```sh
-sudo apt-add-repository -r ppa:mc3man/trusty-media
-```
-
-Once `ffmpeg` is installed, you should be able to access the video-related
-features of `substudy`.
-
-**Note:** In this version of substudy, we always use the default audio
-track chosen by ffmpeg.  We plan to get smarter about this soon.
-
-We tried linking to a very nice Rust `ffmpeg` library, but it turns out
-that there are two forks of the underlying `ffmpeg`, each with several
-different incompatible versions of key data structures, and getting it to
-work on common Ubuntu systems was [far too annoying][ffmpeg-issue].  So we
-decided to just call the command-line utilities.
-
-[ffmpeg]: https://ffmpeg.org/download.html
-[ffmpeg-issue]: https://github.com/meh/rust-ffmpeg-sys/issues/12
 
 ## Contributing
 
@@ -170,7 +143,6 @@ Please feel welcome to send me a pull request or submit an issue!
 Things which I'd love to see `substudy` support include:
 
 - Creating various sorts of parallel media: subtitles, Anki cards, etc.
-- Exracting audio and images corresponding to individual subtitles.
 - Automatic vobsub to `*.srt` conversion, using OCR and character
   databases.  There are several open source Windows tools which tackle
   this, but it should be theoretically possible to do a lot better.
@@ -195,9 +167,10 @@ utilities.
 
 ## License
 
-This program is released into the public domain using the [Unlicense][].
-Our test suites contain a half-dozen lines of subtitles from copyrighted TV
-shows, which should presumably fall under _de minimis_, fair use or
-equivalent exceptions in most jurisdictions.
+This program is released into the public domain using the
+[CC0 public domain declaration][CC0].  Our test suites contain a half-dozen
+lines of subtitles from copyrighted TV shows, which should presumably fall
+under _de minimis_, fair use or equivalent exceptions in most
+jurisdictions.
 
-[Unlicense]: http://unlicense.org/
+[CC0]: https://creativecommons.org/publicdomain/zero/1.0/

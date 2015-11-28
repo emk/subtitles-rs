@@ -3,12 +3,13 @@
 name = "substudy"
 version = "0.3.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
+license = "CC0-1.0"
 
-description = "Tools for working with parallel, bilingual subtitles"
-license = "Unlicense"
+description = """Language-learning tools for working with parallel, bilingual
+subtitles and media files."""
 
-homepage = "https://github.com/emk/substudy"
-documentation = "http://www.rust-ci.org/emk/substudy/doc/substudy/"
+homepage = "http://www.randomhacks.net/substudy/"
+documentation = "http://docs.randomhacks.net/substudy/"
 repository = "https://github.com/emk/substudy"
 readme = "README.md"
 keywords = ["text"]
