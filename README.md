@@ -5,13 +5,13 @@ subtitles in various ways.  Among other things, it can generate bilingual
 subtitles, review pages, and decks of Anki cards:
 
 <a href="http://www.randomhacks.net/substudy/#bilingual">
-<img src="http://www.randomhacks.net//images/substudy/bilingual-subtitles.jpg"
+<img src="http://www.randomhacks.net/images/substudy/bilingual-subtitles.jpg"
      width="320" height="240"
      alt="Fleet of ships on TV, with subtitles in English and Spanish"
      title="TV with bilingual subtitles">
 </a>
 <a href="http://www.randomhacks.net/substudy/#anki">
-<img src="http://www.randomhacks.net//images/substudy/anki.png"
+<img src="http://www.randomhacks.net/images/substudy/anki.png"
      width="320" height="240"
      alt="Flash card with image and audio on front, bilingual subtitles on back"
      title="Studying subtitles with Anki">
@@ -91,30 +91,6 @@ sudo apt-get update
 
 Once `ffmpeg` is installed, you should be able to access the video-related
 features of `substudy`.
-
-## Running `substudy`
-
-To get a list of supported commands, run `target/substudy --help`:
-
-```
-Subtitle processing tools for students of foreign languages
-
-Usage: substudy clean <subs>
-       substudy combine <foreign-subs> <native-subs>
-       substudy export review <video> <foreign-subs> [<native-subs>]
-       substudy tracks <video>
-       substudy --help
-
-For now, all subtitles must be in *.srt format. Many common encodings
-will be automatically detected, but try converting to UTF-8 if you
-have problems.
-```
-
-So, for example, you could run:
-
-``` sh
-substudy combine foreign.srt native.srt > bilingual.srt
-```
 
 ## Building `substudy`
 
