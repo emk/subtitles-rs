@@ -45,8 +45,8 @@ pub fn export_tracks(exporter: &mut Exporter) -> Result<()> {
             let overlap = Period::new(convs[i].begin(), convs[i-1].end())
                 .unwrap();
             let midpoint = overlap.midpoint();
-            println!("Overlap: {:?} {:?} {:?} {}",
-                     convs[i-1], convs[i], overlap, midpoint);
+            debug!("Overlap: {:?} {:?} {:?} {}",
+                   convs[i-1], convs[i], overlap, midpoint);
             convs[i-1] = Period::new(convs[i-1].begin(), midpoint).unwrap();
             convs[i] = Period::new(midpoint, convs[i].end()).unwrap();
             assert!(convs[i].begin() >= convs[i-1].end());
@@ -58,8 +58,8 @@ pub fn export_tracks(exporter: &mut Exporter) -> Result<()> {
     let foreign_lang = exporter.foreign().language;
     for conv in convs {
         exporter.schedule_audio_export(foreign_lang, conv);
-        println!("Conv: {:7.1} -> {:7.1} for {:7.1}",
-                 conv.begin(), conv.end(), conv.duration());
+        debug!("Conv: {:7.1} -> {:7.1} for {:7.1}",
+               conv.begin(), conv.end(), conv.duration());
     }
 
     // Extract our media files.
