@@ -1,6 +1,7 @@
 //! Code shared between multiple exporters.
 
 use std::convert::AsRef;
+use std::default::Default;
 use std::io::Write;
 use std::ffi::OsStr;
 use std::fmt::Write as fmt_Write;
@@ -12,7 +13,7 @@ use err::{err_str, Result};
 use lang::Lang;
 use srt::{Subtitle, SubtitleFile};
 use time::{Period, ToTimestamp};
-use video::{Extraction, ExtractionSpec, Video};
+use video::{Extraction, ExtractionSpec, Id3Metadata, Video};
 
 /// Take a platform-specific pathname fragment and turn it into a regular
 /// Unicode string.
@@ -166,11 +167,21 @@ impl Exporter {
                                  period: Period) ->
         String
     {
+        self.schedule_audio_export_ext(lang, period, Default::default())
+    }
+
+    /// Schedule an export of the audio at the specified time period, using
+    /// the specified metadata.  Returns the path to which the audio will
+    /// be written.
+    pub fn schedule_audio_export_ext(&mut self, lang: Option<Lang>,
+                                     period: Period, metadata: Id3Metadata) ->
+        String
+    {
         let path = self.media_path(period, lang, "mp3");
         let stream = lang.and_then(|l| self.video.audio_for(l));
         self.extractions.push(Extraction {
             path: path.clone(),
-            spec: ExtractionSpec::Audio(stream, period),
+            spec: ExtractionSpec::Audio(stream, period, metadata),
         });
         os_str_to_string(path.file_name().unwrap())
     }

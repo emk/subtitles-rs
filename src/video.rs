@@ -14,6 +14,41 @@ use err::{err_str, Error, Result};
 use lang::Lang;
 use time::Period;
 
+/// Information about an MP3 track (optional).
+#[derive(Debug, Default)]
+#[allow(missing_docs)]
+pub struct Id3Metadata {
+    pub genre: Option<String>,
+    pub artist: Option<String>,
+    pub album: Option<String>,
+    pub track_number: Option<(usize, usize)>,
+    pub track_name: Option<String>,
+    pub lyrics: Option<String>,
+}
+
+impl Id3Metadata {
+    fn add_args(&self, cmd: &mut Command) {
+        if let Some(ref genre) = self.genre {
+            cmd.arg("-metadata").arg(format!("genre={}", genre));
+        }
+        if let Some(ref artist) = self.artist {
+            cmd.arg("-metadata").arg(format!("artist={}", artist));
+        }
+        if let Some(ref album) = self.album {
+            cmd.arg("-metadata").arg(format!("album={}", album));
+        }
+        if let Some((track, total)) = self.track_number {
+            cmd.arg("-metadata").arg(format!("track={}/{}", track, total));
+        }
+        if let Some(ref track_name) = self.track_name {
+            cmd.arg("-metadata").arg(format!("title={}", track_name));
+        }
+        if let Some(ref lyrics) = self.lyrics {
+            cmd.arg("-metadata").arg(format!("lyrics={}", lyrics));
+        }
+    }
+}
+
 /// Individual streams inside a video are labelled with a codec type.
 #[derive(Debug, PartialEq, Eq)]
 #[allow(missing_docs)]
@@ -138,7 +173,7 @@ pub enum ExtractionSpec {
     /// Extract an image at the specified time.
     Image(f32),
     /// Extract an audio clip covering the specified stream and period.
-    Audio(Option<usize>, Period),
+    Audio(Option<usize>, Period, Id3Metadata),
 }
 
 impl ExtractionSpec {
@@ -146,7 +181,7 @@ impl ExtractionSpec {
     fn earliest_time(&self) -> f32 {
         match self {
             &ExtractionSpec::Image(time) => time,
-            &ExtractionSpec::Audio(_, period) => period.begin(),
+            &ExtractionSpec::Audio(_, period, _) => period.begin(),
         }
     }
 
@@ -176,10 +211,11 @@ impl ExtractionSpec {
                     .arg("-filter_complex").arg(&scale_filter)
                     .arg("-f").arg("image2");
             }
-            &ExtractionSpec::Audio(stream, period) => {
+            &ExtractionSpec::Audio(stream, period, ref metadata) => {
                 if let Some(sid) = stream {
                     cmd.arg("-map").arg(format!("0:{}", sid));
                 }
+                metadata.add_args(cmd);
                 cmd.arg("-ss").arg(format!("{}", period.begin() - time_base))
                     .arg("-t").arg(format!("{}", period.duration()));
             }

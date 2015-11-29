@@ -1,11 +1,13 @@
 //! Output a video as a series of short audio tracks, short enough to make
 //! it easy to skip backwards a conversation with most MP3 players.
 
+use std::default::Default;
 use std::io::{Cursor, Write};
 
 use err::Result;
 use export::Exporter;
 use time::Period;
+use video::Id3Metadata;
 
 // Should we merge two time periods into one?
 fn should_merge(p1: Period, p2: Period) -> bool {
@@ -61,8 +63,15 @@ pub fn export_tracks(exporter: &mut Exporter) -> Result<()> {
     // TODO: Genre, artist, album, track title, track number.
     let foreign_lang = exporter.foreign().language;
     let mut buff = Cursor::new(vec!());
-    for conv in convs {
-        let path = exporter.schedule_audio_export(foreign_lang, conv);
+    for (i, conv) in convs.iter().enumerate() {
+        let metadata = Id3Metadata {
+            genre: Some("substudy".to_owned()),
+            album: Some(exporter.file_stem().to_owned()),
+            track_number: Some((i+1, convs.len())),
+            ..Default::default()
+        };
+        let path =
+            exporter.schedule_audio_export_ext(foreign_lang, *conv, metadata);
         try!(writeln!(buff, "{}", &path));
         debug!("Conv: {:7.1} -> {:7.1} for {:7.1}",
                conv.begin(), conv.end(), conv.duration());
