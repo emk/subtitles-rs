@@ -23,6 +23,7 @@ Usage: substudy clean <subs>
        substudy combine <foreign-subs> <native-subs>
        substudy export csv <video> <foreign-subs> [<native-subs>]
        substudy export review <video> <foreign-subs> [<native-subs>]
+       substudy export tracks <video> <foreign-subs>
        substudy list tracks <video>
        substudy --help
 
@@ -45,6 +46,15 @@ struct Args {
     arg_video: String,
 }
 
+fn export_type(args: &Args) -> &str {
+    match *args {
+        Args{cmd_csv: true, ..} => "csv",
+        Args{cmd_review: true, ..} => "review",
+        Args{cmd_tracks: true, ..} => "tracks",
+        _ => panic!("Cannot determine export type: {:?}", args),
+    }
+}
+
 // Choose and run the appropriate command.
 fn run(args: &Args) -> Result<()> {
     match *args {
@@ -53,19 +63,11 @@ fn run(args: &Args) -> Result<()> {
         Args{cmd_combine: true, arg_foreign_subs: ref path1,
              arg_native_subs: Some(ref path2), ..} =>
             cmd_combine(&Path::new(path1), &Path::new(path2)),
-        Args{cmd_review: true,
-             arg_video: ref video_path,
+        Args{cmd_export: true, arg_video: ref video_path,
              arg_foreign_subs: ref foreign_path,
-             arg_native_subs: ref native_path, ..} => {
-            cmd_export("review", &Path::new(video_path),
-                       &Path::new(foreign_path),
-                       native_path.as_ref().map(|p| Path::new(p)))
-        }
-        Args{cmd_csv: true,
-             arg_video: ref video_path,
-             arg_foreign_subs: ref foreign_path,
-             arg_native_subs: ref native_path, ..} => {
-            cmd_export("csv", &Path::new(video_path),
+             arg_native_subs: ref native_path, ..} =>
+        {
+            cmd_export(export_type(args), &Path::new(video_path),
                        &Path::new(foreign_path),
                        native_path.as_ref().map(|p| Path::new(p)))
         }
@@ -116,6 +118,7 @@ fn cmd_export(kind: &str, video_path: &Path, foreign_sub_path: &Path,
     match kind {
         "csv" => try!(export::export_csv(&mut exporter)),
         "review" => try!(export::export_review(&mut exporter)),
+        "tracks" => try!(export::export_tracks(&mut exporter)),
         _ => panic!("Uknown export type: {}", kind),
     }
 
