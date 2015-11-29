@@ -7,18 +7,37 @@ use err::{err_str, Result};
 /// in *.srt subtitle files.
 pub const MIN_SPACING: f32 = 0.001;
 
-/// Converts a time to a pretty, human-readable format.
-///
-/// ```
-/// use substudy::time::seconds_to_hhmmss;
-/// assert_eq!("3:02:01.001", seconds_to_hhmmss(3.0*3600.0+2.0*60.0+1.001));
-/// ```
-pub fn seconds_to_hhmmss(time: f32) -> String {
+// Break seconds down into hours, minutes and seconds.
+fn decompose_time(time: f32) -> (u32, u32, f32) {
     let mut seconds = time;
     let hours = (seconds / 3600.0).floor() as u32;
     seconds %= 3600.0;
     let mins = (seconds / 60.0).floor() as u32;
     seconds %= 60.0;
+    (hours, mins, seconds)
+}
+
+/// Converts a time to a pretty, human-readable format, with second
+/// precision.
+///
+/// ```
+/// use substudy::time::seconds_to_hhmmss;
+/// assert_eq!("3:02:01", seconds_to_hhmmss(3.0*3600.0+2.0*60.0+1.001));
+/// ```
+pub fn seconds_to_hhmmss(time: f32) -> String {
+    let (hours, mins, seconds) = decompose_time(time);
+    format!("{}:{:02}:{:02}", hours, mins, (seconds.floor() as u32))
+}
+
+/// Converts a time to a pretty, human-readable format, with millisecond
+/// precision.
+///
+/// ```
+/// use substudy::time::seconds_to_hhmmss_sss;
+/// assert_eq!("3:02:01.001", seconds_to_hhmmss_sss(3.0*3600.0+2.0*60.0+1.001));
+/// ```
+pub fn seconds_to_hhmmss_sss(time: f32) -> String {
+    let (hours, mins, seconds) = decompose_time(time);
     format!("{}:{:02}:{:06.3}", hours, mins, seconds)
 }
 
