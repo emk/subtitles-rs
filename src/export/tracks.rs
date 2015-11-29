@@ -1,6 +1,8 @@
 //! Output a video as a series of short audio tracks, short enough to make
 //! it easy to skip backwards a conversation with most MP3 players.
 
+use std::io::{Cursor, Write};
+
 use err::Result;
 use export::Exporter;
 use time::Period;
@@ -53,14 +55,19 @@ pub fn export_tracks(exporter: &mut Exporter) -> Result<()> {
         }
     }
 
-    // Schedule exports.
+    // Schedule exports and write our our m3u8 playlist (like m3u, but
+    // UTF-8).
+    //
     // TODO: Genre, artist, album, track title, track number.
     let foreign_lang = exporter.foreign().language;
+    let mut buff = Cursor::new(vec!());
     for conv in convs {
-        exporter.schedule_audio_export(foreign_lang, conv);
+        let path = exporter.schedule_audio_export(foreign_lang, conv);
+        try!(writeln!(buff, "{}", &path));
         debug!("Conv: {:7.1} -> {:7.1} for {:7.1}",
                conv.begin(), conv.end(), conv.duration());
     }
+    try!(exporter.export_data_file("playlist.m3u8", &buff.get_ref()));
 
     // Extract our media files.
     try!(exporter.finish_exports());
