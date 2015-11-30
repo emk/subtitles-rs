@@ -4,7 +4,14 @@ extern crate rustful;
 
 use rustc_serialize::json;
 use rustful::{Context, Handler, Response, StatusCode, Server, TreeRouter};
-use rustful::header::ContentType;
+use rustful::header::{AccessControlAllowOrigin, ContentType};
+
+/// An `Access-Control-Allow-Origin` header for use with `elm-reactor`,
+/// which doesn't know how to proxy APIs yet.
+fn allow_origin_header() -> AccessControlAllowOrigin {
+    // TODO: Debug mode only.
+    AccessControlAllowOrigin::Value("http://localhost:8000".to_owned())
+}
 
 enum Api {
     NotFound,
@@ -28,6 +35,7 @@ impl Handler for Api {
                 match json::encode(&data) {
                     Ok(json) => {
                         response.headers_mut().set(ContentType::json());
+                        response.headers_mut().set(allow_origin_header());
                         response.send(json)
                     }
                     Err(_) => {
