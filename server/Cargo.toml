@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
 [dependencies]
+iron = "0.2.5"
+mount = "0.0.9"
 rustc-serialize = "0.3.16"
-rustful = "0.6.0"
+rustless = "0.7.2"
+staticfile = "0.0.6"
 substudy = { path = ".." }
