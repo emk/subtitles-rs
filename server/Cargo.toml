@@ -3,6 +3,8 @@ name = "substudy-server"
 version = "0.1.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
+build = "build.rs"
+
 [dependencies]
 iron = "0.2.5"
 mount = "0.0.9"
