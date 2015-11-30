@@ -4,4 +4,6 @@ version = "0.1.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
 [dependencies]
+rustc-serialize = "0.3.16"
+rustful = "0.6.0"
 substudy = { path = ".." }
