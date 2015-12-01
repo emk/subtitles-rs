@@ -6,7 +6,7 @@ fn main() {
     process
         .arg("make")
         .arg("Main.elm")
-        .arg("--warn")
+        .arg("--warn").arg("--yes")
         .arg("--output").arg("../static/elm.js")
         .current_dir("site");
 
