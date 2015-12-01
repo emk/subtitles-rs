@@ -21,8 +21,6 @@ fn main() {
         api.version("v1", rustless::Versioning::Path);
 
         api.get("hello", |endpoint| {
-            endpoint.summary("Sends back what it gets");
-            endpoint.desc("Use this to talk to yourself");
             endpoint.handle(|mut client, _params| {
                 let resp = SampleResponse { message: "Hello!".to_owned() };
                 client.set_json_content_type();
@@ -32,7 +30,7 @@ fn main() {
     }));
 
     let mut mount = Mount::new();
-    mount.mount("/", Static::new(Path::new("static/")));
+    mount.mount("/", Static::new(Path::new("assets/")));
     mount.mount("/api", app);
 
     println!("Running on http://localhost:4000/");

@@ -54,8 +54,8 @@ fn elm_make_once() -> Result<(), ElmMakeError> {
         .arg("make")
         .arg("Main.elm")
         .arg("--warn").arg("--yes")
-        .arg("--output").arg("../static/elm.js")
-        .current_dir("site");
+        .arg("--output").arg("../assets/elm.js")
+        .current_dir("ui");
 
     // Try to run the command.
     let status = try!(process.status());
