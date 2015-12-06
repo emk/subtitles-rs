@@ -20,7 +20,7 @@ pub fn format_time(time: f32) -> String {
 
 /// A single SRT-format subtitle, minus some of the optional fields used in
 /// various versions of the file format.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, RustcEncodable)]
 pub struct Subtitle {
     /// The index of this subtitle.  We should normalize these to start
     /// with 1 on output.

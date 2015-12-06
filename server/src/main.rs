@@ -24,11 +24,7 @@ use util::iron_from_io;
 #[macro_use]
 mod util;
 mod range_reader;
-
-#[derive(RustcEncodable)]
-struct Video {
-    url: String,
-}
+mod models;
 
 struct VideoFile {
     path: PathBuf,
@@ -63,8 +59,9 @@ fn main() {
 
         api.get("video.json", |endpoint| {
             endpoint.handle(|mut client, _params| {
-                let resp = Video {
+                let resp = models::Video {
                     url: "/video.mp4".to_owned(),
+                    subtitles: vec!(),
                 };
                 client.set_json_content_type();
                 client.text(json::encode(&resp).unwrap())

@@ -1,5 +1,8 @@
 //! Tools for working with time.
 
+use rustc_serialize::{Encodable, Encoder};
+use std::result;
+
 use err::{err_str, Result};
 
 /// The minimum spacing between two points in time to count as
@@ -216,6 +219,15 @@ impl Period {
     /// ```
     pub fn overlap(&self, other: Period) -> f32 {
         (self.end.min(other.end) - self.begin.max(other.begin)).max(0.0)
+    }
+}
+
+impl Encodable for Period {
+    fn encode<S: Encoder>(&self, s: &mut S) -> result::Result<(), S::Error> {
+        s.emit_seq(2, |ss| {
+            try!(ss.emit_f32(self.begin));
+            ss.emit_f32(self.end)
+        })
     }
 }
 
