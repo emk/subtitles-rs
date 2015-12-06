@@ -5,53 +5,20 @@ extern crate rustless;
 extern crate substudy;
 extern crate staticfile;
 
-use iron::IronResult;
-use iron::headers::{AcceptRanges, ByteRangeSpec, Range, RangeUnit};
 use iron::middleware::Handler;
-use iron::request::Request;
-use iron::response::{Response, WriteBody};
-use iron::status;
 use mount::Mount;
 use rustc_serialize::json;
 use rustless::Nesting;
 use staticfile::Static;
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-use range_reader::RangeReader;
-use util::iron_from_io;
+use video_file_handler::VideoFileHandler;
 
 #[macro_use]
 mod util;
 mod range_reader;
 mod models;
-
-struct VideoFile {
-    path: PathBuf,
-}
-
-impl VideoFile {
-    fn new(path: &Path) -> VideoFile {
-        VideoFile { path: path.to_owned() }
-    }
-}
-
-impl Handler for VideoFile {
-    fn handle(&self, req: &mut Request) -> IronResult<Response> {
-        let range: Range = req.headers.get().cloned().unwrap_or_else(|| {
-            Range::Bytes(vec!(ByteRangeSpec::AllFrom(0)))
-        });
-
-        let file = try!(iron_from_io(fs::File::open(&self.path)));
-        let reader = try!(RangeReader::new(file, range));
-        let content_range = reader.content_range();
-        let wb: Box<WriteBody+Send> = Box::new(reader);
-        let mut response = Response::with((status::PartialContent, wb));
-        response.headers.set(AcceptRanges(vec![RangeUnit::Bytes]));
-        response.headers.set(content_range);
-        Ok(response)
-    }
-}
+mod video_file_handler;
 
 fn main() {
     let app = rustless::Application::new(rustless::Api::build(|api| {
@@ -71,7 +38,8 @@ fn main() {
 
     let mut mount = Mount::new();
     mount.mount("/", Static::new(Path::new("assets/")));
-    mount.mount("/video.mp4", VideoFile::new(Path::new("assets/video.mp4")));
+    mount.mount("/video.mp4",
+                VideoFileHandler::new(Path::new("assets/video.mp4")));
     mount.mount("/api", app);
 
     println!("Running on http://localhost:4000/");
