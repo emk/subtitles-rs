@@ -8,6 +8,7 @@ extern crate substudy;
 extern crate staticfile;
 
 use docopt::Docopt;
+use iron::headers::ContentType;
 use iron::middleware::Handler;
 use mount::Mount;
 use rustc_serialize::json;
@@ -15,8 +16,6 @@ use rustless::Nesting;
 use staticfile::Static;
 use std::path::Path;
 use std::process::exit;
-use substudy::align::align_available_files;
-use substudy::srt::SubtitleFile;
 
 use video_file_handler::VideoFileHandler;
 
@@ -45,27 +44,17 @@ struct Args {
 
 fn run(args: &Args) -> substudy::err::Result<()> {
     let foreign_path = Path::new(&args.arg_foreign_subs);
-    let foreign = try!(SubtitleFile::cleaned_from_path(foreign_path));
-    let native = match &args.arg_native_subs {
-        &None => None,
-        &Some(ref str) => {
-            let native_path = Path::new(str);
-            Some(try!(SubtitleFile::cleaned_from_path(native_path)))
-        }
-    };
-    let subtitles = align_available_files(&foreign, native.as_ref());
+    let native_path = args.arg_native_subs.as_ref().map(|s| Path::new(s));
+    let video = try!(models::Video::new("/video.mp4", &foreign_path,
+                                        native_path));
 
     let app = rustless::Application::new(rustless::Api::build(|api| {
         api.version("v1", rustless::Versioning::Path);
 
         api.get("video.json", |endpoint| {
             endpoint.handle(move |mut client, _params| {
-                let resp = models::Video {
-                    url: "/video.mp4".to_owned(),
-                    subtitles: &subtitles,
-                };
-                client.set_json_content_type();
-                client.text(json::encode(&resp).unwrap())
+                client.set_header(ContentType::json());
+                client.text(json::encode(&video).unwrap())
             })
         });
     }));
@@ -73,7 +62,7 @@ fn run(args: &Args) -> substudy::err::Result<()> {
     let mut mount = Mount::new();
     mount.mount("/", Static::new(Path::new("assets/")));
     mount.mount("/video.mp4",
-                VideoFileHandler::new(Path::new("assets/video.mp4")));
+                VideoFileHandler::new(Path::new(&args.arg_video)));
     mount.mount("/api", app);
 
     println!("Running on http://localhost:4000/");
