@@ -1,8 +1,8 @@
 use substudy::srt::Subtitle;
 
 #[derive(RustcEncodable)]
-pub struct Video {
+pub struct Video<'a> {
     pub url: String,
-    pub subtitles: Vec<(Option<Subtitle>, Option<Subtitle>)>,
+    pub subtitles: &'a [(Option<Subtitle>, Option<Subtitle>)],
 }
 

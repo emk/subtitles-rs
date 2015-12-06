@@ -6,6 +6,8 @@ authors = ["Eric Kidd <git@randomhacks.net>"]
 build = "build.rs"
 
 [dependencies]
+docopt = "0.6.76"
+env_logger = "0.3.2"
 iron = "0.2.5"
 mount = "0.0.9"
 rustc-serialize = "0.3.16"

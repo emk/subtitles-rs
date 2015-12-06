@@ -224,9 +224,9 @@ impl Period {
 
 impl Encodable for Period {
     fn encode<S: Encoder>(&self, s: &mut S) -> result::Result<(), S::Error> {
-        s.emit_seq(2, |ss| {
-            try!(ss.emit_f32(self.begin));
-            ss.emit_f32(self.end)
+        s.emit_seq(2, |s1| {
+            try!(s1.emit_seq_elt(0, |s2| s2.emit_f32(self.begin)));
+            s1.emit_seq_elt(1, |s2| s2.emit_f32(self.end))
         })
     }
 }
