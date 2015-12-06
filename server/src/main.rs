@@ -21,8 +21,9 @@ use std::path::{Path, PathBuf};
 use range_reader::RangeReader;
 use util::iron_from_io;
 
-mod range_reader;
+#[macro_use]
 mod util;
+mod range_reader;
 
 #[derive(RustcEncodable)]
 struct Video {

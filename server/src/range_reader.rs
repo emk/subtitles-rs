@@ -1,7 +1,7 @@
 //! We use `RangeReader` to read specific ranges of files and to write them
 //! as HTTP responses.
 
-use iron::{IronError, IronResult};
+use iron::IronResult;
 use iron::headers::{ByteRangeSpec, ContentRange, ContentRangeSpec, Range};
 use iron::response::{ResponseBody, WriteBody};
 use iron::status;
@@ -9,32 +9,50 @@ use std::cmp::min;
 use std::io::{self, Read, Seek};
 use std::fs;
 
-use util::{iron_from_io, StringError};
+use util::{iron_err, iron_from_io};
 
 // Convert a `ByteRangeSpec` and a file lenth to an actual byte range.
 fn parse_range(range: &ByteRangeSpec, len: u64) -> IronResult<(u64, u64)> {
-    // TODO: len == 0.
+    // Eliminate this case early so we can write `len-1` below.
+    if len == 0 {
+        iron_err!(status::RangeNotSatisfiable,
+                  "Tried to get a range of bytes from the empty file");
+    }
 
     // Note that these ranges are inclusive.
     let (from, to) = match range {
-        &ByteRangeSpec::FromTo(from, to) => (from, to),
+        &ByteRangeSpec::FromTo(from, to) => (from, min(to, len-1)),
         &ByteRangeSpec::AllFrom(from) => (from, len-1),
-        // TODO: Wrap error.
-        &ByteRangeSpec::Last(from_end) => (len-from_end, len-1),
+        &ByteRangeSpec::Last(from_end) if len >= from_end =>
+            (len-from_end, len-1),
+        &ByteRangeSpec::Last(_) =>
+            (0, len-1),
     };
 
-    if from > to {
-        let err = format!("Invalid range {}-{}", from, to);
-        return Err(IronError::new(StringError::new(err), status::BadRequest));
-    }
-    if to >= len {
-        // TODO: This is not actually an error.
-        let err = format!("Range {}-{} extends beyond end of file at {}",
-                          from, to, len);
-        return Err(IronError::new(StringError::new(err),
-                                  status::RangeNotSatisfiable));
+    if from > len-1 {
+        iron_err!(status::RangeNotSatisfiable,
+                  "Range {}-{} starts beyond end of file at {}",
+                  from, to, len);
+    } else if from > to {
+        iron_err!(status::BadRequest, "Invalid range {}-{}", from, to);
     }
     Ok((from, to))
+}
+
+#[test]
+fn test_parse_range() {
+    use iron::headers::ByteRangeSpec::*;
+
+    assert_eq!((5, 9), parse_range(&FromTo(5, 9), 10).unwrap());
+    assert_eq!((5, 9), parse_range(&AllFrom(5), 10).unwrap());
+    assert_eq!((6, 9), parse_range(&Last(4), 10).unwrap());
+
+    assert!(parse_range(&FromTo(2, 1), 10).is_err());
+    assert!(parse_range(&FromTo(0, 0), 0).is_err());
+    assert!(parse_range(&FromTo(10, 10), 10).is_err());
+
+    assert_eq!((5, 9), parse_range(&FromTo(5, 15), 10).unwrap());
+    assert_eq!((0, 9), parse_range(&Last(20), 10).unwrap());
 }
 
 pub struct RangeReader {
@@ -66,8 +84,8 @@ impl RangeReader {
                 })
             }
             _ => {
-                let err = "Only simple byte ranges are supported";
-                Err(IronError::new(StringError::new(err), status::InternalServerError))
+                iron_err!(status::InternalServerError,
+                          "Only simple byte ranges are supported");
             }
         }
     }

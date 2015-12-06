@@ -21,12 +21,30 @@ pub fn iron_from_io<T>(result: io::Result<T>) -> IronResult<T> {
     }
 }
 
+/// Create a simple `IronError` with the specified message and HTTP status
+/// code.
+pub fn iron_err<S: Into<String>>(code: status::Status, msg: S) -> IronError {
+    IronError::new(StringError::new(msg), code)
+}
+
+#[macro_export]
+macro_rules! iron_err {
+    ( $code:expr, $fmt:expr ) => {
+        return Err(iron_err($code, format!($fmt)));
+    };
+    ( $code:expr, $fmt:expr, $($arg:tt)* ) => {
+        return Err(iron_err($code, format!($fmt, $($arg)*)));
+    };
+}
+
+/// A simple error containing nothing but a string.
 #[derive(Debug)]
 pub struct StringError {
     message: String
 }
 
 impl StringError {
+    /// Create a new error.
     pub fn new<S: Into<String>>(message: S) -> StringError {
         StringError { message: message.into() }
     }
