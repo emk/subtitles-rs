@@ -1,19 +1,18 @@
 import Effects exposing (Never)
+import Html
 import StartApp
 import Task
 
-import Html
-
-import Hello
+import Application
 
 -- Define our application using the StartApp MVC library to handle our
 -- basic architecture.
-app : StartApp.App Hello.Model
+app : StartApp.App Application.Model
 app =
   StartApp.start
-    { init = Hello.init
-    , view = Hello.view
-    , update = Hello.update
+    { init = Application.init
+    , view = Application.view
+    , update = Application.update
     , inputs = [] -- for receiving messages from JavaScript
     }
 
