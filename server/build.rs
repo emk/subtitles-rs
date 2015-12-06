@@ -66,7 +66,7 @@ fn elm_make_once() -> Result<(), ElmMakeError> {
 }
 
 fn elm_make() -> Result<(), ElmMakeError> {
-    if fs::metadata("site/elm-stuff").is_err() {
+    if fs::metadata("ui/elm-stuff").is_err() {
         println!("Will retry `elm make` if it fails.");
         for i in 0..2 {
             match elm_make_once() {
