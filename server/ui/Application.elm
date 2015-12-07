@@ -58,7 +58,6 @@ view address model =
         Nothing -> []
     subtitles =
       case model.video of
-        Just video ->
-          List.map Subtitle.view video.subtitles
+        Just video -> [Video.subtitleView video]
         Nothing -> []
   in div [] (flash ++ player ++ subtitles)

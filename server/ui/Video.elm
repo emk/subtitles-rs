@@ -1,6 +1,8 @@
-module Video (Model, init, decode, load) where
+module Video (Model, init, subtitleView, decode, load) where
 
 import Effects
+import Html exposing (div)
+import Html.Attributes exposing (class)
 import Http
 import Json.Decode as Json exposing ((:=))
 import Task
@@ -11,6 +13,10 @@ type alias Model = { url: String, subtitles: List Subtitle.Model }
 
 init : String -> List Subtitle.Model -> Model
 init url subtitles = Model url subtitles
+
+subtitleView : Model -> Html.Html
+subtitleView model =
+  div [class "subtitles"] (List.map Subtitle.view model.subtitles)
 
 decode : Json.Decoder Model
 decode =
