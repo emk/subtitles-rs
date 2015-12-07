@@ -29,9 +29,7 @@ view : Signal.Address Action -> Model -> Html.Html
 view address model =
   let
     ontimeupdate = onTimeUpdate (Signal.forwardTo address TimeUpdate)
-    vid = video [ src model.url, controls True, ontimeupdate ] []
-    time = p [] [text (toString model.currentTime)]
-  in div [] [vid, time]
+  in video [ src model.url, controls True, ontimeupdate ] []
 
 onTimeUpdate : Signal.Address Float -> Html.Attribute
 onTimeUpdate address =
