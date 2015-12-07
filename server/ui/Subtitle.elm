@@ -1,14 +1,17 @@
-module Subtitle (Model, init, view, decode, timeToIndex) where
+module Subtitle (Model, init, Action, update, view, decode, timeToIndex) where
 
 import Array
-import Html exposing (div, text, p)
-import Html.Attributes exposing (class)
+import Html exposing (div, text, p, input)
+import Html.Attributes exposing (class, type', checked)
+import Html.Events exposing (on, targetChecked)
 import Json.Decode as Json exposing ((:=))
+import Signal
 
 type alias Model =
   { period: (Float, Float)
   , foreignText: Maybe String
   , nativeText: Maybe String
+  , selected: Bool
   }
 
 startTime : Model -> Float
@@ -18,11 +21,26 @@ endTime : Model -> Float
 endTime model = snd model.period
 
 init : (Float, Float) -> Maybe String -> Maybe String -> Model
-init = Model
+init period foreignText nativeText =
+  Model period foreignText nativeText False
 
-view : Model -> Html.Html
-view model =
+type Action = Selected Bool
+
+update : Action -> Model -> Model
+update action model =
+  case action of
+    Selected val -> { model | selected = val }
+
+view : Signal.Address Action -> Model -> Html.Html
+view address model =
   let
+    check =
+      input
+        [ type' "checkbox"
+        , checked (model.selected)
+        , on "change" targetChecked (Signal.message address << Selected)
+        ]
+        []
     foreignHtml =
       case model.foreignText of
         Just t -> [p [class "foreign"] [text t]]
@@ -31,11 +49,11 @@ view model =
       case model.nativeText of
         Just t -> [p [class "native"] [text t]]
         Nothing -> []
-  in div [class "subtitle"] (foreignHtml ++ nativeHtml)
+  in div [class "subtitle"] ([check] ++ foreignHtml ++ nativeHtml)
 
 decode : Json.Decoder Model
 decode =
-  Json.object3 Model
+  Json.object3 init
     ("period" := Json.tuple2 (,) Json.float Json.float)
     (Json.maybe ("foreign" := Json.string))
     (Json.maybe ("native" := Json.string))

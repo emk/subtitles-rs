@@ -15,6 +15,7 @@ type alias Model =
 type Action
   = VideoLoaded (Maybe Video.Model)
   | VideoPlayerAction VideoPlayer.Action
+  | VideoAction Video.Action
 
 init : (Model, Effects.Effects Action)
 init = (Model Nothing Nothing Nothing, Video.load VideoLoaded)
@@ -43,6 +44,16 @@ update msg model =
         Nothing -> -- Wait what?
           (model, Effects.none)
 
+    VideoAction act ->
+      case model.video of
+        Just video ->
+          let
+            newVideo = Video.update act video
+            newModel = { model | video = Just(newVideo) }
+          in (newModel, Effects.none)
+        Nothing ->
+          (model, Effects.none)
+
 view : Signal.Address Action -> Model -> Html.Html
 view address model =
   let
@@ -61,6 +72,7 @@ view address model =
         Nothing -> 0
     subtitles =
       case model.video of
-        Just video -> [Video.subtitleView currentTime video]
+        Just video ->
+          [Video.subtitlesView (Signal.forwardTo address VideoAction) currentTime video]
         Nothing -> []
   in div [] (flash ++ player ++ subtitles)
