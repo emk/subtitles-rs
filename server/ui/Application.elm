@@ -6,6 +6,7 @@ import Http
 import Json.Decode as Json exposing ((:=))
 import Task
 
+import Subtitle
 import Video
 import VideoPlayer
 
@@ -58,12 +59,25 @@ view address model =
         Just player ->
           [VideoPlayer.view (Signal.forwardTo address VideoPlayerAction) player]
         Nothing -> []
-  in div [] (flash ++ player)
+    subtitles =
+      case model.video of
+        Just video ->
+          List.map Subtitle.view video.subtitles
+        Nothing -> []
+  in div [] (flash ++ player ++ subtitles)
+
+decodeSubtitle : Json.Decoder Subtitle.Model
+decodeSubtitle =
+  Json.object3 Subtitle.Model
+    ("period" := Json.tuple2 (,) Json.float Json.float)
+    (Json.maybe ("foreign" := Json.string))
+    (Json.maybe ("native" := Json.string))
 
 decodeVideo : Json.Decoder Video.Model
 decodeVideo =
-  Json.object1 Video.Model
+  Json.object2 Video.Model
     ("url" := Json.string)
+    ("subtitles" := Json.list decodeSubtitle)
 
 videoUrl : String
 videoUrl = "/api/v1/video.json"
@@ -74,5 +88,3 @@ loadVideo =
     |> Task.toMaybe
     |> Task.map VideoLoaded
     |> Effects.task
-
-

@@ -1,9 +1,8 @@
 module Video (Model, init) where
 
--- Information about this video.  Will eventually also contain subtitles,
--- etc.
-type alias Model = { url: String }
+import Subtitle
 
--- Create this model.
-init : String -> Model
-init url = Model url
+type alias Model = { url: String, subtitles: List Subtitle.Model }
+
+init : String -> List Subtitle.Model -> Model
+init url subtitles = Model url subtitles
