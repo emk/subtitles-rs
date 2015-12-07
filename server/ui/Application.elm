@@ -3,7 +3,6 @@ module Application (Model, Action, init, update, view) where
 import Effects exposing (Never)
 import Html exposing (div, text)
 
-import Subtitle
 import Video
 import VideoPlayer
 
@@ -56,8 +55,12 @@ view address model =
         Just player ->
           [VideoPlayer.view (Signal.forwardTo address VideoPlayerAction) player]
         Nothing -> []
+    currentTime =
+      case model.player of
+        Just player -> player.currentTime
+        Nothing -> 0
     subtitles =
       case model.video of
-        Just video -> [Video.subtitleView video]
+        Just video -> [Video.subtitleView currentTime video]
         Nothing -> []
   in div [] (flash ++ player ++ subtitles)

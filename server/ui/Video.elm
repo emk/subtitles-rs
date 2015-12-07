@@ -1,5 +1,6 @@
 module Video (Model, init, subtitleView, decode, load) where
 
+import Array
 import Effects
 import Html exposing (div)
 import Html.Attributes exposing (class)
@@ -8,21 +9,28 @@ import Json.Decode as Json exposing ((:=))
 import Task
 
 import Subtitle
+import Util exposing (listFromMaybe)
 
-type alias Model = { url: String, subtitles: List Subtitle.Model }
+type alias Model = { url: String, subtitles: Array.Array Subtitle.Model }
 
-init : String -> List Subtitle.Model -> Model
+init : String -> Array.Array Subtitle.Model -> Model
 init url subtitles = Model url subtitles
 
-subtitleView : Model -> Html.Html
-subtitleView model =
-  div [class "subtitles"] (List.map Subtitle.view model.subtitles)
+subtitleView : Float -> Model -> Html.Html
+subtitleView currentTime model =
+  let
+    idx = Subtitle.timeToIndex currentTime model.subtitles
+    prev = Array.get (idx - 1) model.subtitles
+    curr = Array.get idx model.subtitles
+    next = Array.get (idx + 1) model.subtitles
+    subs = listFromMaybe prev ++ listFromMaybe curr ++ listFromMaybe next
+  in div [class "subtitles"] (List.map Subtitle.view subs)
 
 decode : Json.Decoder Model
 decode =
   Json.object2 Model
     ("url" := Json.string)
-    ("subtitles" := Json.list Subtitle.decode)
+    ("subtitles" := Json.array Subtitle.decode)
 
 videoUrl : String
 videoUrl = "/api/v1/video.json"
