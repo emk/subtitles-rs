@@ -10,7 +10,7 @@ import Task
 
 import Subtitle
 import Subtitle.Array
-import Util exposing (listFromMaybe)
+import Util exposing (listFromMaybe, updateChild)
 import VideoPlayer
 
 type alias Model =
@@ -36,9 +36,8 @@ update action model =
       ({ model | subtitles = Subtitle.Array.update act model.subtitles },
        Effects.none)
     Player act ->
-      let
-        (player', fx) = VideoPlayer.update act model.player
-      in ({ model | player = player' }, Effects.map Player fx)
+      updateChild act model.player VideoPlayer.update Player
+        (\p -> { model | player = p }
 
 playerView : Signal.Address Action -> Model -> Html.Html
 playerView address model =

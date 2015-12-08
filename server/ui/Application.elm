@@ -4,7 +4,7 @@ import Effects exposing (Never)
 import Html exposing (div, text)
 
 import Video
-import Util exposing (listFromMaybe)
+import Util exposing (listFromMaybe, updateChild)
 
 type alias Model =
   { errorMessage: Maybe String
@@ -32,10 +32,8 @@ update msg model =
     VideoAction act ->
       case model.video of
         Just video ->
-          let
-            (video', fx) = Video.update act video
-            model' = { model | video = Just video' }
-          in (model', Effects.map VideoAction fx)
+          updateChild act video Video.update VideoAction
+            (\v -> { model | video = Just v })
         Nothing ->
           (model, Effects.none)
 
