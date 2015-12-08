@@ -4,8 +4,9 @@ module Video
   ) where
 
 import Effects
-import Html exposing (div)
+import Html exposing (div, text, button)
 import Html.Attributes exposing (class)
+import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Json exposing ((:=))
 import Keyboard
@@ -16,20 +17,24 @@ import Subtitle.Array
 import Util exposing (listFromMaybes, updateChild)
 import VideoPlayer
 
+type DisplayMode = Current | Selected
+
 type alias Model =
   { url: String
   , player: VideoPlayer.Model
+  , mode: DisplayMode
   , subtitles: Subtitle.Array.Model
   }
 
 init : String -> Subtitle.Array.Model -> (Model, Effects.Effects Action)
 init url subtitles =
   let (player, fx) = VideoPlayer.init url
-  in (Model url player subtitles, Effects.map Player fx)
+  in (Model url player Current subtitles, Effects.map Player fx)
 
 type Action
   = Player VideoPlayer.Action
   | Subtitles Subtitle.Array.Action
+  | SetMode DisplayMode
   | KeyPress Int
   | Arrows { x: Int, y: Int }
 
@@ -45,6 +50,8 @@ update action model =
     Subtitles act ->
       updateChild act model.subtitles Subtitle.Array.update Subtitles
         (\subs -> { model | subtitles = subs })
+    SetMode mode ->
+      ({ model | mode = mode }, Effects.none)
     KeyPress keyCode ->
       case keyCode of
         32 -> update (VideoPlayer.togglePlay |> Player) model
@@ -62,16 +69,30 @@ playerView address model =
 subtitlesView : Signal.Address Action -> Model -> Html.Html
 subtitlesView address model =
   let
-    current = Subtitle.Array.maybeIndexFromTime currentTime model.subtitles
+    currentButton =
+      button [onClick address (SetMode Current)] [text "Current"]
+    selectedButton =
+      button [onClick address (SetMode Selected)] [text "Selected"]
     currentTime = model.player.currentTime
-    idx = Subtitle.Array.indexFromTime currentTime model.subtitles
-    indicies = [(idx - 1), idx, (idx + 1)]
+    current = Subtitle.Array.maybeIndexFromTime currentTime model.subtitles
+    indicies = subtitlesToShow model
     playerAddr = (Signal.forwardTo address Player)
     addr = Signal.forwardTo address Subtitles
-    children =
+    subtitles =
       Subtitle.Array.viewsAt
         indicies current playerAddr addr model.subtitles
-  in div [class "subtitles"] children
+  in div [class "subtitles"] ([currentButton, selectedButton] ++ subtitles)
+
+subtitlesToShow : Model -> List Int
+subtitlesToShow model =
+  case model.mode of
+    Current ->
+      let
+        currentTime = model.player.currentTime
+        idx = Subtitle.Array.indexFromTime currentTime model.subtitles
+      in [(idx - 1), idx, (idx + 1)]
+    Selected ->
+      Subtitle.Array.selectedIndices model.subtitles
 
 inputs : List (Signal.Signal Action)
 inputs =

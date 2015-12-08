@@ -1,6 +1,6 @@
 module Subtitle.Array
-  (Model, Action, update, viewAt, viewsAt, indexFromTime,
-   maybeIndexFromTime
+  (Model, Action, update, viewAt, viewsAt,
+   selectedIndices, indexFromTime, maybeIndexFromTime
   ) where
 
 import Array
@@ -40,6 +40,12 @@ viewsAt indices current playerAddress address model =
     |> List.map
          (\idx -> viewAt idx (current == Just idx) playerAddress address model)
     |> listFromMaybes
+
+selectedIndices : Model -> List Int
+selectedIndices model =
+  Array.toIndexedList model
+    |> List.filter (\(idx, sub) -> sub.selected)
+    |> List.map (\(idx, sub) -> idx)
 
 type TimeRelation = Before | During | After
 
