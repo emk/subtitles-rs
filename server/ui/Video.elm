@@ -1,6 +1,6 @@
 module Video
-  (Model, init, Action, keyPress, update, playerView, subtitlesView, decode,
-   load
+  (Model, init, Action, keyPress, update, playerView, subtitlesView, inputs,
+   decode, load
   ) where
 
 import Effects
@@ -8,6 +8,7 @@ import Html exposing (div)
 import Html.Attributes exposing (class)
 import Http
 import Json.Decode as Json exposing ((:=))
+import Keyboard
 import Task
 
 import Subtitle
@@ -30,6 +31,7 @@ type Action
   = Player VideoPlayer.Action
   | Subtitles Subtitle.Array.Action
   | KeyPress Int
+  | Arrows { x: Int, y: Int }
 
 keyPress : Int -> Action
 keyPress = KeyPress
@@ -46,8 +48,11 @@ update action model =
     KeyPress keyCode ->
       case keyCode of
         32 -> update (VideoPlayer.togglePlay |> Player) model
-        37 -> update (VideoPlayer.seekRelative -5 |> Player) model
-        39 -> update (VideoPlayer.seekRelative 5 |> Player) model
+        _ -> (model, Effects.none)
+    Arrows arrows ->
+      case (arrows.x, arrows.y) of
+        (-1, 0) -> update (VideoPlayer.seekRelative -5 |> Player) model
+        ( 1, 0) -> update (VideoPlayer.seekRelative  5 |> Player) model
         _ -> (model, Effects.none)
 
 playerView : Signal.Address Action -> Model -> Html.Html
@@ -64,6 +69,12 @@ subtitlesView address model =
     addr = Signal.forwardTo address Subtitles
     children = Subtitle.Array.viewsAt indicies playerAddr addr model.subtitles
   in div [class "subtitles"] children
+
+inputs : List (Signal.Signal Action)
+inputs =
+  [ Signal.map KeyPress Keyboard.presses
+  , Signal.map Arrows Keyboard.arrows
+  ]
 
 decode : Json.Decoder (Model, Effects.Effects Action)
 decode =

@@ -1,8 +1,7 @@
-module Application (Model, Action, init, update, view) where
+module Application (Model, Action, init, update, view, inputs) where
 
 import Effects exposing (Never)
 import Html exposing (div, text)
-import Html.Attributes exposing (tabindex)
 import Html.Events exposing (onKeyDown)
 
 import Video
@@ -16,7 +15,6 @@ type alias Model =
 type Action
   = VideoLoaded (Maybe (Video.Model, Effects.Effects Video.Action))
   | VideoAction Video.Action
-  | KeyPress Int
 
 init : (Model, Effects.Effects Action)
 init = (Model Nothing Nothing, Video.load VideoLoaded)
@@ -36,13 +34,9 @@ update msg model =
       maybeUpdateChild act model.video Video.update VideoAction model
         (\v -> { model | video = Just v })
 
-    KeyPress keyCode ->
-      update (Video.keyPress keyCode |> VideoAction) model
-
 view : Signal.Address Action -> Model -> Html.Html
 view address model =
   let
-    onkeypress = onKeyDown address KeyPress
     flash =
       Maybe.map (\err -> text err) model.errorMessage
     videoAddr = Signal.forwardTo address VideoAction
@@ -50,4 +44,7 @@ view address model =
       Maybe.map (\video -> Video.playerView videoAddr video) model.video
     subtitles =
       Maybe.map (\video -> Video.subtitlesView videoAddr video) model.video
-  in div [onkeypress, tabindex 1] (listFromMaybes [flash, player, subtitles])
+  in div [] (listFromMaybes [flash, player, subtitles])
+
+inputs : List (Signal.Signal Action)
+inputs = List.map (Signal.map VideoAction) Video.inputs

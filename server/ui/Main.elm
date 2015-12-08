@@ -15,7 +15,7 @@ app =
     { init = Application.init
     , view = Application.view
     , update = Application.update
-    , inputs = [] -- for receiving messages from JavaScript
+    , inputs = Application.inputs
     }
 
 -- Display the HTML of our application.
