@@ -5,6 +5,7 @@ import Html exposing (div, text)
 
 import Video
 import VideoPlayer
+import Util exposing (listFromMaybe)
 
 type alias Model =
   { errorMessage: Maybe String
@@ -25,22 +26,22 @@ update msg model =
   case msg of
     VideoLoaded Nothing ->
       let
-        newModel = { model | errorMessage = Just "Could not load video" }
-      in (newModel, Effects.none)
+        model' = { model | errorMessage = Just "Could not load video" }
+      in (model', Effects.none)
 
     VideoLoaded (Just video) ->
       let
-        newModel = { model | video = Just video, player = Just player }
+        model' = { model | video = Just video, player = Just player }
         (player, fx) = VideoPlayer.init video.url
-      in (newModel, Effects.map VideoPlayerAction fx)
+      in (model', Effects.map VideoPlayerAction fx)
 
     VideoPlayerAction act ->
       case model.player of
         Just player ->
           let
-            (newPlayer, fx) = VideoPlayer.update act player
-            newModel = { model | player = Just newPlayer }
-          in (newModel, Effects.map VideoPlayerAction fx)
+            (player', fx) = VideoPlayer.update act player
+            model' = { model | player = Just player' }
+          in (model', Effects.map VideoPlayerAction fx)
         Nothing -> -- Wait what?
           (model, Effects.none)
 
@@ -48,9 +49,9 @@ update msg model =
       case model.video of
         Just video ->
           let
-            newVideo = Video.update act video
-            newModel = { model | video = Just(newVideo) }
-          in (newModel, Effects.none)
+            video' = Video.update act video
+            model' = { model | video = Just video' }
+          in (model', Effects.none)
         Nothing ->
           (model, Effects.none)
 
@@ -58,21 +59,16 @@ view : Signal.Address Action -> Model -> Html.Html
 view address model =
   let
     flash =
-      case model.errorMessage of
-        Just err -> [text err]
-        Nothing -> []
+      Maybe.map (\err -> text err) model.errorMessage
+    playerAddr = Signal.forwardTo address VideoPlayerAction
     player =
-      case model.player of
-        Just player ->
-          [VideoPlayer.view (Signal.forwardTo address VideoPlayerAction) player]
-        Nothing -> []
-    currentTime =
-      case model.player of
-        Just player -> player.currentTime
-        Nothing -> 0
+      Maybe.map (\player -> VideoPlayer.view playerAddr player) model.player
+    currentTime = Maybe.withDefault 0 (Maybe.map .currentTime model.player)
+    videoAddr = Signal.forwardTo address VideoAction
     subtitles =
-      case model.video of
-        Just video ->
-          [Video.subtitlesView (Signal.forwardTo address VideoAction) currentTime video]
-        Nothing -> []
-  in div [] (flash ++ player ++ subtitles)
+      Maybe.map
+        (\video -> Video.subtitlesView videoAddr currentTime video)
+        model.video
+    children =
+      listFromMaybe flash ++ listFromMaybe player ++ listFromMaybe subtitles
+  in div [] children
