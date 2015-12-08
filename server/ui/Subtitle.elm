@@ -1,11 +1,12 @@
-module Subtitle (Model, init, Action, update, view, decode, timeToIndex) where
+module Subtitle
+  (Model, startTime, endTime, init, Action, update, view, decode) where
 
-import Array
 import Html exposing (div, text, p, input)
 import Html.Attributes exposing (class, type', checked)
-import Html.Events exposing (on, targetChecked)
 import Json.Decode as Json exposing ((:=))
 import Signal
+
+import Util exposing (listFromMaybe, checkbox)
 
 type alias Model =
   { period: (Float, Float)
@@ -34,22 +35,14 @@ update action model =
 view : Signal.Address Action -> Model -> Html.Html
 view address model =
   let
-    check =
-      input
-        [ type' "checkbox"
-        , checked (model.selected)
-        , on "change" targetChecked (Signal.message address << Selected)
-        ]
-        []
+    check = checkbox address model.selected Selected
     foreignHtml =
-      case model.foreignText of
-        Just t -> [p [class "foreign"] [text t]]
-        Nothing -> []
+      Maybe.map (\t -> p [class "foreign"] [text t]) model.foreignText
     nativeHtml =
-      case model.nativeText of
-        Just t -> [p [class "native"] [text t]]
-        Nothing -> []
-  in div [class "subtitle"] ([check] ++ foreignHtml ++ nativeHtml)
+      Maybe.map (\t -> p [class "native"] [text t]) model.nativeText
+    children = 
+      [check] ++ listFromMaybe foreignHtml ++ listFromMaybe nativeHtml
+  in div [class "subtitle"] children
 
 decode : Json.Decoder Model
 decode =
@@ -57,30 +50,3 @@ decode =
     ("period" := Json.tuple2 (,) Json.float Json.float)
     (Json.maybe ("foreign" := Json.string))
     (Json.maybe ("native" := Json.string))
-
-type TimeRelation = Before | During | After
-
-timeRelation : Float -> Model -> TimeRelation
-timeRelation time subtitle =
-  if time < (startTime subtitle) then
-    Before
-  else if time > (endTime subtitle) then
-    After
-  else
-    During
-
-timeToIndexHelper : Float -> Array.Array Model -> Int -> Int
-timeToIndexHelper time subtitles idx =
-  case Array.get idx subtitles of
-    -- We're beyond the end of our array, so return the current index.
-    Nothing -> idx
-    Just sub ->
-      case timeRelation time sub of
-        -- Keep looking if we're after the current sub.
-        After -> timeToIndexHelper time subtitles (idx + 1)
-        -- We're either before or in this sub, so we found it.
-        _ -> idx
-
-timeToIndex : Float -> Array.Array Model -> Int
-timeToIndex time subtitles =
-  timeToIndexHelper time subtitles 0

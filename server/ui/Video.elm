@@ -9,6 +9,7 @@ import Json.Decode as Json exposing ((:=))
 import Task
 
 import Subtitle
+import SubtitleArray
 import Util exposing (listFromMaybe)
 
 type alias Model = { url: String, subtitles: Array.Array Subtitle.Model }
@@ -16,30 +17,22 @@ type alias Model = { url: String, subtitles: Array.Array Subtitle.Model }
 init : String -> Array.Array Subtitle.Model -> Model
 init url subtitles = Model url subtitles
 
-type Action = SubtitleN Int Subtitle.Action
+type Action = Subtitles SubtitleArray.Action
 
 update : Action -> Model -> Model
 update action model =
   case action of
-    SubtitleN idx act ->
-      case Array.get idx model.subtitles of
-        Just sub ->
-          let
-            newSub = Subtitle.update act sub
-          in { model | subtitles = Array.set idx newSub model.subtitles }
-        Nothing -> model -- Huh? Shouldn't happen.
+    Subtitles act ->
+      { model | subtitles = SubtitleArray.update act model.subtitles }
 
 subtitlesView : Signal.Address Action -> Float -> Model -> Html.Html
 subtitlesView address currentTime model =
   let
-    view i ms =
-      Maybe.map
-        (\s -> Subtitle.view (Signal.forwardTo address (SubtitleN i)) s)
-        ms
-    idx = Subtitle.timeToIndex currentTime model.subtitles
-    prev = view (idx - 1) (Array.get (idx - 1) model.subtitles)
-    curr = view idx (Array.get idx model.subtitles)
-    next = view (idx + 1) (Array.get (idx + 1) model.subtitles)
+    idx = SubtitleArray.timeToIndex currentTime model.subtitles
+    addr = Signal.forwardTo address Subtitles
+    prev = SubtitleArray.viewAt (idx - 1) addr model.subtitles
+    curr = SubtitleArray.viewAt idx addr model.subtitles
+    next = SubtitleArray.viewAt (idx + 1) addr model.subtitles
     subs = listFromMaybe prev ++ listFromMaybe curr ++ listFromMaybe next
   in div [class "subtitles"] subs
 
