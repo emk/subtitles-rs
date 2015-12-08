@@ -4,10 +4,12 @@ module Subtitle
 import Effects
 import Html exposing (div, text, p, input)
 import Html.Attributes exposing (class, type', checked)
+import Html.Events exposing (onClick)
 import Json.Decode as Json exposing ((:=))
-import Signal
+import Signal exposing (Address)
 
 import Util exposing (listFromMaybes, checkbox)
+import VideoPlayer
 
 type alias Model =
   { period: (Float, Float)
@@ -33,9 +35,10 @@ update action model =
   case action of
     Selected val -> ({ model | selected = val }, Effects.none)
 
-view : Signal.Address Action -> Model -> Html.Html
-view address model =
+view : Address VideoPlayer.Action -> Address Action -> Model -> Html.Html
+view playerAddress address model =
   let
+    onclick = onClick playerAddress (VideoPlayer.seek (startTime model))
     check = checkbox address model.selected Selected
     foreignHtml =
       Maybe.map (\t -> p [class "foreign"] [text t]) model.foreignText
@@ -43,7 +46,7 @@ view address model =
       Maybe.map (\t -> p [class "native"] [text t]) model.nativeText
     children = 
       [check] ++ listFromMaybes [foreignHtml, nativeHtml]
-  in div [class "subtitle"] children
+  in div [class "subtitle", onclick] children
 
 decode : Json.Decoder Model
 decode =

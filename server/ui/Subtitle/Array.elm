@@ -4,9 +4,11 @@ module Subtitle.Array
 import Array
 import Effects
 import Html
+import Signal exposing (Address)
 
 import Subtitle exposing (startTime, endTime)
 import Util exposing (listFromMaybes, maybeUpdateChild)
+import VideoPlayer
 
 type alias Model = Array.Array Subtitle.Model
 
@@ -19,15 +21,17 @@ update action model =
       maybeUpdateChild act (Array.get idx model) Subtitle.update (ItemN idx)
         model (\s -> Array.set idx s model)
 
-viewAt : Int -> Signal.Address Action -> Model -> Maybe Html.Html
-viewAt idx address model =
+viewAt : Int -> Address VideoPlayer.Action -> Address Action -> Model
+  -> Maybe Html.Html
+viewAt idx playerAddress address model =
   let addr = Signal.forwardTo address (ItemN idx)
-  in Maybe.map (\m -> Subtitle.view addr m) (Array.get idx model)
+  in Maybe.map (\m -> Subtitle.view playerAddress addr m) (Array.get idx model)
 
-viewsAt : List Int -> Signal.Address Action -> Model -> List Html.Html
-viewsAt indices address model =
+viewsAt : List Int -> Address VideoPlayer.Action -> Address Action -> Model
+  -> List Html.Html
+viewsAt indices playerAddress address model =
   indices
-    |> List.map (\idx -> viewAt idx address model)
+    |> List.map (\idx -> viewAt idx playerAddress address model)
     |> listFromMaybes
 
 type TimeRelation = Before | During | After

@@ -1,9 +1,11 @@
 import Effects exposing (Never)
 import Html
 import StartApp
+import Signal
 import Task
 
 import Application
+import VideoPlayer exposing (videoMailbox)
 
 -- Define our application using the StartApp MVC library to handle our
 -- basic architecture.
@@ -23,3 +25,7 @@ main = app.html
 -- This is apparently how our runnable tasks get connected to JavaScript.
 port tasks : Signal (Task.Task Never ())
 port tasks = app.tasks
+
+-- Send commands to our <video> tag.
+port videoSeek : Signal Float
+port videoSeek = videoMailbox.signal

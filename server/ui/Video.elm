@@ -48,8 +48,9 @@ subtitlesView address model =
     currentTime = model.player.currentTime
     idx = Subtitle.Array.timeToIndex currentTime model.subtitles
     indicies = [(idx - 1), idx, (idx + 1)]
+    playerAddr = (Signal.forwardTo address Player)
     addr = Signal.forwardTo address Subtitles
-    children = Subtitle.Array.viewsAt indicies addr model.subtitles
+    children = Subtitle.Array.viewsAt indicies playerAddr addr model.subtitles
   in div [class "subtitles"] children
 
 decode : Json.Decoder (Model, Effects.Effects Action)

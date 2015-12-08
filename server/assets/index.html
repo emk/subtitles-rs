@@ -27,6 +27,17 @@
     <script src="elm.js"></script>
   </head>
   <body>
-    <script type="text/javascript">Elm.fullscreen(Elm.Main)</script>
+    <script type="text/javascript">
+      window.app = Elm.fullscreen(Elm.Main);
+      app.ports.videoSeek.subscribe(videoSeek);
+
+      function videoSeek(time) {
+        console.log("Seeking to:", time)
+        var videos = document.getElementsByTagName('video');
+        if (videos.length == 1) {
+          videos[0].currentTime = time;
+        }
+      }
+    </script>
   </body>
 </html>
