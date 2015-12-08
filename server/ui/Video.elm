@@ -5,7 +5,7 @@ module Video
 
 import Effects
 import Html exposing (div, text, button)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Json exposing ((:=))
@@ -69,10 +69,6 @@ playerView address model =
 subtitlesView : Signal.Address Action -> Model -> Html.Html
 subtitlesView address model =
   let
-    currentButton =
-      button [onClick address (SetMode Current)] [text "Current"]
-    selectedButton =
-      button [onClick address (SetMode Selected)] [text "Selected"]
     currentTime = model.player.currentTime
     current = Subtitle.Array.maybeIndexFromTime currentTime model.subtitles
     indicies = subtitlesToShow model
@@ -81,7 +77,7 @@ subtitlesView address model =
     subtitles =
       Subtitle.Array.viewsAt
         indicies current playerAddr addr model.subtitles
-  in div [class "subtitles"] ([currentButton, selectedButton] ++ subtitles)
+  in div [class "subtitles"] ([buttonBar address model] ++ subtitles)
 
 subtitlesToShow : Model -> List Int
 subtitlesToShow model =
@@ -93,6 +89,22 @@ subtitlesToShow model =
       in [(idx - 1), idx, (idx + 1)]
     Selected ->
       Subtitle.Array.selectedIndices model.subtitles
+
+buttonBar : Signal.Address Action -> Model -> Html.Html
+buttonBar address model =
+  let
+    onclick mode = onClick address (SetMode mode)
+    classes mode =
+      classList
+        [ ("btn", True)
+        , ("btn-default", True)
+        , ("active", mode == model.mode)
+        ]
+    currentButton =
+      button [onclick Current, classes Current] [text "Current"]
+    selectedButton =
+      button [onclick Selected, classes Selected] [text "Selected"]
+  in div [class "btn-group btn-group-sm"] [currentButton, selectedButton]
 
 inputs : List (Signal.Signal Action)
 inputs =
