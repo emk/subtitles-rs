@@ -1,4 +1,4 @@
-module SubtitleArray (Model, Action, update, viewAt, timeToIndex) where
+module Subtitle.Array (Model, Action, update, viewAt, timeToIndex) where
 
 import Array
 import Html

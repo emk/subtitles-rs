@@ -9,7 +9,7 @@ import Json.Decode as Json exposing ((:=))
 import Task
 
 import Subtitle
-import SubtitleArray
+import Subtitle.Array
 import Util exposing (listFromMaybe)
 
 type alias Model = { url: String, subtitles: Array.Array Subtitle.Model }
@@ -17,22 +17,22 @@ type alias Model = { url: String, subtitles: Array.Array Subtitle.Model }
 init : String -> Array.Array Subtitle.Model -> Model
 init url subtitles = Model url subtitles
 
-type Action = Subtitles SubtitleArray.Action
+type Action = Subtitles Subtitle.Array.Action
 
 update : Action -> Model -> Model
 update action model =
   case action of
     Subtitles act ->
-      { model | subtitles = SubtitleArray.update act model.subtitles }
+      { model | subtitles = Subtitle.Array.update act model.subtitles }
 
 subtitlesView : Signal.Address Action -> Float -> Model -> Html.Html
 subtitlesView address currentTime model =
   let
-    idx = SubtitleArray.timeToIndex currentTime model.subtitles
+    idx = Subtitle.Array.timeToIndex currentTime model.subtitles
     addr = Signal.forwardTo address Subtitles
-    prev = SubtitleArray.viewAt (idx - 1) addr model.subtitles
-    curr = SubtitleArray.viewAt idx addr model.subtitles
-    next = SubtitleArray.viewAt (idx + 1) addr model.subtitles
+    prev = Subtitle.Array.viewAt (idx - 1) addr model.subtitles
+    curr = Subtitle.Array.viewAt idx addr model.subtitles
+    next = Subtitle.Array.viewAt (idx + 1) addr model.subtitles
     subs = listFromMaybe prev ++ listFromMaybe curr ++ listFromMaybe next
   in div [class "subtitles"] subs
 
