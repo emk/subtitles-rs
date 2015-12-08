@@ -2,6 +2,7 @@ module Application (Model, Action, init, update, view, inputs) where
 
 import Effects exposing (Never)
 import Html exposing (div, text)
+import Html.Attributes exposing (class)
 import Html.Events exposing (onKeyDown)
 
 import Video
@@ -44,7 +45,7 @@ view address model =
       Maybe.map (\video -> Video.playerView videoAddr video) model.video
     subtitles =
       Maybe.map (\video -> Video.subtitlesView videoAddr video) model.video
-  in div [] (listFromMaybes [flash, player, subtitles])
+  in div [class "container-fluid"] (listFromMaybes [flash, player, subtitles])
 
 inputs : List (Signal.Signal Action)
 inputs = List.map (Signal.map VideoAction) Video.inputs
