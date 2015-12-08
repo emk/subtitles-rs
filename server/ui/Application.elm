@@ -4,7 +4,7 @@ import Effects exposing (Never)
 import Html exposing (div, text)
 
 import Video
-import Util exposing (listFromMaybe, maybeUpdateChild)
+import Util exposing (listFromMaybes, maybeUpdateChild)
 
 type alias Model =
   { errorMessage: Maybe String
@@ -43,6 +43,4 @@ view address model =
       Maybe.map (\video -> Video.playerView videoAddr video) model.video
     subtitles =
       Maybe.map (\video -> Video.subtitlesView videoAddr video) model.video
-    children =
-      listFromMaybe flash ++ listFromMaybe player ++ listFromMaybe subtitles
-  in div [] children
+  in div [] (listFromMaybes [flash, player, subtitles])

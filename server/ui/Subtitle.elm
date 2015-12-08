@@ -7,7 +7,7 @@ import Html.Attributes exposing (class, type', checked)
 import Json.Decode as Json exposing ((:=))
 import Signal
 
-import Util exposing (listFromMaybe, checkbox)
+import Util exposing (listFromMaybes, checkbox)
 
 type alias Model =
   { period: (Float, Float)
@@ -42,7 +42,7 @@ view address model =
     nativeHtml =
       Maybe.map (\t -> p [class "native"] [text t]) model.nativeText
     children = 
-      [check] ++ listFromMaybe foreignHtml ++ listFromMaybe nativeHtml
+      [check] ++ listFromMaybes [foreignHtml, nativeHtml]
   in div [class "subtitle"] children
 
 decode : Json.Decoder Model

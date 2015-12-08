@@ -1,4 +1,5 @@
-module Util (listFromMaybe, checkbox, updateChild, maybeUpdateChild) where
+module Util
+  (listFromMaybe, listFromMaybes, checkbox, updateChild, maybeUpdateChild) where
 
 import Effects
 import Html exposing (input)
@@ -10,6 +11,13 @@ listFromMaybe maybeVal =
   case maybeVal of
     Just val -> [val]
     Nothing -> []
+
+listFromMaybes : List (Maybe a) -> List a
+listFromMaybes l =
+  case l of
+    [] -> []
+    Nothing :: xs -> listFromMaybes xs
+    Just x :: xs -> x :: listFromMaybes xs
 
 checkbox : Signal.Address a -> Bool -> (Bool -> a) -> Html.Html
 checkbox address isChecked tag =

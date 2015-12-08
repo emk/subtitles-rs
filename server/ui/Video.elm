@@ -10,7 +10,7 @@ import Task
 
 import Subtitle
 import Subtitle.Array
-import Util exposing (listFromMaybe, updateChild)
+import Util exposing (listFromMaybes, updateChild)
 import VideoPlayer
 
 type alias Model =
@@ -52,8 +52,7 @@ subtitlesView address model =
     prev = Subtitle.Array.viewAt (idx - 1) addr model.subtitles
     curr = Subtitle.Array.viewAt idx addr model.subtitles
     next = Subtitle.Array.viewAt (idx + 1) addr model.subtitles
-    subs = listFromMaybe prev ++ listFromMaybe curr ++ listFromMaybe next
-  in div [class "subtitles"] subs
+  in div [class "subtitles"] (listFromMaybes [prev, curr, next])
 
 decode : Json.Decoder (Model, Effects.Effects Action)
 decode =
