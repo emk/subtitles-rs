@@ -1,11 +1,12 @@
-module Subtitle.Array (Model, Action, update, viewAt, timeToIndex) where
+module Subtitle.Array
+  (Model, Action, update, viewAt, viewsAt, timeToIndex) where
 
 import Array
 import Effects
 import Html
 
 import Subtitle exposing (startTime, endTime)
-import Util exposing (maybeUpdateChild)
+import Util exposing (listFromMaybes, maybeUpdateChild)
 
 type alias Model = Array.Array Subtitle.Model
 
@@ -22,6 +23,12 @@ viewAt : Int -> Signal.Address Action -> Model -> Maybe Html.Html
 viewAt idx address model =
   let addr = Signal.forwardTo address (ItemN idx)
   in Maybe.map (\m -> Subtitle.view addr m) (Array.get idx model)
+
+viewsAt : List Int -> Signal.Address Action -> Model -> List Html.Html
+viewsAt indices address model =
+  indices
+    |> List.map (\idx -> viewAt idx address model)
+    |> listFromMaybes
 
 type TimeRelation = Before | During | After
 

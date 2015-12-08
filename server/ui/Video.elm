@@ -21,8 +21,7 @@ type alias Model =
 
 init : String -> Subtitle.Array.Model -> (Model, Effects.Effects Action)
 init url subtitles =
-  let
-    (player, fx) = VideoPlayer.init url
+  let (player, fx) = VideoPlayer.init url
   in (Model url player subtitles, Effects.map Player fx)
 
 type Action
@@ -48,11 +47,10 @@ subtitlesView address model =
   let
     currentTime = model.player.currentTime
     idx = Subtitle.Array.timeToIndex currentTime model.subtitles
+    indicies = [(idx - 1), idx, (idx + 1)]
     addr = Signal.forwardTo address Subtitles
-    prev = Subtitle.Array.viewAt (idx - 1) addr model.subtitles
-    curr = Subtitle.Array.viewAt idx addr model.subtitles
-    next = Subtitle.Array.viewAt (idx + 1) addr model.subtitles
-  in div [class "subtitles"] (listFromMaybes [prev, curr, next])
+    children = Subtitle.Array.viewsAt indicies addr model.subtitles
+  in div [class "subtitles"] children
 
 decode : Json.Decoder (Model, Effects.Effects Action)
 decode =
