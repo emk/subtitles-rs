@@ -4,7 +4,7 @@ module Subtitle
 import Effects
 import Html exposing (div, text, p, input)
 import Html.Attributes exposing (class, type', checked)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onDoubleClick)
 import Json.Decode as Json exposing ((:=))
 import Signal exposing (Address)
 
@@ -38,7 +38,7 @@ update action model =
 view : Address VideoPlayer.Action -> Address Action -> Model -> Html.Html
 view playerAddress address model =
   let
-    onclick = onClick playerAddress (VideoPlayer.seek (startTime model))
+    onclick = onDoubleClick playerAddress (VideoPlayer.seek (startTime model))
     check = checkbox address model.selected Selected
     foreignHtml =
       Maybe.map (\t -> p [class "foreign"] [text t]) model.foreignText
