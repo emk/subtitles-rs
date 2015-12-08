@@ -1,4 +1,4 @@
-module Util (listFromMaybe, checkbox, updateChild) where
+module Util (listFromMaybe, checkbox, updateChild, maybeUpdateChild) where
 
 import Effects
 import Html exposing (input)
@@ -33,3 +33,18 @@ updateChild msg model update tag assign =
     assigned = assign model'
   in (assigned, Effects.map tag fx)
 
+maybeUpdateChild
+  : action
+  -> (Maybe model)
+  -> (action -> model -> (model, Effects.Effects action))
+  -> (action -> parentAction)
+  -> parentModel
+  -> (model -> parentModel)
+  -> (parentModel, Effects.Effects parentAction)
+maybeUpdateChild msg maybeModel update tag parentModel assign =
+  case maybeModel of
+    Just model ->
+      updateChild msg model update tag assign
+    -- This is probably an error that we should log:
+    Nothing ->
+      (parentModel, Effects.none)

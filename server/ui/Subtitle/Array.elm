@@ -5,7 +5,7 @@ import Effects
 import Html
 
 import Subtitle exposing (startTime, endTime)
-import Util exposing (updateChild)
+import Util exposing (maybeUpdateChild)
 
 type alias Model = Array.Array Subtitle.Model
 
@@ -15,18 +15,13 @@ update : Action -> Model -> (Model, Effects.Effects Action)
 update action model =
   case action of
     ItemN idx act ->
-      case Array.get idx model of
-        Nothing -> (model, Effects.none)
-        Just sub ->
-          updateChild act sub Subtitle.update (ItemN idx)
-            (\s -> Array.set idx s model)
+      maybeUpdateChild act (Array.get idx model) Subtitle.update (ItemN idx)
+        model (\s -> Array.set idx s model)
 
 viewAt : Int -> Signal.Address Action -> Model -> Maybe Html.Html
 viewAt idx address model =
-  case Array.get idx model of
-    Nothing -> Nothing
-    Just model' ->
-      Just <| Subtitle.view (Signal.forwardTo address (ItemN idx)) model'
+  let addr = Signal.forwardTo address (ItemN idx)
+  in Maybe.map (\m -> Subtitle.view addr m) (Array.get idx model)
 
 type TimeRelation = Before | During | After
 
