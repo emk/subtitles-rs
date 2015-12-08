@@ -20,12 +20,13 @@ type alias Model =
   { url: String
   , player: VideoPlayer.Model
   , subtitles: Subtitle.Array.Model
+  , currentSubtitle: Maybe Int
   }
 
 init : String -> Subtitle.Array.Model -> (Model, Effects.Effects Action)
 init url subtitles =
   let (player, fx) = VideoPlayer.init url
-  in (Model url player subtitles, Effects.map Player fx)
+  in (Model url player subtitles Nothing, Effects.map Player fx)
 
 type Action
   = Player VideoPlayer.Action
@@ -40,8 +41,14 @@ update : Action -> Model -> (Model, Effects.Effects Action)
 update action model =
   case action of
     Player act ->
-      updateChild act model.player VideoPlayer.update Player
-        (\p -> { model | player = p })
+      let
+        (model', fx) =
+          updateChild act model.player VideoPlayer.update Player
+            (\p -> { model | player = p })
+        currentTime = model'.player.currentTime
+        current = Subtitle.Array.maybeIndexFromTime currentTime model.subtitles
+        model'' = { model' | currentSubtitle = current }
+      in (model'', fx)
     Subtitles act ->
       updateChild act model.subtitles Subtitle.Array.update Subtitles
         (\subs -> { model | subtitles = subs })
@@ -62,12 +69,15 @@ playerView address model =
 subtitlesView : Signal.Address Action -> Model -> Html.Html
 subtitlesView address model =
   let
+    current = model.currentSubtitle
     currentTime = model.player.currentTime
-    idx = Subtitle.Array.timeToIndex currentTime model.subtitles
+    idx = Subtitle.Array.indexFromTime currentTime model.subtitles
     indicies = [(idx - 1), idx, (idx + 1)]
     playerAddr = (Signal.forwardTo address Player)
     addr = Signal.forwardTo address Subtitles
-    children = Subtitle.Array.viewsAt indicies playerAddr addr model.subtitles
+    children =
+      Subtitle.Array.viewsAt
+        indicies current playerAddr addr model.subtitles
   in div [class "subtitles"] children
 
 inputs : List (Signal.Signal Action)

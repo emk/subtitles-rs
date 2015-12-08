@@ -35,17 +35,24 @@ update action model =
   case action of
     Selected val -> ({ model | selected = val }, Effects.none)
 
-view : Address VideoPlayer.Action -> Address Action -> Model -> Html.Html
-view playerAddress address model =
+view
+  : Address VideoPlayer.Action -> Address Action -> Bool -> Model
+  -> Html.Html
+view playerAddress address current model =
   let
     onclick = onDoubleClick playerAddress (VideoPlayer.seek (startTime model))
     check = checkbox address model.selected Selected
+    arrow =
+      if current then
+        Just (p [class "arrow"] [text "▶"])
+      else
+        Nothing
     foreignHtml =
       Maybe.map (\t -> p [class "foreign"] [text t]) model.foreignText
     nativeHtml =
       Maybe.map (\t -> p [class "native"] [text t]) model.nativeText
     children = 
-      [check] ++ listFromMaybes [foreignHtml, nativeHtml]
+      [check] ++ listFromMaybes [arrow, foreignHtml, nativeHtml]
   in div [class "subtitle", onclick] children
 
 decode : Json.Decoder Model
