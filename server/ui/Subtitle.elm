@@ -42,17 +42,15 @@ view playerAddress address current model =
   let
     onclick = onDoubleClick playerAddress (VideoPlayer.seek (startTime model))
     check = checkbox address model.selected Selected
-    arrow =
-      if current then
-        Just (p [class "arrow"] [text "▶"])
-      else
-        Nothing
+    arrow = if current then "▶ " else ""
     foreignHtml =
-      Maybe.map (\t -> p [class "foreign"] [text t]) model.foreignText
+      model.foreignText
+        |> Maybe.map (\t -> p [class "foreign"] [text (arrow ++ t)])
     nativeHtml =
-      Maybe.map (\t -> p [class "native"] [text t]) model.nativeText
+      model.nativeText
+        |> Maybe.map (\t -> p [class "native"] [text t])
     children = 
-      [check] ++ listFromMaybes [arrow, foreignHtml, nativeHtml]
+      [check] ++ listFromMaybes [foreignHtml, nativeHtml]
   in div [class "subtitle", onclick] children
 
 decode : Json.Decoder Model
