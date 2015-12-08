@@ -20,13 +20,12 @@ type alias Model =
   { url: String
   , player: VideoPlayer.Model
   , subtitles: Subtitle.Array.Model
-  , currentSubtitle: Maybe Int
   }
 
 init : String -> Subtitle.Array.Model -> (Model, Effects.Effects Action)
 init url subtitles =
   let (player, fx) = VideoPlayer.init url
-  in (Model url player subtitles Nothing, Effects.map Player fx)
+  in (Model url player subtitles, Effects.map Player fx)
 
 type Action
   = Player VideoPlayer.Action
@@ -41,14 +40,8 @@ update : Action -> Model -> (Model, Effects.Effects Action)
 update action model =
   case action of
     Player act ->
-      let
-        (model', fx) =
-          updateChild act model.player VideoPlayer.update Player
-            (\p -> { model | player = p })
-        currentTime = model'.player.currentTime
-        current = Subtitle.Array.maybeIndexFromTime currentTime model.subtitles
-        model'' = { model' | currentSubtitle = current }
-      in (model'', fx)
+      updateChild act model.player VideoPlayer.update Player
+        (\p -> { model | player = p })
     Subtitles act ->
       updateChild act model.subtitles Subtitle.Array.update Subtitles
         (\subs -> { model | subtitles = subs })
@@ -69,7 +62,7 @@ playerView address model =
 subtitlesView : Signal.Address Action -> Model -> Html.Html
 subtitlesView address model =
   let
-    current = model.currentSubtitle
+    current = Subtitle.Array.maybeIndexFromTime currentTime model.subtitles
     currentTime = model.player.currentTime
     idx = Subtitle.Array.indexFromTime currentTime model.subtitles
     indicies = [(idx - 1), idx, (idx + 1)]
