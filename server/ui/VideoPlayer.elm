@@ -1,10 +1,14 @@
-module VideoPlayer (Model, Action, seek, init, update, view, videoMailbox) where
+module VideoPlayer
+  (Model, DomAction, Action, play, pause, togglePlay, seek, seekRelative,
+  init, update, view, playerMailbox
+  ) where
 
 import Effects exposing (Never)
 import Html exposing (video, div, p, text)
 import Html.Attributes exposing (src, controls)
 import Html.Events exposing (on)
-import Json.Decode as Json
+import Json.Decode
+import Json.Encode
 import Signal
 import Task
 
@@ -13,41 +17,84 @@ import Task
 type alias Model =
   { url: String
   , currentTime: Float
+  , playing: Bool
   }
 
-type Action = TimeUpdate Float | Seek Float | TaskDone
+type alias DomAction =
+  { command: String
+  , value:  Json.Encode.Value
+  }
+
+type Action
+  = TimeUpdate Float
+  | PlayingUpdate Bool
+  | Dom DomAction
+  | TogglePlay
+  | SeekRelative Float
+  | TaskDone
+
+play : Action
+play = Json.Encode.null |> DomAction "play" |> Dom
+
+pause : Action
+pause = Json.Encode.null |> DomAction "pause" |> Dom
+
+togglePlay : Action
+togglePlay = TogglePlay
 
 seek : Float -> Action
-seek = Seek
+seek time = Json.Encode.float time |> DomAction "seek" |> Dom
+
+seekRelative : Float -> Action
+seekRelative = SeekRelative
 
 init : String -> (Model, Effects.Effects Action)
-init url = (Model url 0, Effects.none)
+init url = (Model url 0 False, Effects.none)
 
 update : Action -> Model -> (Model, Effects.Effects Action)
 update msg model =
   case msg of
     TimeUpdate time ->
       ({ model | currentTime = time }, Effects.none)
-    Seek time ->
+    PlayingUpdate playing ->
+      ({ model | playing = playing}, Effects.none)
+    Dom domAction ->
       let
         fx =
-          Signal.send videoMailbox.address time
+          Signal.send playerMailbox.address domAction
             |> Task.map (\_ -> TaskDone)
             |> Effects.task
       in (model, fx)
-    _ -> (model, Effects.none)
+    TogglePlay ->
+      if model.playing then
+        update pause model
+      else
+        update play model
+    SeekRelative offset ->
+      update (seek (model.currentTime + offset)) model
+    TaskDone -> (model, Effects.none)
 
 view : Signal.Address Action -> Model -> Html.Html
 view address model =
   let
     ontimeupdate = onTimeUpdate (Signal.forwardTo address TimeUpdate)
-  in video [ src model.url, controls True, ontimeupdate ] []
+    onplay = onPlay (Signal.message address (PlayingUpdate True))
+    onpause = onPause (Signal.message address (PlayingUpdate False))
+  in video [ src model.url, controls True, ontimeupdate, onplay, onpause ] []
 
 onTimeUpdate : Signal.Address Float -> Html.Attribute
 onTimeUpdate address =
   on "timeupdate"
-    (Json.at ["target", "currentTime"] Json.float)
+    (Json.Decode.at ["target", "currentTime"] Json.Decode.float)
     (\time -> Signal.message address time)
 
-videoMailbox : Signal.Mailbox Float
-videoMailbox = Signal.mailbox 0
+onPlay : Signal.Message -> Html.Attribute
+onPlay message =
+  on "play" Json.Decode.value (\_ -> message)
+
+onPause : Signal.Message -> Html.Attribute
+onPause message =
+  on "pause" Json.Decode.value (\_ -> message)
+
+playerMailbox : Signal.Mailbox DomAction
+playerMailbox = Signal.mailbox (DomAction "none" Json.Encode.null)

@@ -29,13 +29,21 @@
   <body>
     <script type="text/javascript">
       window.app = Elm.fullscreen(Elm.Main);
-      app.ports.videoSeek.subscribe(videoSeek);
+      app.ports.playerAction.subscribe(playerAction);
 
-      function videoSeek(time) {
-        console.log("Seeking to:", time)
+      function playerAction(action) {
+        console.log("Player action:", action)
         var videos = document.getElementsByTagName('video');
         if (videos.length == 1) {
-          videos[0].currentTime = time;
+          var vid = videos[0];
+          var cmd = action.command;
+          if (cmd == "seek") {
+            vid.currentTime = action.value;
+          } else if (cmd == "play") {
+            vid.play();
+          } else if (cmd == "pause") {
+            vid.pause();
+          }
         }
       }
     </script>

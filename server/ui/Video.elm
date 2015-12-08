@@ -1,5 +1,7 @@
 module Video
-  (Model, init, Action, update, playerView, subtitlesView, decode, load) where
+  (Model, init, Action, keyPress, update, playerView, subtitlesView, decode,
+   load
+  ) where
 
 import Effects
 import Html exposing (div)
@@ -27,6 +29,10 @@ init url subtitles =
 type Action
   = Player VideoPlayer.Action
   | Subtitles Subtitle.Array.Action
+  | KeyPress Int
+
+keyPress : Int -> Action
+keyPress = KeyPress
 
 update : Action -> Model -> (Model, Effects.Effects Action)
 update action model =
@@ -37,6 +43,12 @@ update action model =
     Subtitles act ->
       updateChild act model.subtitles Subtitle.Array.update Subtitles
         (\subs -> { model | subtitles = subs })
+    KeyPress keyCode ->
+      case keyCode of
+        32 -> update (VideoPlayer.togglePlay |> Player) model
+        37 -> update (VideoPlayer.seekRelative -5 |> Player) model
+        39 -> update (VideoPlayer.seekRelative 5 |> Player) model
+        _ -> (model, Effects.none)
 
 playerView : Signal.Address Action -> Model -> Html.Html
 playerView address model =

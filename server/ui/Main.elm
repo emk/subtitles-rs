@@ -5,7 +5,7 @@ import Signal
 import Task
 
 import Application
-import VideoPlayer exposing (videoMailbox)
+import VideoPlayer exposing (playerMailbox)
 
 -- Define our application using the StartApp MVC library to handle our
 -- basic architecture.
@@ -27,5 +27,5 @@ port tasks : Signal (Task.Task Never ())
 port tasks = app.tasks
 
 -- Send commands to our <video> tag.
-port videoSeek : Signal Float
-port videoSeek = videoMailbox.signal
+port playerAction : Signal VideoPlayer.DomAction
+port playerAction = playerMailbox.signal
