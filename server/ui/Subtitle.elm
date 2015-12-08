@@ -1,6 +1,7 @@
 module Subtitle
   (Model, startTime, endTime, init, Action, update, view, decode) where
 
+import Effects
 import Html exposing (div, text, p, input)
 import Html.Attributes exposing (class, type', checked)
 import Json.Decode as Json exposing ((:=))
@@ -27,10 +28,10 @@ init period foreignText nativeText =
 
 type Action = Selected Bool
 
-update : Action -> Model -> Model
+update : Action -> Model -> (Model, Effects.Effects Action)
 update action model =
   case action of
-    Selected val -> { model | selected = val }
+    Selected val -> ({ model | selected = val }, Effects.none)
 
 view : Signal.Address Action -> Model -> Html.Html
 view address model =

@@ -1,21 +1,25 @@
 module Subtitle.Array (Model, Action, update, viewAt, timeToIndex) where
 
 import Array
+import Effects
 import Html
 
 import Subtitle exposing (startTime, endTime)
+import Util exposing (updateChild)
 
 type alias Model = Array.Array Subtitle.Model
 
 type Action = ItemN Int Subtitle.Action
 
-update : Action -> Model -> Array.Array Subtitle.Model
+update : Action -> Model -> (Model, Effects.Effects Action)
 update action model =
   case action of
     ItemN idx act ->
       case Array.get idx model of
-        Nothing -> model
-        Just sub -> Array.set idx (Subtitle.update act sub) model
+        Nothing -> (model, Effects.none)
+        Just sub ->
+          updateChild act sub Subtitle.update (ItemN idx)
+            (\s -> Array.set idx s model)
 
 viewAt : Int -> Signal.Address Action -> Model -> Maybe Html.Html
 viewAt idx address model =

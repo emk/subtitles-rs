@@ -26,18 +26,18 @@ init url subtitles =
   in (Model url player subtitles, Effects.map Player fx)
 
 type Action
-  = Subtitles Subtitle.Array.Action
-  | Player VideoPlayer.Action
+  = Player VideoPlayer.Action
+  | Subtitles Subtitle.Array.Action
 
 update : Action -> Model -> (Model, Effects.Effects Action)
 update action model =
   case action of
-    Subtitles act ->
-      ({ model | subtitles = Subtitle.Array.update act model.subtitles },
-       Effects.none)
     Player act ->
       updateChild act model.player VideoPlayer.update Player
-        (\p -> { model | player = p }
+        (\p -> { model | player = p })
+    Subtitles act ->
+      updateChild act model.subtitles Subtitle.Array.update Subtitles
+        (\subs -> { model | subtitles = subs })
 
 playerView : Signal.Address Action -> Model -> Html.Html
 playerView address model =
