@@ -12,18 +12,25 @@
     <style>
       video { max-width: 100%; }
 
-      #app {
-        position: relative;
-      }
-
-      .subtitles {
-        position: absolute;
+      .subtitles-view {
+        position: fixed;
         /* Top is overriden by app. */
         top: 0; right: 0; bottom: 0; left: 0;
       }
 
-      .subtitles .btn-group {
-        margin: 2px 0 5px 0;
+      .subtitles-view .button-bar {
+        position: absolute;
+        top: 0; right: 0; height: 30px; left: 0;
+      }
+
+      .subtitles-view .scroll {
+        position: absolute;
+        top: 30px; right: 0; bottom: 0; left: 0;
+        overflow-y: auto;
+      }
+
+      .subtitles-view .scroll .subtitles-list {
+        padding: 5px;
       }
 
       .subtitle {

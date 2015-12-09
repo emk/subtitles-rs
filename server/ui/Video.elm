@@ -80,10 +80,13 @@ subtitlesView address model =
     playerAddr = (Signal.forwardTo address Player)
     addr = Signal.forwardTo address Subtitles
     subtitles =
-      Subtitle.Array.viewsAt
-        indicies current playerAddr addr model.subtitles
+      div [class "subtitles-list"]
+        (Subtitle.Array.viewsAt
+          indicies current playerAddr addr model.subtitles)
     styles = style [("top", toString model.playerHeight ++ "px")]
-  in div [class "subtitles", styles] ([buttonBar address model] ++ subtitles)
+  in
+    div [class "subtitles-view", styles]
+      ([buttonBar address model] ++ [div [class "scroll"] [subtitles]])
 
 subtitlesToShow : Model -> List Int
 subtitlesToShow model =
@@ -100,17 +103,18 @@ buttonBar : Signal.Address Action -> Model -> Html.Html
 buttonBar address model =
   let
     onclick mode = onClick address (SetMode mode)
-    classes mode =
+    btnClasses mode =
       classList
         [ ("btn", True)
         , ("btn-default", True)
         , ("active", mode == model.mode)
         ]
     currentButton =
-      button [onclick Current, classes Current] [text "Current"]
+      button [onclick Current, btnClasses Current] [text "Current"]
     selectedButton =
-      button [onclick Selected, classes Selected] [text "Selected"]
-  in div [class "btn-group btn-group-sm"] [currentButton, selectedButton]
+      button [onclick Selected, btnClasses Selected] [text "Selected"]
+    classes = class "button-bar btn-group btn-group-sm"
+  in div [classes] [currentButton, selectedButton]
 
 inputs : List (Signal.Signal Action)
 inputs =

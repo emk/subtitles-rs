@@ -37,6 +37,10 @@ update msg model =
 view : Signal.Address Action -> Model -> Html.Html
 view address model =
   let
+    -- TODO: The layout of the flash is broken, because we don't
+    -- reserve space for it.  We can probably fix this in CSS.  But it's
+    -- not a priority because we currently can't have both a flash and
+    -- a video.
     flash =
       Maybe.map (\err -> text err) model.errorMessage
     videoAddr = Signal.forwardTo address VideoAction
@@ -45,8 +49,7 @@ view address model =
     subtitles =
       Maybe.map (\video -> Video.subtitlesView videoAddr video) model.video
   in
-    div [id "app", class "container-fluid"]
-      (listFromMaybes [flash, player, subtitles])
+    div [id "app"] (listFromMaybes [flash, player, subtitles])
 
 inputs : List (Signal.Signal Action)
 inputs = List.map (Signal.map VideoAction) Video.inputs

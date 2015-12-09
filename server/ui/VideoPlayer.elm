@@ -141,6 +141,6 @@ height = Signal.map2 calculateHeight Window.width sizeMailbox.signal
 calculateHeight : Int -> Size -> Int
 calculateHeight width playerSize =
   let
-    scale = (toFloat width - 30) / toFloat playerSize.width
+    scale = toFloat width / toFloat playerSize.width
     height = ceiling (min scale 1.0 * toFloat playerSize.height)
   in height
