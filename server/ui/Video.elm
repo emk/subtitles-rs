@@ -3,6 +3,7 @@ module Video
    decode, load
   ) where
 
+import Array
 import Debug exposing (log)
 import Effects
 import Html exposing (div, text, button)
@@ -18,7 +19,7 @@ import Subtitle.Array
 import Util exposing (listFromMaybes, updateChild)
 import VideoPlayer
 
-type DisplayMode = Current | Selected
+type DisplayMode = All | Current | Selected
 
 type alias Model =
   { url: String
@@ -91,6 +92,9 @@ subtitlesView address model =
 subtitlesToShow : Model -> List Int
 subtitlesToShow model =
   case model.mode of
+    All ->
+      Array.toIndexedList model.subtitles
+        |> List.map (\(idx, _) -> idx)
     Current ->
       let
         currentTime = model.player.currentTime
@@ -109,12 +113,14 @@ buttonBar address model =
         , ("btn-default", True)
         , ("active", mode == model.mode)
         ]
+    allButton =
+      button [onclick All, btnClasses All] [text "All"]
     currentButton =
       button [onclick Current, btnClasses Current] [text "Current"]
     selectedButton =
       button [onclick Selected, btnClasses Selected] [text "Selected"]
     classes = class "button-bar btn-group btn-group-sm"
-  in div [classes] [currentButton, selectedButton]
+  in div [classes] [allButton, currentButton, selectedButton]
 
 inputs : List (Signal.Signal Action)
 inputs =
