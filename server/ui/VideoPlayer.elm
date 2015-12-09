@@ -12,10 +12,13 @@ import Json.Encode
 import Signal
 import Task
 
+import Util exposing (Size, targetSize)
+
 -- Video player state.  Need to know (here or elsewhere) about load state,
 -- playing/paused, current playback time.
 type alias Model =
   { url: String
+  , size: Size
   , currentTime: Float
   , playing: Bool
   }
@@ -26,7 +29,8 @@ type alias DomAction =
   }
 
 type Action
-  = TimeUpdate Float
+  = LoadedMetadata Size
+  | TimeUpdate Float
   | PlayingUpdate Bool
   | Dom DomAction
   | TogglePlay
@@ -49,11 +53,13 @@ seekRelative : Float -> Action
 seekRelative = SeekRelative
 
 init : String -> (Model, Effects.Effects Action)
-init url = (Model url 0 False, Effects.none)
+init url = (Model url (Size 0 0) 0 False, Effects.none)
 
 update : Action -> Model -> (Model, Effects.Effects Action)
 update msg model =
   case msg of
+    LoadedMetadata size ->
+      ({ model | size = size }, Effects.none)
     TimeUpdate time ->
       ({ model | currentTime = time }, Effects.none)
     PlayingUpdate playing ->
@@ -77,10 +83,21 @@ update msg model =
 view : Signal.Address Action -> Model -> Html.Html
 view address model =
   let
+    onloaded =
+      onLoadedMetadata <| \size -> Signal.message address (LoadedMetadata size)
     ontimeupdate = onTimeUpdate (Signal.forwardTo address TimeUpdate)
     onplay = onPlay (Signal.message address (PlayingUpdate True))
     onpause = onPause (Signal.message address (PlayingUpdate False))
-  in video [ src model.url, controls True, ontimeupdate, onplay, onpause ] []
+  in
+    video
+      [ src model.url, controls True
+      , onloaded, ontimeupdate, onplay, onpause
+      ]
+      []
+
+onLoadedMetadata : (Size -> Signal.Message) -> Html.Attribute
+onLoadedMetadata toMessage =
+  on "loadedmetadata" targetSize toMessage
 
 onTimeUpdate : Signal.Address Float -> Html.Attribute
 onTimeUpdate address =

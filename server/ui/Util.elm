@@ -1,10 +1,22 @@
 module Util
-  (listFromMaybe, listFromMaybes, checkbox, updateChild, maybeUpdateChild) where
+  (Size, targetSize, listFromMaybe, listFromMaybes, checkbox,
+   updateChild, maybeUpdateChild)
+  where
 
 import Effects
 import Html exposing (input)
 import Html.Attributes exposing (class, type', checked)
 import Html.Events exposing (on, targetChecked)
+import Json.Decode as Json exposing ((:=))
+
+type alias Size = { width: Int, height: Int }
+
+targetSize : Json.Decoder Size
+targetSize =
+  Json.at ["target"]
+    (Json.object2 Size
+       ("width" := Json.int)
+       ("height" := Json.int))
 
 listFromMaybe : Maybe a -> List a
 listFromMaybe maybeVal =
