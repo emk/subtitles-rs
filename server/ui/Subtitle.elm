@@ -3,9 +3,10 @@ module Subtitle
 
 import Effects
 import Html exposing (div, text, p, input)
-import Html.Attributes exposing (class, type', checked)
+import Html.Attributes exposing (class, type', checked, property)
 import Html.Events exposing (onDoubleClick)
 import Json.Decode as Json exposing ((:=))
+import Json.Encode
 import Signal exposing (Address)
 
 import Util exposing (listFromMaybes, checkbox)
@@ -51,7 +52,11 @@ view playerAddress address current model =
         |> Maybe.map (\t -> p [class "native"] [text t])
     children = 
       [check] ++ listFromMaybes [foreignHtml, nativeHtml]
-  in div [class "subtitle", onclick] children
+    -- We need this so the virtual-dom diffing code can tell subtitles
+    -- apart.  Without it, it will mix up checkboxes in certain views,
+    -- because their values don't show up in the DOM.
+    key = property "key" (Json.Encode.string (toString model.period))
+  in div [key, class "subtitle", onclick] children
 
 decode : Json.Decoder Model
 decode =
