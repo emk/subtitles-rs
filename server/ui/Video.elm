@@ -3,9 +3,10 @@ module Video
    decode, load
   ) where
 
+import Debug exposing (log)
 import Effects
 import Html exposing (div, text, button)
-import Html.Attributes exposing (class, classList)
+import Html.Attributes exposing (class, style, classList)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Json exposing ((:=))
@@ -22,6 +23,7 @@ type DisplayMode = Current | Selected
 type alias Model =
   { url: String
   , player: VideoPlayer.Model
+  , playerHeight: Int
   , mode: DisplayMode
   , subtitles: Subtitle.Array.Model
   }
@@ -29,7 +31,7 @@ type alias Model =
 init : String -> Subtitle.Array.Model -> (Model, Effects.Effects Action)
 init url subtitles =
   let (player, fx) = VideoPlayer.init url
-  in (Model url player Current subtitles, Effects.map Player fx)
+  in (Model url player 0 Current subtitles, Effects.map Player fx)
 
 type Action
   = Player VideoPlayer.Action
@@ -37,6 +39,7 @@ type Action
   | SetMode DisplayMode
   | KeyPress Int
   | Arrows { x: Int, y: Int }
+  | PlayerHeight Int
 
 keyPress : Int -> Action
 keyPress = KeyPress
@@ -61,6 +64,8 @@ update action model =
         (-1, 0) -> update (VideoPlayer.seekRelative -5 |> Player) model
         ( 1, 0) -> update (VideoPlayer.seekRelative  5 |> Player) model
         _ -> (model, Effects.none)
+    PlayerHeight height ->
+      ({ model | playerHeight = log "Video.playerHeight" height }, Effects.none)
 
 playerView : Signal.Address Action -> Model -> Html.Html
 playerView address model =
@@ -77,7 +82,8 @@ subtitlesView address model =
     subtitles =
       Subtitle.Array.viewsAt
         indicies current playerAddr addr model.subtitles
-  in div [class "subtitles"] ([buttonBar address model] ++ subtitles)
+    styles = style [("top", toString model.playerHeight ++ "px")]
+  in div [class "subtitles", styles] ([buttonBar address model] ++ subtitles)
 
 subtitlesToShow : Model -> List Int
 subtitlesToShow model =
@@ -110,6 +116,7 @@ inputs : List (Signal.Signal Action)
 inputs =
   [ Signal.map KeyPress Keyboard.presses
   , Signal.map Arrows Keyboard.arrows
+  , Signal.map PlayerHeight VideoPlayer.height
   ]
 
 decode : Json.Decoder (Model, Effects.Effects Action)

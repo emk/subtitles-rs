@@ -1,8 +1,9 @@
 module VideoPlayer
   (Model, DomAction, Action, play, pause, togglePlay, seek, seekRelative,
-  init, update, view, playerMailbox
+  init, update, view, playerMailbox, height
   ) where
 
+import Basics exposing (min)
 import Effects exposing (Never)
 import Html exposing (video, div, p, text)
 import Html.Attributes exposing (src, controls)
@@ -11,6 +12,7 @@ import Json.Decode
 import Json.Encode
 import Signal
 import Task
+import Window
 
 import Util exposing (Size, targetSize)
 
@@ -59,7 +61,10 @@ update : Action -> Model -> (Model, Effects.Effects Action)
 update msg model =
   case msg of
     LoadedMetadata size ->
-      ({ model | size = size }, Effects.none)
+      ({ model | size = size },
+       Signal.send sizeMailbox.address size
+         |> Task.map (\_ -> TaskDone)
+         |> Effects.task)
     TimeUpdate time ->
       ({ model | currentTime = time }, Effects.none)
     PlayingUpdate playing ->
@@ -115,3 +120,27 @@ onPause message =
 
 playerMailbox : Signal.Mailbox DomAction
 playerMailbox = Signal.mailbox (DomAction "none" Json.Encode.null)
+
+-- Hack. See below.
+sizeMailbox : Signal.Mailbox Size
+sizeMailbox = Signal.mailbox (Size 0 0)
+
+-- The height of our video player.  This is special-cased because
+-- `Window.width` doesn't work correctly with the Elm Architecture, as
+-- discussed here:
+--
+-- https://groups.google.com/forum/#!topic/elm-discuss/4uQu6BgyLIE
+--
+-- Basically, we'll never receive an initial value for `Window.width`.  But
+-- if we combine it with another signal, we'll at least receive an update
+-- whenever that signal changes.  This is a major design flaw in
+-- `startApp`, and possibly in Elm itself, so hackery is OK.
+height : Signal.Signal Int
+height = Signal.map2 calculateHeight Window.width sizeMailbox.signal
+
+calculateHeight : Int -> Size -> Int
+calculateHeight width playerSize =
+  let
+    scale = (toFloat width - 30) / toFloat playerSize.width
+    height = ceiling (min scale 1.0 * toFloat playerSize.height)
+  in height

@@ -15,8 +15,8 @@ targetSize : Json.Decoder Size
 targetSize =
   Json.at ["target"]
     (Json.object2 Size
-       ("width" := Json.int)
-       ("height" := Json.int))
+       ("videoWidth" := Json.int)
+       ("videoHeight" := Json.int))
 
 listFromMaybe : Maybe a -> List a
 listFromMaybe maybeVal =
