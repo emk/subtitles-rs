@@ -40,63 +40,59 @@ substudy export review episode_01_01.mkv \
 ## Installing `substudy`
 
 The easiest way to install `substudy` is using the `cargo install` command.
-To get access to this, you'll need a nightly build of Rust.  The easiest
-way to to this is to install [`multirust`][multirust] by running:
+To get access to this, you'll to install Rust 1.5.  If you already have
+[`multirust`][multirust] installed, you can run:
 
 ```sh
-curl -sf https://raw.githubusercontent.com/brson/multirust/master/blastoff.sh | sh
-multirust update nightly
+multirust update stable
 ```
 
-Follow any extra installation instructions printed by `multirust`.  You
-will also need to have a working copy of `cmake`, which you might be able
-to install as follows:
+If you've never heard of `multirust`, you can look at the instructions on
+the [Rust install page][install-rust], or you can just run the following:
+
+```sh
+curl -sSf https://static.rust-lang.org/rustup.sh | sh
+```
+
+You will also need to have a working copies of `cmake` and the
+[latest version of `ffmpeg`][ffmpeg] (2.8.1 or newer), which you might be
+able to install as follows:
 
 ```sh
 # MacOS X with `brew` installed.
-brew install cmake
+brew install cmake ffmpeg
 
 # Ubuntu.
 sudo apt-get install cmake
 ```
 
-Once all that is set up, you can then install `substudy` by running:
-
-```sh
-multirust run nightly cargo install substudy
-```
-
-[multirust]: https://github.com/brson/multirust
-
-### Installing ffmpeg
-
-To use the video-related features, you'll need to install
-[version 2.8.1 or newer of `ffmpeg`][ffmpeg].  You may have problems with
-older versions or with the `libav` fork.  If you're running Ubuntu 14.04
-LTS, you could run:
+Installing `ffmpeg` on Ubuntu is a bit more complicated, because you need
+to get the latest version from a third-party repository.  Do not try to
+replace `ffmpeg` with older versions of `libav`; they may eat up a huge
+amount of memory and then crash.
 
 ```sh
 sudo apt-add-repository ppa:mc3man/trusty-media
 sudo apt-get update
 sudo apt-get install ffmpeg
-```
-
-You might want to remove this external package repository before applying
-other updates to your system, to avoid conflicts:
-
-```sh
 sudo apt-add-repository -r ppa:mc3man/trusty-media
 sudo apt-get update
 ```
 
-Once `ffmpeg` is installed, you should be able to access the video-related
-features of `substudy`.
+Once all that is set up, you can then install `substudy` by running:
 
+```sh
+cargo install substudy
+```
+
+[install-rust]: https://www.rust-lang.org/downloads.html
+[multirust]: https://github.com/brson/multirust
 [ffmpeg]: https://ffmpeg.org/download.html
 
 ## Building `substudy`
 
-Assuming you have `multirust` installed as described above, you can run:
+Assuming you have Rust and the other dependencies installed as described
+above, you can run:
 
 ```sh
 git clone https://github.com/emk/substudy.git
