@@ -26,6 +26,7 @@ Usage: substudy clean <subs>
        substudy export tracks <video> <foreign-subs>
        substudy list tracks <video>
        substudy --help
+       substudy --version
 
 For now, all subtitles must be in *.srt format. Many common encodings
 will be automatically detected, but try converting to UTF-8 if you
@@ -44,6 +45,7 @@ struct Args {
     arg_foreign_subs: String,
     arg_native_subs: Option<String>,
     arg_video: String,
+    flag_version: bool,
 }
 
 fn export_type(args: &Args) -> &str {
@@ -58,6 +60,8 @@ fn export_type(args: &Args) -> &str {
 // Choose and run the appropriate command.
 fn run(args: &Args) -> Result<()> {
     match *args {
+        Args{flag_version: true, ..} =>
+            cmd_version(),
         Args{cmd_clean: true, arg_subs: ref path, ..} =>
             cmd_clean(&Path::new(path)),
         Args{cmd_combine: true, arg_foreign_subs: ref path1,
@@ -75,6 +79,11 @@ fn run(args: &Args) -> Result<()> {
             cmd_tracks(&Path::new(path)),
         _ => panic!("Unexpected argument combination: {:?}", args)
     }
+}
+
+fn cmd_version() -> Result<()> {
+    println!("substudy {}", env!("CARGO_PKG_VERSION"));
+    Ok(())
 }
 
 fn cmd_clean(path: &Path) -> Result<()> {
