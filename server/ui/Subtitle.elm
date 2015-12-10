@@ -3,11 +3,13 @@ module Subtitle
 
 import Effects
 import Html exposing (div, text, p, input)
-import Html.Attributes exposing (class, type', checked, property)
-import Html.Events exposing (onDoubleClick)
+import Html.Attributes exposing (class, classList, type', checked, property)
+import Html.Events exposing (onClick)
 import Json.Decode as Json exposing ((:=))
 import Json.Encode
 import Signal exposing (Address)
+import Svg exposing (svg, use)
+import Svg.Attributes exposing (xlinkHref, viewBox)
 
 import Util exposing (listFromMaybes, checkbox)
 import VideoPlayer
@@ -41,22 +43,22 @@ view
   -> Html.Html
 view playerAddress address current model =
   let
-    onclick = onDoubleClick playerAddress (VideoPlayer.seek (startTime model))
+    onclick = onClick playerAddress (VideoPlayer.seek (startTime model))
     check = checkbox address model.selected Selected
-    arrow = if current then "▶ " else ""
+    play =
+      svg [viewBox "0 0 32 32", onclick] [use [xlinkHref "play.svg#play"] []]
     foreignHtml =
-      model.foreignText
-        |> Maybe.map (\t -> p [class "foreign"] [text (arrow ++ t)])
+      model.foreignText |> Maybe.map (\t -> p [class "foreign"] [text t])
     nativeHtml =
-      model.nativeText
-        |> Maybe.map (\t -> p [class "native"] [text t])
+      model.nativeText |> Maybe.map (\t -> p [class "native"] [text t])
     children = 
-      [check] ++ listFromMaybes [foreignHtml, nativeHtml]
+      [check, play] ++ listFromMaybes [foreignHtml, nativeHtml]
     -- We need this so the virtual-dom diffing code can tell subtitles
     -- apart.  Without it, it will mix up checkboxes in certain views,
     -- because their values don't show up in the DOM.
     key = property "key" (Json.Encode.string (toString model.period))
-  in div [key, class "subtitle", onclick] children
+    classes = classList [("subtitle", True), ("current", current)]
+  in div [key, classes] children
 
 decode : Json.Decoder Model
 decode =

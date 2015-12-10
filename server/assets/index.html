@@ -39,13 +39,27 @@
         min-height: 40px;
       }
 
+      .subtitle svg {
+        position: absolute;
+        top: 0; left: 0; width: 32px; height: 32px;
+        fill: lightgrey;
+      }
+
+      .subtitle svg:hover {
+        fill: grey;
+      }
+
+      .subtitle.current svg {
+        fill: blue;
+      }
+
       .subtitle input {
         position: absolute;
-        top: 0; left: 0;
+        top: 0; left: 40px;
       }
 
       .subtitle .foreign, .subtitle .native {
-        margin: 0 0 0 24px;
+        margin: 0 0 0 60px;
       }
 
       .subtitle .native {
@@ -54,6 +68,7 @@
       }
     </style>
 
+    <script src="svg4everybody.js"></script>
     <script src="elm.js"></script>
   </head>
   <body>
