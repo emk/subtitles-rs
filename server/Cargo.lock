@@ -9,7 +9,7 @@ dependencies = [
  "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustless 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "staticfile 0.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "substudy 0.3.0",
+ "substudy 0.4.0",
 ]
 
 [[package]]
@@ -564,7 +564,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "substudy"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "cld2 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "csv 0.14.3 (registry+https://github.com/rust-lang/crates.io-index)",
