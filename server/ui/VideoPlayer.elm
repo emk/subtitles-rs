@@ -1,6 +1,6 @@
 module VideoPlayer
-  (Model, DomAction, Action, play, pause, togglePlay, seek, seekRelative,
-  init, update, view, playerMailbox, height
+  (Model, DomAction, Action, play, pause, togglePlay, playRange,
+  seek, seekRelative, init, update, view, playerMailbox, height
   ) where
 
 import Basics exposing (min)
@@ -23,6 +23,7 @@ type alias Model =
   , size: Size
   , currentTime: Float
   , playing: Bool
+  , stopAt: (Maybe Float)
   }
 
 type alias DomAction =
@@ -36,6 +37,7 @@ type Action
   | PlayingUpdate Bool
   | Dom DomAction
   | TogglePlay
+  | PlayRange (Float, Float)
   | SeekRelative Float
   | TaskDone
 
@@ -48,6 +50,9 @@ pause = Json.Encode.null |> DomAction "pause" |> Dom
 togglePlay : Action
 togglePlay = TogglePlay
 
+playRange : (Float, Float) -> Action
+playRange = PlayRange
+
 seek : Float -> Action
 seek time = Json.Encode.float time |> DomAction "seek" |> Dom
 
@@ -55,7 +60,7 @@ seekRelative : Float -> Action
 seekRelative = SeekRelative
 
 init : String -> (Model, Effects.Effects Action)
-init url = (Model url (Size 0 0) 0 False, Effects.none)
+init url = (Model url (Size 0 0) 0 False Nothing, Effects.none)
 
 update : Action -> Model -> (Model, Effects.Effects Action)
 update msg model =
@@ -66,7 +71,16 @@ update msg model =
          |> Task.map (\_ -> TaskDone)
          |> Effects.task)
     TimeUpdate time ->
-      ({ model | currentTime = time }, Effects.none)
+      let model' = { model | currentTime = time }
+      in
+        case model.stopAt of
+          Nothing ->
+            (model', Effects.none)
+          Just stopAt ->
+            if time < stopAt then
+              (model', Effects.none)
+            else
+              update pause model'
     PlayingUpdate playing ->
       ({ model | playing = playing}, Effects.none)
     Dom domAction ->
@@ -81,6 +95,15 @@ update msg model =
         update pause model
       else
         update play model
+    PlayRange (begin, end) ->
+      if model.playing then
+        update (seek begin) model
+      else
+        let
+          model1 = { model | stopAt = (Just end) }
+          (model2, fx1) = update (seek begin) model1
+          (model3, fx2) = update play model2
+        in (model3, Effects.batch [fx1, fx2])
     SeekRelative offset ->
       update (seek (model.currentTime + offset)) model
     TaskDone -> (model, Effects.none)

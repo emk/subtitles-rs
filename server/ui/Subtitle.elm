@@ -43,7 +43,7 @@ view
   -> Html.Html
 view playerAddress address current model =
   let
-    onclick = onClick playerAddress (VideoPlayer.seek (startTime model))
+    onclick = onClick playerAddress (VideoPlayer.playRange model.period)
     check = checkbox address model.selected Selected
     play =
       svg [viewBox "0 0 32 32", onclick] [use [xlinkHref "play.svg#play"] []]
