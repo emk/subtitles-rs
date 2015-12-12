@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="Source to the Rust file `src/lang.rs`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang">
+
+    <title>lang.rs.html -- source</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+<span id="2">  2</span>
+<span id="3">  3</span>
+<span id="4">  4</span>
+<span id="5">  5</span>
+<span id="6">  6</span>
+<span id="7">  7</span>
+<span id="8">  8</span>
+<span id="9">  9</span>
+<span id="10"> 10</span>
+<span id="11"> 11</span>
+<span id="12"> 12</span>
+<span id="13"> 13</span>
+<span id="14"> 14</span>
+<span id="15"> 15</span>
+<span id="16"> 16</span>
+<span id="17"> 17</span>
+<span id="18"> 18</span>
+<span id="19"> 19</span>
+<span id="20"> 20</span>
+<span id="21"> 21</span>
+<span id="22"> 22</span>
+<span id="23"> 23</span>
+<span id="24"> 24</span>
+<span id="25"> 25</span>
+<span id="26"> 26</span>
+<span id="27"> 27</span>
+<span id="28"> 28</span>
+<span id="29"> 29</span>
+<span id="30"> 30</span>
+<span id="31"> 31</span>
+<span id="32"> 32</span>
+<span id="33"> 33</span>
+<span id="34"> 34</span>
+<span id="35"> 35</span>
+<span id="36"> 36</span>
+<span id="37"> 37</span>
+<span id="38"> 38</span>
+<span id="39"> 39</span>
+<span id="40"> 40</span>
+<span id="41"> 41</span>
+<span id="42"> 42</span>
+<span id="43"> 43</span>
+<span id="44"> 44</span>
+<span id="45"> 45</span>
+<span id="46"> 46</span>
+<span id="47"> 47</span>
+<span id="48"> 48</span>
+<span id="49"> 49</span>
+<span id="50"> 50</span>
+<span id="51"> 51</span>
+<span id="52"> 52</span>
+<span id="53"> 53</span>
+<span id="54"> 54</span>
+<span id="55"> 55</span>
+<span id="56"> 56</span>
+<span id="57"> 57</span>
+<span id="58"> 58</span>
+<span id="59"> 59</span>
+<span id="60"> 60</span>
+<span id="61"> 61</span>
+<span id="62"> 62</span>
+<span id="63"> 63</span>
+<span id="64"> 64</span>
+<span id="65"> 65</span>
+<span id="66"> 66</span>
+<span id="67"> 67</span>
+<span id="68"> 68</span>
+<span id="69"> 69</span>
+<span id="70"> 70</span>
+<span id="71"> 71</span>
+<span id="72"> 72</span>
+<span id="73"> 73</span>
+<span id="74"> 74</span>
+<span id="75"> 75</span>
+<span id="76"> 76</span>
+<span id="77"> 77</span>
+<span id="78"> 78</span>
+<span id="79"> 79</span>
+<span id="80"> 80</span>
+<span id="81"> 81</span>
+<span id="82"> 82</span>
+<span id="83"> 83</span>
+<span id="84"> 84</span>
+<span id="85"> 85</span>
+<span id="86"> 86</span>
+<span id="87"> 87</span>
+<span id="88"> 88</span>
+<span id="89"> 89</span>
+<span id="90"> 90</span>
+<span id="91"> 91</span>
+<span id="92"> 92</span>
+<span id="93"> 93</span>
+<span id="94"> 94</span>
+<span id="95"> 95</span>
+<span id="96"> 96</span>
+<span id="97"> 97</span>
+<span id="98"> 98</span>
+<span id="99"> 99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+</pre><pre class='rust '>
+<span class='doccomment'>//! Naming and identifying languages.  We use </span>
+
+<span class='kw'>use</span> <span class='ident'>cld2</span>;
+<span class='kw'>use</span> <span class='ident'>rustc_serialize</span>::<span class='ident'>json</span>::{<span class='ident'>ToJson</span>, <span class='ident'>Json</span>};
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ascii</span>::<span class='ident'>AsciiExt</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::<span class='ident'>HashMap</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>iter</span>::<span class='ident'>FromIterator</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>str</span>::<span class='ident'>from_utf8</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>result</span>;
+
+<span class='kw'>use</span> <span class='ident'>err</span>::{<span class='ident'>err_str</span>, <span class='prelude-ty'>Result</span>};
+
+<span class='comment'>// Use the third-party `lazy_static!` macro to declare variables that will</span>
+<span class='comment'>// initialized the first time we use them.</span>
+<span class='macro'>lazy_static</span><span class='macro'>!</span> {
+    <span class='doccomment'>/// Maps ISO 639 codes to their preferred internal forms.  Based on</span>
+    <span class='doccomment'>/// http://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt</span>
+    <span class='kw'>static</span> <span class='kw-2'>ref</span> <span class='ident'>CANONICAL_CODE</span>: <span class='ident'>HashMap</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>, <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> {
+        <span class='ident'>HashMap</span>::<span class='ident'>from_iter</span>([
+            (<span class='string'>&quot;aar&quot;</span>, <span class='string'>&quot;aa&quot;</span>), (<span class='string'>&quot;abk&quot;</span>, <span class='string'>&quot;ab&quot;</span>), (<span class='string'>&quot;afr&quot;</span>, <span class='string'>&quot;af&quot;</span>), (<span class='string'>&quot;aka&quot;</span>, <span class='string'>&quot;ak&quot;</span>),
+            (<span class='string'>&quot;alb&quot;</span>, <span class='string'>&quot;sq&quot;</span>), (<span class='string'>&quot;sqi&quot;</span>, <span class='string'>&quot;sq&quot;</span>), (<span class='string'>&quot;amh&quot;</span>, <span class='string'>&quot;am&quot;</span>), (<span class='string'>&quot;ara&quot;</span>, <span class='string'>&quot;ar&quot;</span>),
+            (<span class='string'>&quot;arg&quot;</span>, <span class='string'>&quot;an&quot;</span>), (<span class='string'>&quot;arm&quot;</span>, <span class='string'>&quot;hy&quot;</span>), (<span class='string'>&quot;hye&quot;</span>, <span class='string'>&quot;hy&quot;</span>), (<span class='string'>&quot;asm&quot;</span>, <span class='string'>&quot;as&quot;</span>),
+            (<span class='string'>&quot;ava&quot;</span>, <span class='string'>&quot;av&quot;</span>), (<span class='string'>&quot;ave&quot;</span>, <span class='string'>&quot;ae&quot;</span>), (<span class='string'>&quot;aym&quot;</span>, <span class='string'>&quot;ay&quot;</span>), (<span class='string'>&quot;aze&quot;</span>, <span class='string'>&quot;az&quot;</span>),
+            (<span class='string'>&quot;bak&quot;</span>, <span class='string'>&quot;ba&quot;</span>), (<span class='string'>&quot;bam&quot;</span>, <span class='string'>&quot;bm&quot;</span>), (<span class='string'>&quot;baq&quot;</span>, <span class='string'>&quot;eu&quot;</span>), (<span class='string'>&quot;eus&quot;</span>, <span class='string'>&quot;eu&quot;</span>),
+            (<span class='string'>&quot;bel&quot;</span>, <span class='string'>&quot;be&quot;</span>), (<span class='string'>&quot;ben&quot;</span>, <span class='string'>&quot;bn&quot;</span>), (<span class='string'>&quot;bih&quot;</span>, <span class='string'>&quot;bh&quot;</span>), (<span class='string'>&quot;bis&quot;</span>, <span class='string'>&quot;bi&quot;</span>),
+            (<span class='string'>&quot;bos&quot;</span>, <span class='string'>&quot;bs&quot;</span>), (<span class='string'>&quot;bre&quot;</span>, <span class='string'>&quot;br&quot;</span>), (<span class='string'>&quot;bul&quot;</span>, <span class='string'>&quot;bg&quot;</span>), (<span class='string'>&quot;bur&quot;</span>, <span class='string'>&quot;my&quot;</span>),
+            (<span class='string'>&quot;mya&quot;</span>, <span class='string'>&quot;my&quot;</span>), (<span class='string'>&quot;cat&quot;</span>, <span class='string'>&quot;ca&quot;</span>), (<span class='string'>&quot;cha&quot;</span>, <span class='string'>&quot;ch&quot;</span>), (<span class='string'>&quot;che&quot;</span>, <span class='string'>&quot;ce&quot;</span>),
+            (<span class='string'>&quot;chi&quot;</span>, <span class='string'>&quot;zh&quot;</span>), (<span class='string'>&quot;zho&quot;</span>, <span class='string'>&quot;zh&quot;</span>), (<span class='string'>&quot;chu&quot;</span>, <span class='string'>&quot;cu&quot;</span>), (<span class='string'>&quot;chv&quot;</span>, <span class='string'>&quot;cv&quot;</span>),
+            (<span class='string'>&quot;cor&quot;</span>, <span class='string'>&quot;kw&quot;</span>), (<span class='string'>&quot;cos&quot;</span>, <span class='string'>&quot;co&quot;</span>), (<span class='string'>&quot;cre&quot;</span>, <span class='string'>&quot;cr&quot;</span>), (<span class='string'>&quot;ces&quot;</span>, <span class='string'>&quot;cs&quot;</span>),
+            (<span class='string'>&quot;cze&quot;</span>, <span class='string'>&quot;cs&quot;</span>), (<span class='string'>&quot;dan&quot;</span>, <span class='string'>&quot;da&quot;</span>), (<span class='string'>&quot;div&quot;</span>, <span class='string'>&quot;dv&quot;</span>), (<span class='string'>&quot;dut&quot;</span>, <span class='string'>&quot;nl&quot;</span>),
+            (<span class='string'>&quot;nld&quot;</span>, <span class='string'>&quot;nl&quot;</span>), (<span class='string'>&quot;dzo&quot;</span>, <span class='string'>&quot;dz&quot;</span>), (<span class='string'>&quot;eng&quot;</span>, <span class='string'>&quot;en&quot;</span>), (<span class='string'>&quot;epo&quot;</span>, <span class='string'>&quot;eo&quot;</span>),
+            (<span class='string'>&quot;est&quot;</span>, <span class='string'>&quot;et&quot;</span>), (<span class='string'>&quot;ewe&quot;</span>, <span class='string'>&quot;ee&quot;</span>), (<span class='string'>&quot;fao&quot;</span>, <span class='string'>&quot;fo&quot;</span>), (<span class='string'>&quot;fij&quot;</span>, <span class='string'>&quot;fj&quot;</span>),
+            (<span class='string'>&quot;fin&quot;</span>, <span class='string'>&quot;fi&quot;</span>), (<span class='string'>&quot;fra&quot;</span>, <span class='string'>&quot;fr&quot;</span>), (<span class='string'>&quot;fre&quot;</span>, <span class='string'>&quot;fr&quot;</span>), (<span class='string'>&quot;fry&quot;</span>, <span class='string'>&quot;fy&quot;</span>),
+            (<span class='string'>&quot;ful&quot;</span>, <span class='string'>&quot;ff&quot;</span>), (<span class='string'>&quot;geo&quot;</span>, <span class='string'>&quot;ka&quot;</span>), (<span class='string'>&quot;kat&quot;</span>, <span class='string'>&quot;ka&quot;</span>), (<span class='string'>&quot;deu&quot;</span>, <span class='string'>&quot;de&quot;</span>),
+            (<span class='string'>&quot;ger&quot;</span>, <span class='string'>&quot;de&quot;</span>), (<span class='string'>&quot;gla&quot;</span>, <span class='string'>&quot;gd&quot;</span>), (<span class='string'>&quot;gle&quot;</span>, <span class='string'>&quot;ga&quot;</span>), (<span class='string'>&quot;glg&quot;</span>, <span class='string'>&quot;gl&quot;</span>),
+            (<span class='string'>&quot;glv&quot;</span>, <span class='string'>&quot;gv&quot;</span>), (<span class='string'>&quot;ell&quot;</span>, <span class='string'>&quot;el&quot;</span>), (<span class='string'>&quot;gre&quot;</span>, <span class='string'>&quot;el&quot;</span>), (<span class='string'>&quot;grn&quot;</span>, <span class='string'>&quot;gn&quot;</span>),
+            (<span class='string'>&quot;guj&quot;</span>, <span class='string'>&quot;gu&quot;</span>), (<span class='string'>&quot;hat&quot;</span>, <span class='string'>&quot;ht&quot;</span>), (<span class='string'>&quot;hau&quot;</span>, <span class='string'>&quot;ha&quot;</span>), (<span class='string'>&quot;heb&quot;</span>, <span class='string'>&quot;he&quot;</span>),
+            (<span class='string'>&quot;her&quot;</span>, <span class='string'>&quot;hz&quot;</span>), (<span class='string'>&quot;hin&quot;</span>, <span class='string'>&quot;hi&quot;</span>), (<span class='string'>&quot;hmo&quot;</span>, <span class='string'>&quot;ho&quot;</span>), (<span class='string'>&quot;hrv&quot;</span>, <span class='string'>&quot;hr&quot;</span>),
+            (<span class='string'>&quot;hun&quot;</span>, <span class='string'>&quot;hu&quot;</span>), (<span class='string'>&quot;ibo&quot;</span>, <span class='string'>&quot;ig&quot;</span>), (<span class='string'>&quot;ice&quot;</span>, <span class='string'>&quot;is&quot;</span>), (<span class='string'>&quot;isl&quot;</span>, <span class='string'>&quot;is&quot;</span>),
+            (<span class='string'>&quot;ido&quot;</span>, <span class='string'>&quot;io&quot;</span>), (<span class='string'>&quot;iii&quot;</span>, <span class='string'>&quot;ii&quot;</span>), (<span class='string'>&quot;iku&quot;</span>, <span class='string'>&quot;iu&quot;</span>), (<span class='string'>&quot;ile&quot;</span>, <span class='string'>&quot;ie&quot;</span>),
+            (<span class='string'>&quot;ina&quot;</span>, <span class='string'>&quot;ia&quot;</span>), (<span class='string'>&quot;ind&quot;</span>, <span class='string'>&quot;id&quot;</span>), (<span class='string'>&quot;ipk&quot;</span>, <span class='string'>&quot;ik&quot;</span>), (<span class='string'>&quot;ita&quot;</span>, <span class='string'>&quot;it&quot;</span>),
+            (<span class='string'>&quot;jav&quot;</span>, <span class='string'>&quot;jv&quot;</span>), (<span class='string'>&quot;jpn&quot;</span>, <span class='string'>&quot;ja&quot;</span>), (<span class='string'>&quot;kal&quot;</span>, <span class='string'>&quot;kl&quot;</span>), (<span class='string'>&quot;kan&quot;</span>, <span class='string'>&quot;kn&quot;</span>),
+            (<span class='string'>&quot;kas&quot;</span>, <span class='string'>&quot;ks&quot;</span>), (<span class='string'>&quot;kau&quot;</span>, <span class='string'>&quot;kr&quot;</span>), (<span class='string'>&quot;kaz&quot;</span>, <span class='string'>&quot;kk&quot;</span>), (<span class='string'>&quot;khm&quot;</span>, <span class='string'>&quot;km&quot;</span>),
+            (<span class='string'>&quot;kik&quot;</span>, <span class='string'>&quot;ki&quot;</span>), (<span class='string'>&quot;kin&quot;</span>, <span class='string'>&quot;rw&quot;</span>), (<span class='string'>&quot;kir&quot;</span>, <span class='string'>&quot;ky&quot;</span>), (<span class='string'>&quot;kom&quot;</span>, <span class='string'>&quot;kv&quot;</span>),
+            (<span class='string'>&quot;kon&quot;</span>, <span class='string'>&quot;kg&quot;</span>), (<span class='string'>&quot;kor&quot;</span>, <span class='string'>&quot;ko&quot;</span>), (<span class='string'>&quot;kua&quot;</span>, <span class='string'>&quot;kj&quot;</span>), (<span class='string'>&quot;kur&quot;</span>, <span class='string'>&quot;ku&quot;</span>),
+            (<span class='string'>&quot;lao&quot;</span>, <span class='string'>&quot;lo&quot;</span>), (<span class='string'>&quot;lat&quot;</span>, <span class='string'>&quot;la&quot;</span>), (<span class='string'>&quot;lav&quot;</span>, <span class='string'>&quot;lv&quot;</span>), (<span class='string'>&quot;lim&quot;</span>, <span class='string'>&quot;li&quot;</span>),
+            (<span class='string'>&quot;lin&quot;</span>, <span class='string'>&quot;ln&quot;</span>), (<span class='string'>&quot;lit&quot;</span>, <span class='string'>&quot;lt&quot;</span>), (<span class='string'>&quot;ltz&quot;</span>, <span class='string'>&quot;lb&quot;</span>), (<span class='string'>&quot;lub&quot;</span>, <span class='string'>&quot;lu&quot;</span>),
+            (<span class='string'>&quot;lug&quot;</span>, <span class='string'>&quot;lg&quot;</span>), (<span class='string'>&quot;mac&quot;</span>, <span class='string'>&quot;mk&quot;</span>), (<span class='string'>&quot;mkd&quot;</span>, <span class='string'>&quot;mk&quot;</span>), (<span class='string'>&quot;mah&quot;</span>, <span class='string'>&quot;mh&quot;</span>),
+            (<span class='string'>&quot;mal&quot;</span>, <span class='string'>&quot;ml&quot;</span>), (<span class='string'>&quot;mao&quot;</span>, <span class='string'>&quot;mi&quot;</span>), (<span class='string'>&quot;mri&quot;</span>, <span class='string'>&quot;mi&quot;</span>), (<span class='string'>&quot;mar&quot;</span>, <span class='string'>&quot;mr&quot;</span>),
+            (<span class='string'>&quot;may&quot;</span>, <span class='string'>&quot;ms&quot;</span>), (<span class='string'>&quot;msa&quot;</span>, <span class='string'>&quot;ms&quot;</span>), (<span class='string'>&quot;mlg&quot;</span>, <span class='string'>&quot;mg&quot;</span>), (<span class='string'>&quot;mlt&quot;</span>, <span class='string'>&quot;mt&quot;</span>),
+            (<span class='string'>&quot;mon&quot;</span>, <span class='string'>&quot;mn&quot;</span>), (<span class='string'>&quot;nau&quot;</span>, <span class='string'>&quot;na&quot;</span>), (<span class='string'>&quot;nav&quot;</span>, <span class='string'>&quot;nv&quot;</span>), (<span class='string'>&quot;nbl&quot;</span>, <span class='string'>&quot;nr&quot;</span>),
+            (<span class='string'>&quot;nde&quot;</span>, <span class='string'>&quot;nd&quot;</span>), (<span class='string'>&quot;ndo&quot;</span>, <span class='string'>&quot;ng&quot;</span>), (<span class='string'>&quot;nep&quot;</span>, <span class='string'>&quot;ne&quot;</span>), (<span class='string'>&quot;nno&quot;</span>, <span class='string'>&quot;nn&quot;</span>),
+            (<span class='string'>&quot;nob&quot;</span>, <span class='string'>&quot;nb&quot;</span>), (<span class='string'>&quot;nor&quot;</span>, <span class='string'>&quot;no&quot;</span>), (<span class='string'>&quot;nya&quot;</span>, <span class='string'>&quot;ny&quot;</span>), (<span class='string'>&quot;oci&quot;</span>, <span class='string'>&quot;oc&quot;</span>),
+            (<span class='string'>&quot;oji&quot;</span>, <span class='string'>&quot;oj&quot;</span>), (<span class='string'>&quot;ori&quot;</span>, <span class='string'>&quot;or&quot;</span>), (<span class='string'>&quot;orm&quot;</span>, <span class='string'>&quot;om&quot;</span>), (<span class='string'>&quot;oss&quot;</span>, <span class='string'>&quot;os&quot;</span>),
+            (<span class='string'>&quot;pan&quot;</span>, <span class='string'>&quot;pa&quot;</span>), (<span class='string'>&quot;fas&quot;</span>, <span class='string'>&quot;fa&quot;</span>), (<span class='string'>&quot;per&quot;</span>, <span class='string'>&quot;fa&quot;</span>), (<span class='string'>&quot;pli&quot;</span>, <span class='string'>&quot;pi&quot;</span>),
+            (<span class='string'>&quot;pol&quot;</span>, <span class='string'>&quot;pl&quot;</span>), (<span class='string'>&quot;por&quot;</span>, <span class='string'>&quot;pt&quot;</span>), (<span class='string'>&quot;pus&quot;</span>, <span class='string'>&quot;ps&quot;</span>), (<span class='string'>&quot;que&quot;</span>, <span class='string'>&quot;qu&quot;</span>),
+            (<span class='string'>&quot;roh&quot;</span>, <span class='string'>&quot;rm&quot;</span>), (<span class='string'>&quot;ron&quot;</span>, <span class='string'>&quot;ro&quot;</span>), (<span class='string'>&quot;rum&quot;</span>, <span class='string'>&quot;ro&quot;</span>), (<span class='string'>&quot;run&quot;</span>, <span class='string'>&quot;rn&quot;</span>),
+            (<span class='string'>&quot;rus&quot;</span>, <span class='string'>&quot;ru&quot;</span>), (<span class='string'>&quot;sag&quot;</span>, <span class='string'>&quot;sg&quot;</span>), (<span class='string'>&quot;san&quot;</span>, <span class='string'>&quot;sa&quot;</span>), (<span class='string'>&quot;sin&quot;</span>, <span class='string'>&quot;si&quot;</span>),
+            (<span class='string'>&quot;slk&quot;</span>, <span class='string'>&quot;sk&quot;</span>), (<span class='string'>&quot;slo&quot;</span>, <span class='string'>&quot;sk&quot;</span>), (<span class='string'>&quot;slv&quot;</span>, <span class='string'>&quot;sl&quot;</span>), (<span class='string'>&quot;sme&quot;</span>, <span class='string'>&quot;se&quot;</span>),
+            (<span class='string'>&quot;smo&quot;</span>, <span class='string'>&quot;sm&quot;</span>), (<span class='string'>&quot;sna&quot;</span>, <span class='string'>&quot;sn&quot;</span>), (<span class='string'>&quot;snd&quot;</span>, <span class='string'>&quot;sd&quot;</span>), (<span class='string'>&quot;som&quot;</span>, <span class='string'>&quot;so&quot;</span>),
+            (<span class='string'>&quot;sot&quot;</span>, <span class='string'>&quot;st&quot;</span>), (<span class='string'>&quot;spa&quot;</span>, <span class='string'>&quot;es&quot;</span>), (<span class='string'>&quot;srd&quot;</span>, <span class='string'>&quot;sc&quot;</span>), (<span class='string'>&quot;srp&quot;</span>, <span class='string'>&quot;sr&quot;</span>),
+            (<span class='string'>&quot;ssw&quot;</span>, <span class='string'>&quot;ss&quot;</span>), (<span class='string'>&quot;sun&quot;</span>, <span class='string'>&quot;su&quot;</span>), (<span class='string'>&quot;swa&quot;</span>, <span class='string'>&quot;sw&quot;</span>), (<span class='string'>&quot;swe&quot;</span>, <span class='string'>&quot;sv&quot;</span>),
+            (<span class='string'>&quot;tah&quot;</span>, <span class='string'>&quot;ty&quot;</span>), (<span class='string'>&quot;tam&quot;</span>, <span class='string'>&quot;ta&quot;</span>), (<span class='string'>&quot;tat&quot;</span>, <span class='string'>&quot;tt&quot;</span>), (<span class='string'>&quot;tel&quot;</span>, <span class='string'>&quot;te&quot;</span>),
+            (<span class='string'>&quot;tgk&quot;</span>, <span class='string'>&quot;tg&quot;</span>), (<span class='string'>&quot;tgl&quot;</span>, <span class='string'>&quot;tl&quot;</span>), (<span class='string'>&quot;tha&quot;</span>, <span class='string'>&quot;th&quot;</span>), (<span class='string'>&quot;bod&quot;</span>, <span class='string'>&quot;bo&quot;</span>),
+            (<span class='string'>&quot;tib&quot;</span>, <span class='string'>&quot;bo&quot;</span>), (<span class='string'>&quot;tir&quot;</span>, <span class='string'>&quot;ti&quot;</span>), (<span class='string'>&quot;ton&quot;</span>, <span class='string'>&quot;to&quot;</span>), (<span class='string'>&quot;tsn&quot;</span>, <span class='string'>&quot;tn&quot;</span>),
+            (<span class='string'>&quot;tso&quot;</span>, <span class='string'>&quot;ts&quot;</span>), (<span class='string'>&quot;tuk&quot;</span>, <span class='string'>&quot;tk&quot;</span>), (<span class='string'>&quot;tur&quot;</span>, <span class='string'>&quot;tr&quot;</span>), (<span class='string'>&quot;twi&quot;</span>, <span class='string'>&quot;tw&quot;</span>),
+            (<span class='string'>&quot;uig&quot;</span>, <span class='string'>&quot;ug&quot;</span>), (<span class='string'>&quot;ukr&quot;</span>, <span class='string'>&quot;uk&quot;</span>), (<span class='string'>&quot;urd&quot;</span>, <span class='string'>&quot;ur&quot;</span>), (<span class='string'>&quot;uzb&quot;</span>, <span class='string'>&quot;uz&quot;</span>),
+            (<span class='string'>&quot;ven&quot;</span>, <span class='string'>&quot;ve&quot;</span>), (<span class='string'>&quot;vie&quot;</span>, <span class='string'>&quot;vi&quot;</span>), (<span class='string'>&quot;vol&quot;</span>, <span class='string'>&quot;vo&quot;</span>), (<span class='string'>&quot;cym&quot;</span>, <span class='string'>&quot;cy&quot;</span>),
+            (<span class='string'>&quot;wel&quot;</span>, <span class='string'>&quot;cy&quot;</span>), (<span class='string'>&quot;wln&quot;</span>, <span class='string'>&quot;wa&quot;</span>), (<span class='string'>&quot;wol&quot;</span>, <span class='string'>&quot;wo&quot;</span>), (<span class='string'>&quot;xho&quot;</span>, <span class='string'>&quot;xh&quot;</span>),
+            (<span class='string'>&quot;yid&quot;</span>, <span class='string'>&quot;yi&quot;</span>), (<span class='string'>&quot;yor&quot;</span>, <span class='string'>&quot;yo&quot;</span>), (<span class='string'>&quot;zha&quot;</span>, <span class='string'>&quot;za&quot;</span>), (<span class='string'>&quot;zul&quot;</span>, <span class='string'>&quot;zu&quot;</span>),
+        ].<span class='ident'>iter</span>().<span class='ident'>cloned</span>())
+    };
+}
+
+<span class='doccomment'>/// A language identifier.</span>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Copy</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Eq</span>)]</span>
+<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Lang</span> {
+    <span class='ident'>code</span>: [<span class='ident'>u8</span>; <span class='number'>3</span>],
+}
+
+<span class='kw'>impl</span> <span class='ident'>Lang</span> {
+    <span class='doccomment'>/// Specify a language using an ISO 639-1, -2/T or -2/B code.  We know</span>
+    <span class='doccomment'>/// that the same language is sometimes represented by more than one</span>
+    <span class='doccomment'>/// code, and we do our best to treat equivalent codes as the same</span>
+    <span class='doccomment'>/// language.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// ```</span>
+    <span class='doccomment'>/// use substudy::lang::Lang;</span>
+    <span class='doccomment'>/// assert_eq!(Lang::iso639(&quot;en&quot;).unwrap(), Lang::iso639(&quot;eng&quot;).unwrap());</span>
+    <span class='doccomment'>/// assert!(Lang::iso639(&quot;en&quot;).unwrap() != Lang::iso639(&quot;fr&quot;).unwrap());</span>
+    <span class='doccomment'>/// assert!(Lang::iso639(&quot;abcd&quot;).is_err());</span>
+    <span class='doccomment'>/// ```</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>iso639</span>(<span class='ident'>code</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Lang</span><span class='op'>&gt;</span> {
+        <span class='kw'>let</span> <span class='ident'>canon</span> <span class='op'>=</span> <span class='ident'>CANONICAL_CODE</span>.<span class='ident'>get</span>(<span class='ident'>code</span>).<span class='ident'>cloned</span>().<span class='ident'>unwrap_or</span>(<span class='ident'>code</span>);
+        <span class='kw'>let</span> <span class='ident'>c</span> <span class='op'>=</span> <span class='ident'>canon</span>.<span class='ident'>as_bytes</span>();
+        <span class='kw'>match</span> (<span class='ident'>canon</span>.<span class='ident'>is_ascii</span>(), <span class='ident'>c</span>.<span class='ident'>len</span>()) {
+            (<span class='boolval'>true</span>, <span class='number'>2</span>) <span class='op'>=&gt;</span> { <span class='prelude-val'>Ok</span>(<span class='ident'>Lang</span> { <span class='ident'>code</span>: [<span class='ident'>c</span>[<span class='number'>0</span>], <span class='ident'>c</span>[<span class='number'>1</span>], <span class='string'>b&#39; &#39;</span>] }) }
+            (<span class='boolval'>true</span>, <span class='number'>3</span>) <span class='op'>=&gt;</span> { <span class='prelude-val'>Ok</span>(<span class='ident'>Lang</span> { <span class='ident'>code</span>: [<span class='ident'>c</span>[<span class='number'>0</span>], <span class='ident'>c</span>[<span class='number'>1</span>], <span class='ident'>c</span>[<span class='number'>2</span>]] }) }
+            _ <span class='op'>=&gt;</span> { <span class='prelude-val'>Err</span>(<span class='ident'>err_str</span>(<span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;Unsupported language code: {}&quot;</span>, <span class='ident'>code</span>))) }
+        }
+    }
+
+    <span class='doccomment'>/// Get the normalized language code as a `&amp;str`.  Prefers ISO 639-1</span>
+    <span class='doccomment'>/// codes when possible, and -2/T if that&#39;s the best it can do.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// ```</span>
+    <span class='doccomment'>/// use substudy::lang::Lang;</span>
+    <span class='doccomment'>/// assert_eq!(&quot;en&quot;, Lang::iso639(&quot;en&quot;).unwrap().as_str());</span>
+    <span class='doccomment'>/// assert_eq!(&quot;en&quot;, Lang::iso639(&quot;eng&quot;).unwrap().as_str());</span>
+    <span class='doccomment'>/// ```</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>as_str</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>str</span> {
+        <span class='comment'>// We could actually use the unsafe from_utf8_unchecked here.</span>
+        <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>code</span>[<span class='number'>2</span>] <span class='op'>==</span> <span class='string'>b&#39; &#39;</span> {
+            <span class='ident'>from_utf8</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>code</span>[..<span class='number'>2</span>]).<span class='ident'>unwrap</span>()
+        } <span class='kw'>else</span> {
+            <span class='ident'>from_utf8</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>code</span>).<span class='ident'>unwrap</span>()
+        }
+    }
+
+    <span class='doccomment'>/// Try to determine the language of `text`.  We return `None` unless</span>
+    <span class='doccomment'>/// we&#39;re pretty sure.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>for_text</span>(<span class='ident'>text</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Lang</span><span class='op'>&gt;</span> {
+        <span class='kw'>match</span> <span class='ident'>cld2</span>::<span class='ident'>detect_language</span>(<span class='kw-2'>&amp;</span><span class='ident'>text</span>, <span class='ident'>cld2</span>::<span class='ident'>Format</span>::<span class='ident'>Text</span>) {
+            (<span class='prelude-val'>Some</span>(<span class='ident'>cld2</span>::<span class='ident'>Lang</span>(<span class='ident'>code</span>)), <span class='ident'>cld2</span>::<span class='ident'>Reliable</span>) <span class='op'>=&gt;</span>
+                <span class='ident'>Lang</span>::<span class='ident'>iso639</span>(<span class='ident'>code</span>).<span class='ident'>ok</span>(),
+            _ <span class='op'>=&gt;</span> <span class='prelude-val'>None</span>,
+        }
+    }
+}
+
+<span class='kw'>impl</span> <span class='ident'>fmt</span>::<span class='ident'>Debug</span> <span class='kw'>for</span> <span class='ident'>Lang</span> {
+    <span class='kw'>fn</span> <span class='ident'>fmt</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>f</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>fmt</span>::<span class='ident'>Formatter</span>) <span class='op'>-&gt;</span> <span class='ident'>result</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>fmt</span>::<span class='ident'>Error</span><span class='op'>&gt;</span> {
+        <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>f</span>, <span class='string'>&quot;{}&quot;</span>, <span class='self'>self</span>.<span class='ident'>as_str</span>())
+    }
+}
+
+<span class='kw'>impl</span> <span class='ident'>fmt</span>::<span class='ident'>Display</span> <span class='kw'>for</span> <span class='ident'>Lang</span> {
+    <span class='kw'>fn</span> <span class='ident'>fmt</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>f</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>fmt</span>::<span class='ident'>Formatter</span>) <span class='op'>-&gt;</span> <span class='ident'>result</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>fmt</span>::<span class='ident'>Error</span><span class='op'>&gt;</span> {
+        <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>f</span>, <span class='string'>&quot;{}&quot;</span>, <span class='self'>self</span>.<span class='ident'>as_str</span>())
+    }
+}
+
+<span class='kw'>impl</span> <span class='ident'>ToJson</span> <span class='kw'>for</span> <span class='ident'>Lang</span> {
+    <span class='kw'>fn</span> <span class='ident'>to_json</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Json</span> {
+        <span class='self'>self</span>.<span class='ident'>as_str</span>().<span class='ident'>to_json</span>()
+    }
+}
+</pre>
+</section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "substudy";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

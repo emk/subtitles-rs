@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["align_available_files","If we have two files, align them.  If one is missing, just return its subtitles by themselves."],["align_files","Align two subtitle files, merging subtitles as necessary."],["combine_files","Combine two subtitle files into an aligned file."]]});

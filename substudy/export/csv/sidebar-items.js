@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["export_csv","Export the video and subtitles as a CSV file with accompanying media files, for import into Anki."]]});

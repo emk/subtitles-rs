@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["clean_subtitle_file","Clean up various issues with subtitle files, including:"],["strip_formatting","Remove the formatting from a subtitle."]]});

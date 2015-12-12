@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["TemplateError","Template parsing error"]],"struct":[["Context","The context wrap data you render on your templates."],["Handlebars",""],["Helper",""],["RenderContext","The context of a render call"],["RenderError",""],["Template",""]],"trait":[["HelperDef","Helper Definition"],["JsonRender",""],["JsonTruthy",""],["Renderable",""]]});

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `detect_language` fn in crate `cld2`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, detect_language">
+
+    <title>cld2::detect_language - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>cld2</a></p><script>window.sidebarCurrent = {name: 'detect_language', ty: 'fn', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content fn">
+<h1 class='fqn'><span class='in-band'>Function <a href='index.html'>cld2</a>::<wbr><a class='fn' href=''>detect_language</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-224' class='srclink' href='../src/cld2/detection.rs.html#64-69' title='goto source code'>[src]</a></span></h1>
+<pre class='rust fn'>pub fn detect_language(text: &amp;<a href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>, format: <a class='enum' href='../cld2/enum.Format.html' title='cld2::Format'>Format</a>) -&gt; <a href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(<a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../cld2/struct.Lang.html' title='cld2::Lang'>Lang</a>&gt;, <a class='enum' href='../cld2/enum.Reliability.html' title='cld2::Reliability'>Reliability</a>)</a></pre><div class='docblock'><p>Detect the language of the input text.</p>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>cld2</span>::{<span class='ident'>detect_language</span>, <span class='ident'>Format</span>, <span class='ident'>Reliable</span>, <span class='ident'>Unreliable</span>, <span class='ident'>Lang</span>};
+
+<span class='kw'>let</span> <span class='ident'>text</span> <span class='op'>=</span> <span class='string'>&quot;It is an ancient Mariner,
+And he stoppeth one of three.
+&#39;By thy long grey beard and glittering eye,
+Now wherefore stopp&#39;st thou me?&quot;</span>;
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>((<span class='prelude-val'>Some</span>(<span class='ident'>Lang</span>(<span class='string'>&quot;en&quot;</span>)), <span class='ident'>Reliable</span>),
+           <span class='ident'>detect_language</span>(<span class='ident'>text</span>, <span class='ident'>Format</span>::<span class='ident'>Text</span>));
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>((<span class='prelude-val'>None</span>, <span class='ident'>Unreliable</span>),
+           <span class='ident'>detect_language</span>(<span class='string'>&quot;blah&quot;</span>, <span class='ident'>Format</span>::<span class='ident'>Html</span>));</pre>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "cld2";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script async src="../search-index.js"></script>
+</body>
+</html>

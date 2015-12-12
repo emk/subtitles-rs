@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-0a35038f75765ae4/cld2-sys-0.1.0/src/encodings.rs`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang">
+
+    <title>encodings.rs.html -- source</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content source"><pre class="line-numbers"><span id="1"> 1</span>
+<span id="2"> 2</span>
+<span id="3"> 3</span>
+<span id="4"> 4</span>
+<span id="5"> 5</span>
+<span id="6"> 6</span>
+<span id="7"> 7</span>
+<span id="8"> 8</span>
+<span id="9"> 9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+</pre><pre class='rust '>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>,<span class='ident'>PartialEq</span>,<span class='ident'>Eq</span>,<span class='ident'>PartialOrd</span>,<span class='ident'>Ord</span>,<span class='ident'>Clone</span>,<span class='ident'>Copy</span>)]</span>
+<span class='attribute'>#[<span class='ident'>repr</span>(<span class='ident'>C</span>)]</span>
+<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>Encoding</span> {
+    <span class='ident'>ISO_8859_1</span>           <span class='op'>=</span>  <span class='number'>0</span>,  <span class='comment'>//   ASCII</span>
+    <span class='ident'>ISO_8859_2</span>           <span class='op'>=</span>  <span class='number'>1</span>,  <span class='comment'>//   Latin2</span>
+    <span class='ident'>ISO_8859_3</span>           <span class='op'>=</span>  <span class='number'>2</span>,  <span class='comment'>//</span>
+    <span class='ident'>ISO_8859_4</span>           <span class='op'>=</span>  <span class='number'>3</span>,  <span class='comment'>//   Latin4</span>
+    <span class='ident'>ISO_8859_5</span>           <span class='op'>=</span>  <span class='number'>4</span>,  <span class='comment'>//   ISO-8859-5</span>
+    <span class='ident'>ISO_8859_6</span>           <span class='op'>=</span>  <span class='number'>5</span>,  <span class='comment'>//   Arabic</span>
+    <span class='ident'>ISO_8859_7</span>           <span class='op'>=</span>  <span class='number'>6</span>,  <span class='comment'>//   Greek</span>
+    <span class='ident'>ISO_8859_8</span>           <span class='op'>=</span>  <span class='number'>7</span>,  <span class='comment'>//   Hebrew</span>
+    <span class='ident'>ISO_8859_9</span>           <span class='op'>=</span>  <span class='number'>8</span>,  <span class='comment'>//</span>
+    <span class='ident'>ISO_8859_10</span>          <span class='op'>=</span>  <span class='number'>9</span>,  <span class='comment'>//</span>
+    <span class='ident'>JAPANESE_EUC_JP</span>      <span class='op'>=</span> <span class='number'>10</span>,  <span class='comment'>//   EUC_JP</span>
+    <span class='ident'>JAPANESE_SHIFT_JIS</span>   <span class='op'>=</span> <span class='number'>11</span>,  <span class='comment'>//   SJS</span>
+    <span class='ident'>JAPANESE_JIS</span>         <span class='op'>=</span> <span class='number'>12</span>,  <span class='comment'>//   JIS</span>
+    <span class='ident'>CHINESE_BIG5</span>         <span class='op'>=</span> <span class='number'>13</span>,  <span class='comment'>//   BIG5</span>
+    <span class='ident'>CHINESE_GB</span>           <span class='op'>=</span> <span class='number'>14</span>,  <span class='comment'>//   GB</span>
+    <span class='ident'>CHINESE_EUC_CN</span>       <span class='op'>=</span> <span class='number'>15</span>,  <span class='comment'>// Misnamed. Should be EUC_TW. Was Basis Tech</span>
+    <span class='ident'>KOREAN_EUC_KR</span>        <span class='op'>=</span> <span class='number'>16</span>,  <span class='comment'>//   KSC</span>
+    <span class='ident'>UNICODE_UNUSED</span>       <span class='op'>=</span> <span class='number'>17</span>,  <span class='comment'>//   Unicode</span>
+    <span class='ident'>CHINESE_EUC_DEC</span>      <span class='op'>=</span> <span class='number'>18</span>,  <span class='comment'>// Misnamed. Should be EUC_TW. Was</span>
+    <span class='ident'>CHINESE_CNS</span>          <span class='op'>=</span> <span class='number'>19</span>,  <span class='comment'>// Misnamed. Should be EUC_TW. Was</span>
+    <span class='ident'>CHINESE_BIG5_CP950</span>   <span class='op'>=</span> <span class='number'>20</span>,  <span class='comment'>//   BIG5_CP950</span>
+    <span class='ident'>JAPANESE_CP932</span>       <span class='op'>=</span> <span class='number'>21</span>,  <span class='comment'>//   CP932</span>
+    <span class='ident'>UTF8</span>                 <span class='op'>=</span> <span class='number'>22</span>,
+    <span class='ident'>UNKNOWN_ENCODING</span>     <span class='op'>=</span> <span class='number'>23</span>,
+    <span class='ident'>ASCII_7BIT</span>           <span class='op'>=</span> <span class='number'>24</span>,  <span class='comment'>// ISO_8859_1 with all characters &lt;= 127.</span>
+    <span class='ident'>RUSSIAN_KOI8_R</span>       <span class='op'>=</span> <span class='number'>25</span>,  <span class='comment'>//   KOI8R</span>
+    <span class='ident'>RUSSIAN_CP1251</span>       <span class='op'>=</span> <span class='number'>26</span>,  <span class='comment'>//   CP1251</span>
+    <span class='ident'>MSFT_CP1252</span>          <span class='op'>=</span> <span class='number'>27</span>,  <span class='comment'>// 27: CP1252 aka MSFT euro ascii</span>
+    <span class='ident'>RUSSIAN_KOI8_RU</span>      <span class='op'>=</span> <span class='number'>28</span>,  <span class='comment'>// CP21866 aka KOI8-U, used for Ukrainian.</span>
+    <span class='ident'>MSFT_CP1250</span>          <span class='op'>=</span> <span class='number'>29</span>,  <span class='comment'>// CP1250 aka MSFT eastern european</span>
+    <span class='ident'>ISO_8859_15</span>          <span class='op'>=</span> <span class='number'>30</span>,  <span class='comment'>// aka ISO_8859_0 aka ISO_8859_1 euroized</span>
+    <span class='ident'>MSFT_CP1254</span>          <span class='op'>=</span> <span class='number'>31</span>,  <span class='comment'>// used for Turkish</span>
+    <span class='ident'>MSFT_CP1257</span>          <span class='op'>=</span> <span class='number'>32</span>,  <span class='comment'>// used in Baltic countries</span>
+    <span class='ident'>ISO_8859_11</span>          <span class='op'>=</span> <span class='number'>33</span>,  <span class='comment'>// aka TIS-620, used for Thai</span>
+    <span class='ident'>MSFT_CP874</span>           <span class='op'>=</span> <span class='number'>34</span>,  <span class='comment'>// used for Thai</span>
+    <span class='ident'>MSFT_CP1256</span>          <span class='op'>=</span> <span class='number'>35</span>,  <span class='comment'>// used for Arabic</span>
+    <span class='ident'>MSFT_CP1255</span>          <span class='op'>=</span> <span class='number'>36</span>,  <span class='comment'>// Logical Hebrew Microsoft</span>
+    <span class='ident'>ISO_8859_8_I</span>         <span class='op'>=</span> <span class='number'>37</span>,  <span class='comment'>// Iso Hebrew Logical</span>
+    <span class='ident'>HEBREW_VISUAL</span>        <span class='op'>=</span> <span class='number'>38</span>,  <span class='comment'>// Iso Hebrew Visual</span>
+    <span class='ident'>CZECH_CP852</span>          <span class='op'>=</span> <span class='number'>39</span>,
+    <span class='ident'>CZECH_CSN_369103</span>     <span class='op'>=</span> <span class='number'>40</span>,  <span class='comment'>// aka ISO_IR_139 aka KOI8_CS</span>
+    <span class='ident'>MSFT_CP1253</span>          <span class='op'>=</span> <span class='number'>41</span>,  <span class='comment'>// used for Greek</span>
+    <span class='ident'>RUSSIAN_CP866</span>        <span class='op'>=</span> <span class='number'>42</span>,
+    <span class='ident'>ISO_8859_13</span>          <span class='op'>=</span> <span class='number'>43</span>,
+    <span class='ident'>ISO_2022_KR</span>          <span class='op'>=</span> <span class='number'>44</span>,
+    <span class='ident'>GBK</span>                  <span class='op'>=</span> <span class='number'>45</span>,
+    <span class='ident'>GB18030</span>              <span class='op'>=</span> <span class='number'>46</span>,
+    <span class='ident'>BIG5_HKSCS</span>           <span class='op'>=</span> <span class='number'>47</span>,
+    <span class='ident'>ISO_2022_CN</span>          <span class='op'>=</span> <span class='number'>48</span>,
+    <span class='ident'>TSCII</span>                <span class='op'>=</span> <span class='number'>49</span>,
+    <span class='ident'>TAMIL_MONO</span>           <span class='op'>=</span> <span class='number'>50</span>,
+    <span class='ident'>TAMIL_BI</span>             <span class='op'>=</span> <span class='number'>51</span>,
+    <span class='ident'>JAGRAN</span>               <span class='op'>=</span> <span class='number'>52</span>,
+    <span class='ident'>MACINTOSH_ROMAN</span>      <span class='op'>=</span> <span class='number'>53</span>,
+    <span class='ident'>UTF7</span>                 <span class='op'>=</span> <span class='number'>54</span>,
+    <span class='ident'>BHASKAR</span>              <span class='op'>=</span> <span class='number'>55</span>,  <span class='comment'>// Indic encoding - Devanagari</span>
+    <span class='ident'>HTCHANAKYA</span>           <span class='op'>=</span> <span class='number'>56</span>,  <span class='comment'>// 56 Indic encoding - Devanagari</span>
+    <span class='ident'>UTF16BE</span>              <span class='op'>=</span> <span class='number'>57</span>,  <span class='comment'>// big-endian UTF-16</span>
+    <span class='ident'>UTF16LE</span>              <span class='op'>=</span> <span class='number'>58</span>,  <span class='comment'>// little-endian UTF-16</span>
+    <span class='ident'>UTF32BE</span>              <span class='op'>=</span> <span class='number'>59</span>,  <span class='comment'>// big-endian UTF-32</span>
+    <span class='ident'>UTF32LE</span>              <span class='op'>=</span> <span class='number'>60</span>,  <span class='comment'>// little-endian UTF-32</span>
+    <span class='ident'>BINARYENC</span>            <span class='op'>=</span> <span class='number'>61</span>,
+    <span class='ident'>HZ_GB_2312</span>           <span class='op'>=</span> <span class='number'>62</span>,
+    <span class='ident'>UTF8UTF8</span>             <span class='op'>=</span> <span class='number'>63</span>,
+    <span class='ident'>TAM_ELANGO</span>           <span class='op'>=</span> <span class='number'>64</span>,  <span class='comment'>// Elango - Tamil</span>
+    <span class='ident'>TAM_LTTMBARANI</span>       <span class='op'>=</span> <span class='number'>65</span>,  <span class='comment'>// Barani - Tamil</span>
+    <span class='ident'>TAM_SHREE</span>            <span class='op'>=</span> <span class='number'>66</span>,  <span class='comment'>// Shree - Tamil</span>
+    <span class='ident'>TAM_TBOOMIS</span>          <span class='op'>=</span> <span class='number'>67</span>,  <span class='comment'>// TBoomis - Tamil</span>
+    <span class='ident'>TAM_TMNEWS</span>           <span class='op'>=</span> <span class='number'>68</span>,  <span class='comment'>// TMNews - Tamil</span>
+    <span class='ident'>TAM_WEBTAMIL</span>         <span class='op'>=</span> <span class='number'>69</span>,  <span class='comment'>// Webtamil - Tamil</span>
+    <span class='ident'>KDDI_SHIFT_JIS</span>       <span class='op'>=</span> <span class='number'>70</span>,
+    <span class='ident'>DOCOMO_SHIFT_JIS</span>     <span class='op'>=</span> <span class='number'>71</span>,
+    <span class='ident'>SOFTBANK_SHIFT_JIS</span>   <span class='op'>=</span> <span class='number'>72</span>,
+    <span class='ident'>KDDI_ISO_2022_JP</span>     <span class='op'>=</span> <span class='number'>73</span>,
+    <span class='ident'>SOFTBANK_ISO_2022_JP</span> <span class='op'>=</span> <span class='number'>74</span>,
+}
+
+<span class='kw'>pub</span> <span class='kw'>static</span> <span class='ident'>NUM_ENCODINGS</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='number'>75</span>;
+</pre>
+</section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "cld2_sys";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

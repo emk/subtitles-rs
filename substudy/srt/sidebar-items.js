@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["format_time","Format seconds using the standard SRT time format."]],"struct":[["Subtitle","A single SRT-format subtitle, minus some of the optional fields used in various versions of the file format."],["SubtitleFile","The contents of an SRT-format subtitle file."]]});

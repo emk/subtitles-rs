@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["err_str","Create a new error from something that can be turned into a string."]],"type":[["Error","Our library's error class.  We just use a generic error type for everything; it works fine for our needs."],["Result","Our library's result type."]]});

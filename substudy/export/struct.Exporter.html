@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Exporter` struct in crate `substudy`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Exporter">
+
+    <title>substudy::export::Exporter - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>substudy</a>::<wbr><a href='index.html'>export</a></p><script>window.sidebarCurrent = {name: 'Exporter', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>substudy</a>::<wbr><a href='index.html'>export</a>::<wbr><a class='struct' href=''>Exporter</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-1528' class='srclink' href='../../src/substudy/export/exporter.rs.html#46-65' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Exporter {
+    // some fields omitted
+}</pre><div class='docblock'><p>Information about media file and associated subtitles that the user
+wants to export.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../substudy/export/struct.Exporter.html' title='substudy::export::Exporter'>Exporter</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>(video: <a class='struct' href='../../substudy/video/struct.Video.html' title='substudy::video::Video'>Video</a>, foreign_subtitles: <a class='struct' href='../../substudy/srt/struct.SubtitleFile.html' title='substudy::srt::SubtitleFile'>SubtitleFile</a>, native_subtitles: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../substudy/srt/struct.SubtitleFile.html' title='substudy::srt::SubtitleFile'>SubtitleFile</a>&gt;, label: &amp;<a href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='type' href='../../substudy/err/type.Result.html' title='substudy::err::Result'>Result</a>&lt;<a class='struct' href='../../substudy/export/struct.Exporter.html' title='substudy::export::Exporter'>Exporter</a>&gt;</code></h4>
+<div class='docblock'><p>Create a new exporter for the specified video and subtitles.  The
+<code>label</code> parameter will be used to construct an output directory
+name.</p>
+</div><h4 id='method.file_stem' class='method'><code>fn <a href='#method.file_stem' class='fnname'>file_stem</a>(&amp;self) -&gt; &amp;<a href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a></code></h4>
+<div class='docblock'><p>The base name of this file, with the directory and file extension
+removed.</p>
+</div><h4 id='method.title' class='method'><code>fn <a href='#method.title' class='fnname'>title</a>(&amp;self) -&gt; &amp;<a href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a></code></h4>
+<div class='docblock'><p>Return a title for this video.</p>
+</div><h4 id='method.video' class='method'><code>fn <a href='#method.video' class='fnname'>video</a>(&amp;self) -&gt; &amp;<a class='struct' href='../../substudy/video/struct.Video.html' title='substudy::video::Video'>Video</a></code></h4>
+<div class='docblock'><p>Get the video we&#39;re exporting.</p>
+</div><h4 id='method.foreign' class='method'><code>fn <a href='#method.foreign' class='fnname'>foreign</a>(&amp;self) -&gt; &amp;<a class='struct' href='../../substudy/export/struct.LanguageResources.html' title='substudy::export::LanguageResources'>LanguageResources</a></code></h4>
+<div class='docblock'><p>Get data related to the foreign language.</p>
+</div><h4 id='method.native' class='method'><code>fn <a href='#method.native' class='fnname'>native</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;<a class='struct' href='../../substudy/export/struct.LanguageResources.html' title='substudy::export::LanguageResources'>LanguageResources</a>&gt;</code></h4>
+<div class='docblock'><p>Get data related to the native language.</p>
+</div><h4 id='method.align' class='method'><code>fn <a href='#method.align' class='fnname'>align</a>(&amp;self) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(<a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../substudy/srt/struct.Subtitle.html' title='substudy::srt::Subtitle'>Subtitle</a>&gt;, <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../substudy/srt/struct.Subtitle.html' title='substudy::srt::Subtitle'>Subtitle</a>&gt;)</a>&gt;</code></h4>
+<div class='docblock'><p>Align our two sets of subtitles.</p>
+</div><h4 id='method.schedule_image_export' class='method'><code>fn <a href='#method.schedule_image_export' class='fnname'>schedule_image_export</a>(&amp;mut self, time: <a href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a></code></h4>
+<div class='docblock'><p>Schedule an export of the image at the specified time code.
+Returns the path to which the image will be written.</p>
+</div><h4 id='method.schedule_audio_export' class='method'><code>fn <a href='#method.schedule_audio_export' class='fnname'>schedule_audio_export</a>(&amp;mut self, lang: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../substudy/lang/struct.Lang.html' title='substudy::lang::Lang'>Lang</a>&gt;, period: <a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a>) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a></code></h4>
+<div class='docblock'><p>Schedule an export of the audio at the specified time period.
+Returns the path to which the audio will be written.</p>
+</div><h4 id='method.schedule_audio_export_ext' class='method'><code>fn <a href='#method.schedule_audio_export_ext' class='fnname'>schedule_audio_export_ext</a>(&amp;mut self, lang: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../substudy/lang/struct.Lang.html' title='substudy::lang::Lang'>Lang</a>&gt;, period: <a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a>, metadata: <a class='struct' href='../../substudy/video/struct.Id3Metadata.html' title='substudy::video::Id3Metadata'>Id3Metadata</a>) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a></code></h4>
+<div class='docblock'><p>Schedule an export of the audio at the specified time period, using
+the specified metadata.  Returns the path to which the audio will
+be written.</p>
+</div><h4 id='method.export_data_file' class='method'><code>fn <a href='#method.export_data_file' class='fnname'>export_data_file</a>&lt;P&gt;(&amp;self, rel_path: P, data: <a href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;[</a><a href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a><a href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>) -&gt; <a class='type' href='../../substudy/err/type.Result.html' title='substudy::err::Result'>Result</a>&lt;<a href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt; <span class='where'>where P: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.AsRef.html' title='core::convert::AsRef'>AsRef</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/std/path/struct.Path.html' title='std::path::Path'>Path</a>&gt;</span></code></h4>
+<div class='docblock'><p>Write a raw chunk of bytes to a file in our export directory.</p>
+</div><h4 id='method.finish_exports' class='method'><code>fn <a href='#method.finish_exports' class='fnname'>finish_exports</a>(&amp;mut self) -&gt; <a class='type' href='../../substudy/err/type.Result.html' title='substudy::err::Result'>Result</a>&lt;<a href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+<div class='docblock'><p>Finish all scheduled exports.</p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "substudy";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

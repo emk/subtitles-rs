@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `cld2_sys` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, cld2_sys">
+
+    <title>cld2_sys - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'cld2_sys', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>cld2_sys</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-0' class='srclink' href='../src/cld2_sys/lib.rs.html#1-154' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Unsafe, low-level wrapper around cld2, the &quot;compact language detector&quot;
+based on Chromium&#39;s code, plus a very thin C wrapper layer.  Normally
+you won&#39;t want to use this library directly unless you&#39;re writing
+your own cld2 wrapper library.</p>
+
+<p>If you need access to APIs which are not currently wrapped, please feel
+free to send pull requests!</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.CLDHints.html'
+                               title='cld2_sys::CLDHints'>CLDHints</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.ResultChunk.html'
+                               title='cld2_sys::ResultChunk'>ResultChunk</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                </table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='enum' href='enum.Encoding.html'
+                               title='cld2_sys::Encoding'>Encoding</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='enum' href='enum.Language.html'
+                               title='cld2_sys::Language'>Language</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                </table><h2 id='statics' class='section-header'><a href="#statics">Statics</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='static' href='static.NUM_ENCODINGS.html'
+                               title='cld2_sys::NUM_ENCODINGS'>NUM_ENCODINGS</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='static' href='static.NUM_LANGUAGES.html'
+                               title='cld2_sys::NUM_LANGUAGES'>NUM_LANGUAGES</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='static' href='static.kCLDFlagCr.html'
+                               title='cld2_sys::kCLDFlagCr'>kCLDFlagCr</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='static' href='static.kCLDFlagEcho.html'
+                               title='cld2_sys::kCLDFlagEcho'>kCLDFlagEcho</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='static' href='static.kCLDFlagHtml.html'
+                               title='cld2_sys::kCLDFlagHtml'>kCLDFlagHtml</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='static' href='static.kCLDFlagQuiet.html'
+                               title='cld2_sys::kCLDFlagQuiet'>kCLDFlagQuiet</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='static' href='static.kCLDFlagScoreAsQuads.html'
+                               title='cld2_sys::kCLDFlagScoreAsQuads'>kCLDFlagScoreAsQuads</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='static' href='static.kCLDFlagVerbose.html'
+                               title='cld2_sys::kCLDFlagVerbose'>kCLDFlagVerbose</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                </table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.CLD2_DetectLanguage.html'
+                               title='cld2_sys::CLD2_DetectLanguage'>CLD2_DetectLanguage</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.CLD2_DetectLanguageSummary.html'
+                               title='cld2_sys::CLD2_DetectLanguageSummary'>CLD2_DetectLanguageSummary</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.CLD2_DetectLanguageSummary2.html'
+                               title='cld2_sys::CLD2_DetectLanguageSummary2'>CLD2_DetectLanguageSummary2</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.CLD2_DetectLanguageVersion.html'
+                               title='cld2_sys::CLD2_DetectLanguageVersion'>CLD2_DetectLanguageVersion</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.CLD2_ExtDetectLanguageSummary.html'
+                               title='cld2_sys::CLD2_ExtDetectLanguageSummary'>CLD2_ExtDetectLanguageSummary</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.CLD2_ExtDetectLanguageSummary2.html'
+                               title='cld2_sys::CLD2_ExtDetectLanguageSummary2'>CLD2_ExtDetectLanguageSummary2</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.CLD2_ExtDetectLanguageSummary3.html'
+                               title='cld2_sys::CLD2_ExtDetectLanguageSummary3'>CLD2_ExtDetectLanguageSummary3</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.CLD2_ExtDetectLanguageSummary4.html'
+                               title='cld2_sys::CLD2_ExtDetectLanguageSummary4'>CLD2_ExtDetectLanguageSummary4</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.CLD2_GetLanguageFromName.html'
+                               title='cld2_sys::CLD2_GetLanguageFromName'>CLD2_GetLanguageFromName</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.CLD2_LanguageCode.html'
+                               title='cld2_sys::CLD2_LanguageCode'>CLD2_LanguageCode</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.CLD2_LanguageDeclaredName.html'
+                               title='cld2_sys::CLD2_LanguageDeclaredName'>CLD2_LanguageDeclaredName</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.CLD2_LanguageName.html'
+                               title='cld2_sys::CLD2_LanguageName'>CLD2_LanguageName</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.CLD2_ResultChunkVector_data.html'
+                               title='cld2_sys::CLD2_ResultChunkVector_data'>CLD2_ResultChunkVector_data</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.CLD2_ResultChunkVector_delete.html'
+                               title='cld2_sys::CLD2_ResultChunkVector_delete'>CLD2_ResultChunkVector_delete</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.CLD2_ResultChunkVector_new.html'
+                               title='cld2_sys::CLD2_ResultChunkVector_new'>CLD2_ResultChunkVector_new</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.CLD2_ResultChunkVector_size.html'
+                               title='cld2_sys::CLD2_ResultChunkVector_size'>CLD2_ResultChunkVector_size</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                </table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='type' href='type.ResultChunks.html'
+                               title='cld2_sys::ResultChunks'>ResultChunks</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "cld2_sys";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script async src="../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["smart_decode","Guess the encoding of a byte buffer and decode it to a string."]]});

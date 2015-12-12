@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["merge_subtitles","Merge several subtitles into a single subtitle.  Returns `None` if no subtitles have been supplied, or if the resulting subtitle has no text."]]});

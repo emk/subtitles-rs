@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Period` struct in crate `substudy`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Period">
+
+    <title>substudy::time::Period - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>substudy</a>::<wbr><a href='index.html'>time</a></p><script>window.sidebarCurrent = {name: 'Period', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>substudy</a>::<wbr><a href='index.html'>time</a>::<wbr><a class='struct' href=''>Period</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-838' class='srclink' href='../../src/substudy/time.rs.html#61-64' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Period {
+    // some fields omitted
+}</pre><div class='docblock'><p>A period of time, in seconds.  The beginning is guaranteed to be less
+than the end, and all times are positive.  This is lightweight
+structure which implements <code>Copy</code>, so it can be passed by value.</p>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>substudy</span>::<span class='ident'>time</span>::<span class='ident'>Period</span>;
+
+<span class='kw'>let</span> <span class='ident'>period</span> <span class='op'>=</span> <span class='ident'>Period</span>::<span class='ident'>new</span>(<span class='number'>1.0</span>, <span class='number'>5.0</span>).<span class='ident'>unwrap</span>();
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1.0</span>, <span class='ident'>period</span>.<span class='ident'>begin</span>());
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>5.0</span>, <span class='ident'>period</span>.<span class='ident'>end</span>());
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>4.0</span>, <span class='ident'>period</span>.<span class='ident'>duration</span>());
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>3.0</span>, <span class='ident'>period</span>.<span class='ident'>midpoint</span>());</pre>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>(begin: <a href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>, end: <a href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>) -&gt; <a class='type' href='../../substudy/err/type.Result.html' title='substudy::err::Result'>Result</a>&lt;<a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a>&gt;</code></h4>
+<div class='docblock'><p>Create a new time period.</p>
+</div><h4 id='method.from_union_opt' class='method'><code>fn <a href='#method.from_union_opt' class='fnname'>from_union_opt</a>(p1: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a>&gt;, p2: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a>&gt;) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a>&gt;</code></h4>
+<div class='docblock'><p>Construct a time period from two optional time periods, taking the
+union if both are present.  This is normally used when working with
+aligned subtitle pairs, either of which might be missing.</p>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>substudy</span>::<span class='ident'>time</span>::<span class='ident'>Period</span>;
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>None</span>, <span class='ident'>Period</span>::<span class='ident'>from_union_opt</span>(<span class='prelude-val'>None</span>, <span class='prelude-val'>None</span>));
+
+<span class='kw'>let</span> <span class='ident'>p1</span> <span class='op'>=</span> <span class='ident'>Period</span>::<span class='ident'>new</span>(<span class='number'>1.0</span>, <span class='number'>2.0</span>).<span class='ident'>unwrap</span>();
+<span class='kw'>let</span> <span class='ident'>p2</span> <span class='op'>=</span> <span class='ident'>Period</span>::<span class='ident'>new</span>(<span class='number'>2.5</span>, <span class='number'>3.0</span>).<span class='ident'>unwrap</span>();
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='ident'>p1</span>),
+           <span class='ident'>Period</span>::<span class='ident'>from_union_opt</span>(<span class='prelude-val'>Some</span>(<span class='ident'>p1</span>), <span class='prelude-val'>None</span>));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='ident'>Period</span>::<span class='ident'>new</span>(<span class='number'>1.0</span>, <span class='number'>3.0</span>).<span class='ident'>unwrap</span>()),
+           <span class='ident'>Period</span>::<span class='ident'>from_union_opt</span>(<span class='prelude-val'>Some</span>(<span class='ident'>p1</span>), <span class='prelude-val'>Some</span>(<span class='ident'>p2</span>)));</pre>
+</div><h4 id='method.begin' class='method'><code>fn <a href='#method.begin' class='fnname'>begin</a>(&amp;self) -&gt; <a href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a></code></h4>
+<div class='docblock'><p>The beginning of this time period.</p>
+</div><h4 id='method.end' class='method'><code>fn <a href='#method.end' class='fnname'>end</a>(&amp;self) -&gt; <a href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a></code></h4>
+<div class='docblock'><p>The end of this time period.</p>
+</div><h4 id='method.duration' class='method'><code>fn <a href='#method.duration' class='fnname'>duration</a>(&amp;self) -&gt; <a href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a></code></h4>
+<div class='docblock'><p>How long this time period lasts.</p>
+</div><h4 id='method.midpoint' class='method'><code>fn <a href='#method.midpoint' class='fnname'>midpoint</a>(&amp;self) -&gt; <a href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a></code></h4>
+<div class='docblock'><p>The midpoint of this time period.</p>
+</div><h4 id='method.grow' class='method'><code>fn <a href='#method.grow' class='fnname'>grow</a>(&amp;self, before: <a href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>, after: <a href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>) -&gt; <a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a></code></h4>
+<div class='docblock'><p>Grow this time period by the specified amount, making any necessary
+adjustments to keep it valid.</p>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>substudy</span>::<span class='ident'>time</span>::<span class='ident'>Period</span>;
+
+<span class='kw'>let</span> <span class='ident'>period</span> <span class='op'>=</span> <span class='ident'>Period</span>::<span class='ident'>new</span>(<span class='number'>1.0</span>, <span class='number'>5.0</span>).<span class='ident'>unwrap</span>();
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>Period</span>::<span class='ident'>new</span>(<span class='number'>0.0</span>, <span class='number'>7.0</span>).<span class='ident'>unwrap</span>(),
+           <span class='ident'>period</span>.<span class='ident'>grow</span>(<span class='number'>1.5</span>, <span class='number'>2.0</span>));</pre>
+</div><h4 id='method.union' class='method'><code>fn <a href='#method.union' class='fnname'>union</a>(&amp;self, other: <a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a>) -&gt; <a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a></code></h4>
+<div class='docblock'><p>Calculate the smallest time period containing this time period and
+another.</p>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>substudy</span>::<span class='ident'>time</span>::<span class='ident'>Period</span>;
+
+<span class='kw'>let</span> <span class='ident'>p1</span> <span class='op'>=</span> <span class='ident'>Period</span>::<span class='ident'>new</span>(<span class='number'>1.0</span>, <span class='number'>2.0</span>).<span class='ident'>unwrap</span>();
+<span class='kw'>let</span> <span class='ident'>p2</span> <span class='op'>=</span> <span class='ident'>Period</span>::<span class='ident'>new</span>(<span class='number'>2.5</span>, <span class='number'>3.0</span>).<span class='ident'>unwrap</span>();
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>Period</span>::<span class='ident'>new</span>(<span class='number'>1.0</span>, <span class='number'>3.0</span>).<span class='ident'>unwrap</span>(),
+           <span class='ident'>p1</span>.<span class='ident'>union</span>(<span class='ident'>p2</span>));</pre>
+</div><h4 id='method.begin_after' class='method'><code>fn <a href='#method.begin_after' class='fnname'>begin_after</a>(&amp;mut self, limit: <a href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>) -&gt; <a class='type' href='../../substudy/err/type.Result.html' title='substudy::err::Result'>Result</a>&lt;<a href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+<div class='docblock'><p>Make sure this subtitle begins after <code>limit</code>.</p>
+</div><h4 id='method.end_before' class='method'><code>fn <a href='#method.end_before' class='fnname'>end_before</a>(&amp;mut self, limit: <a href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>) -&gt; <a class='type' href='../../substudy/err/type.Result.html' title='substudy::err::Result'>Result</a>&lt;<a href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+<div class='docblock'><p>Truncate this subtitle before <code>limit</code>, which must be at least
+<code>2*MIN_SPACING</code> greater than the begin time.</p>
+</div><h4 id='method.distance' class='method'><code>fn <a href='#method.distance' class='fnname'>distance</a>(&amp;self, other: <a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>&gt;</code></h4>
+<div class='docblock'><p>Return the absolute value of the distance between two durations, or
+<code>None</code> if the durations overlap.</p>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>substudy</span>::<span class='ident'>time</span>::<span class='ident'>Period</span>;
+
+<span class='kw'>let</span> <span class='ident'>p1</span> <span class='op'>=</span> <span class='ident'>Period</span>::<span class='ident'>new</span>(<span class='number'>1.0</span>, <span class='number'>2.0</span>).<span class='ident'>unwrap</span>();
+<span class='kw'>let</span> <span class='ident'>p2</span> <span class='op'>=</span> <span class='ident'>Period</span>::<span class='ident'>new</span>(<span class='number'>2.0</span>, <span class='number'>3.0</span>).<span class='ident'>unwrap</span>();
+<span class='kw'>let</span> <span class='ident'>p3</span> <span class='op'>=</span> <span class='ident'>Period</span>::<span class='ident'>new</span>(<span class='number'>2.5</span>, <span class='number'>3.0</span>).<span class='ident'>unwrap</span>();
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='number'>0.5</span>), <span class='ident'>p1</span>.<span class='ident'>distance</span>(<span class='ident'>p3</span>));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='number'>0.5</span>), <span class='ident'>p3</span>.<span class='ident'>distance</span>(<span class='ident'>p1</span>));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='number'>0.0</span>), <span class='ident'>p1</span>.<span class='ident'>distance</span>(<span class='ident'>p2</span>));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>None</span>, <span class='ident'>p2</span>.<span class='ident'>distance</span>(<span class='ident'>p3</span>));</pre>
+</div><h4 id='method.overlap' class='method'><code>fn <a href='#method.overlap' class='fnname'>overlap</a>(&amp;self, other: <a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a>) -&gt; <a href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a></code></h4>
+<div class='docblock'><p>Return the total amount of time which appears in both durations.</p>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>substudy</span>::<span class='ident'>time</span>::<span class='ident'>Period</span>;
+ 
+<span class='kw'>let</span> <span class='ident'>p1</span> <span class='op'>=</span> <span class='ident'>Period</span>::<span class='ident'>new</span>(<span class='number'>1.0</span>, <span class='number'>2.0</span>).<span class='ident'>unwrap</span>();
+<span class='kw'>let</span> <span class='ident'>p2</span> <span class='op'>=</span> <span class='ident'>Period</span>::<span class='ident'>new</span>(<span class='number'>2.0</span>, <span class='number'>3.0</span>).<span class='ident'>unwrap</span>();
+<span class='kw'>let</span> <span class='ident'>p3</span> <span class='op'>=</span> <span class='ident'>Period</span>::<span class='ident'>new</span>(<span class='number'>2.5</span>, <span class='number'>3.0</span>).<span class='ident'>unwrap</span>();
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0.0</span>, <span class='ident'>p1</span>.<span class='ident'>overlap</span>(<span class='ident'>p3</span>));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0.0</span>, <span class='ident'>p3</span>.<span class='ident'>overlap</span>(<span class='ident'>p1</span>));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0.0</span>, <span class='ident'>p1</span>.<span class='ident'>overlap</span>(<span class='ident'>p2</span>));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0.5</span>, <span class='ident'>p2</span>.<span class='ident'>overlap</span>(<span class='ident'>p3</span>));</pre>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='../../rustc_serialize/serialize/trait.Encodable.html' title='rustc_serialize::serialize::Encodable'>Encodable</a> for <a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a></code></h3><div class='impl-items'><h4 id='method.encode' class='method'><code>fn <a href='../../rustc_serialize/serialize/trait.Encodable.html#method.encode' class='fnname'>encode</a>&lt;S: <a class='trait' href='../../rustc_serialize/serialize/trait.Encoder.html' title='rustc_serialize::serialize::Encoder'>Encoder</a>&gt;(&amp;self, s: &amp;mut S) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, S::Error&gt;</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='../../substudy/time/trait.ToTimestamp.html' title='substudy::time::ToTimestamp'>ToTimestamp</a> for <a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a></code></h3><div class='impl-items'><h4 id='method.to_timestamp' class='method'><code>fn <a href='../../substudy/time/trait.ToTimestamp.html#method.to_timestamp' class='fnname'>to_timestamp</a>(&amp;self) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a></code></h4>
+<h4 id='method.to_file_timestamp' class='method'><code>fn <a href='../../substudy/time/trait.ToTimestamp.html#method.to_file_timestamp' class='fnname'>to_file_timestamp</a>(&amp;self) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a></code></h4>
+</div><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html' title='core::cmp::PartialEq'>PartialEq</a> for <a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a></code></h3><div class='impl-items'><h4 id='method.eq' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.eq' class='fnname'>eq</a>(&amp;self, __arg_0: &amp;<a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a>) -&gt; <a href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<h4 id='method.ne' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.ne' class='fnname'>ne</a>(&amp;self, __arg_0: &amp;<a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a>) -&gt; <a href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html' title='core::marker::Copy'>Copy</a> for <a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a></code></h3><div class='impl-items'></div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a></code></h3><div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../../substudy/time/struct.Period.html' title='substudy::time::Period'>Period</a></code></h4>
+<h4 id='method.clone_from' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "substudy";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script async src="../../search-index.js"></script>
+</body>
+</html>
