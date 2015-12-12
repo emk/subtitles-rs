@@ -114,6 +114,12 @@ stabilize them.
 
 Please feel welcome to send me a pull request or submit an issue!
 
+Make sure everything continues to work with your changes:
+
+```sh
+cargo test
+```
+
 Things which I'd love to see `substudy` support include:
 
 - Creating various sorts of parallel media: subtitles, Anki cards, etc.
