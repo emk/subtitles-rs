@@ -126,14 +126,15 @@ pub struct Stream {
     pub time_base: Fraction,
     pub start_time: f64,
     //duration
-    pub tags: BTreeMap<String, String>,
+    pub tags: Option<BTreeMap<String, String>>,
 }
 
 impl Stream {
     /// Return the language associated with this stream, if we can figure
     /// it out.
     pub fn language(&self) -> Option<Lang> {
-        self.tags.get("language")
+        self.tags.as_ref()
+            .and_then(|tags| tags.get("language"))
             .and_then(|lang| Lang::iso639(lang).ok())
     }
 }
