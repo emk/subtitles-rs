@@ -1,0 +1,19 @@
+{
+  "name": "substudy-ui",
+  "version": "0.0.0",
+  "description": "User interface for substudy-server",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "virtual-dom": "^2.1.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "pulp test"
+  },
+  "author": "Eric Kidd <git@randomhacks.net>",
+  "license": "CC0-1.0",
+  "private": true
+}

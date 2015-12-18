@@ -11,6 +11,7 @@
     "output"
   ],
   "dependencies": {
-    "purescript-console": "^0.1.0"
+    "purescript-console": "^0.1.0",
+    "purescript-halogen": "~0.5.9"
   }
 }
