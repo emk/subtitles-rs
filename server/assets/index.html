@@ -69,28 +69,8 @@
     </style>
 
     <script src="svg4everybody.js"></script>
-    <script src="elm.js"></script>
   </head>
   <body>
-    <script type="text/javascript">
-      window.app = Elm.fullscreen(Elm.Main);
-      app.ports.playerAction.subscribe(playerAction);
-
-      function playerAction(action) {
-        console.log("Player action:", action)
-        var videos = document.getElementsByTagName('video');
-        if (videos.length == 1) {
-          var vid = videos[0];
-          var cmd = action.command;
-          if (cmd == "seek") {
-            vid.currentTime = action.value;
-          } else if (cmd == "play") {
-            vid.play();
-          } else if (cmd == "pause") {
-            vid.pause();
-          }
-        }
-      }
-    </script>
+    <script src="app.js"></script>
   </body>
 </html>
