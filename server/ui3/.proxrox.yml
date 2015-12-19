@@ -1,0 +1,10 @@
+# This allows us to run the backend on port 4000, the frontend on port
+# 1337 (using `pulp serve`), and to access the whole thing on port 8000 as
+# a single, unified app.
+port: 8000
+root: .
+proxy:
+  "/": "http://localhost:4000"
+  "/assets/app.js": "http://localhost:1337/app.js"
+  "/assets/app.js.map": "http://localhost:1337/app.js.map"
+logDir: "logs/"
