@@ -1,5 +1,5 @@
 {
-  "name": "ui2",
+  "name": "ui3",
   "version": "1.0.0",
   "moduleType": [
     "node"
@@ -11,8 +11,6 @@
     "output"
   ],
   "dependencies": {
-    "purescript-console": "^0.1.0",
-    "purescript-halogen": "~0.5.9",
-    "purescript-generics": "~0.7.0"
+    "purescript-thermite": "~0.12.1"
   }
 }

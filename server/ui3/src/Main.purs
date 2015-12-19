@@ -2,60 +2,50 @@ module Main where
 
 import Prelude
 
-import Control.Monad.Aff (runAff)
-import Control.Monad.Eff (Eff())
-import Control.Monad.Eff.Class
-import Control.Monad.Eff.Console
-import Control.Monad.Eff.Exception (throwException)
+import qualified Data.Maybe.Unsafe as Unsafe
+import Data.Nullable (Nullable(), toMaybe)
+import Control.Monad.Eff
 
-import Data.Functor.Coproduct (Coproduct())
-import Data.Generic (Generic, gEq, gCompare)
+import qualified DOM as DOM
+import qualified DOM.HTML as DOM
+import qualified DOM.HTML.Types as DOM
+import qualified DOM.HTML.Window as DOM
+import qualified DOM.Node.ParentNode as DOM
+import qualified React as R
+import qualified React.DOM as R
+import qualified React.DOM.Props as RP
+import qualified Thermite as T
 
-import Halogen
-import Halogen.Util (appendToBody)
-import qualified Halogen.HTML.Indexed as H
---import qualified Halogen.HTML.Properties.Indexed as P
-
-import Definitions
-import VideoPlayer (videoPlayer)
+--import Definitions
+--import VideoPlayer
 
 -- Our application's state.
 data State = State
 
--- Ugh I can't believe this type machinery.
-type ChildState = VideoPlayer.State
-type ChildQuery = VideoPlayer.Query
-data ChildSlot = VideoPlayerSlot
-type StateP g = InstalledState State ChildState Query ChildQuery g ChildSlot
-type QueryP = Coproduct Query (ChildF ChildSlot ChildQuery)
-derive instance genericChildSlot :: Generic ChildSlot
-instance eqChildSlot :: Eq ChildSlot where eq = gEq
-instance ordChildSlot :: Ord ChildSlot where compare = gCompare
+-- The actions we can perform on our application.
+data Action = DoNothing
 
--- Useless command for now.
-data Query a = Hello a
+initialState :: State
+initialState = State
 
--- Define our main UI component.
-ui :: Component (StateP AppAff) QueryP AppAff
-ui = parentComponent render eval
+hello :: forall eff props. T.Spec eff State props Action
+hello = T.simpleSpec performAction render
   where
 
-    -- Render our UI component.
-    render :: State -> ParentHTML ChildState Query ChildQuery AppAff ChildSlot
-    render state = H.div_
-      [ H.slot VideoPlayerSlot $ \_ ->
-         { component: videoPlayer
-         , initialState: VideoPlayer.initialState "/video.mp4"
-         }
-      ]
+  --render :: T.Render State props Action
+  render dispatch _ _state _ =
+    [ R.p [ RP.key "hello" ] [ R.text "Hello, world!" ] ]
 
-    -- Process our supported queries.
-    eval :: Natural Query (ParentDSL State ChildState Query ChildQuery AppAff ChildSlot)
-    eval (Hello next) = do
-      pure next
+  --performAction :: T.PerformAction eff State props Action
+  performAction DoNothing _ state k = pure unit
 
-main :: Eff (AppEffects ()) Unit
-main = runAff throwException (const (pure unit)) do
-  liftEff $ log "Starting app"
-  app <- runUI ui (installedState State)
-  appendToBody app.node
+unsafeFromNullable :: forall a. Nullable a -> a
+unsafeFromNullable = Unsafe.fromJust <<< toMaybe
+
+main :: Eff (dom :: DOM.DOM) Unit
+main = void do
+  let component = T.createClass hello initialState
+  document <- DOM.window >>= DOM.document
+  let root = DOM.htmlDocumentToParentNode document
+  container <- unsafeFromNullable <$> DOM.querySelector "#container" root
+  R.render (R.createFactory component {}) container

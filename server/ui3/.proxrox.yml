@@ -5,6 +5,6 @@ port: 8000
 root: .
 proxy:
   "/": "http://localhost:4000"
-  "/assets/app.js": "http://localhost:1337/app.js"
-  "/assets/app.js.map": "http://localhost:1337/app.js.map"
+  "/app.js": "http://localhost:1337/app.js"
+  "/app.js.map": "http://localhost:1337/app.js.map"
 logDir: "logs/"
