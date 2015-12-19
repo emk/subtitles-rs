@@ -2,46 +2,60 @@ module Main where
 
 import Prelude
 
-import Control.Monad.Aff (Aff(), runAff)
+import Control.Monad.Aff (runAff)
 import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Class
 import Control.Monad.Eff.Console
 import Control.Monad.Eff.Exception (throwException)
+
+import Data.Functor.Coproduct (Coproduct())
+import Data.Generic (Generic, gEq, gCompare)
 
 import Halogen
 import Halogen.Util (appendToBody)
 import qualified Halogen.HTML.Indexed as H
 --import qualified Halogen.HTML.Properties.Indexed as P
 
--- The effects used by our application.
-type AppEffects eff = HalogenEffects (console :: CONSOLE | eff)
+import Definitions
+import VideoPlayer (videoPlayer)
 
--- The monad in which we'll run most of our computations.
-type AppAff = Aff (AppEffects ())
-
--- Empty state for now.
+-- Our application's state.
 data State = State
 
--- Useless commands.
+-- Ugh I can't believe this type machinery.
+type ChildState = VideoPlayer.State
+type ChildQuery = VideoPlayer.Query
+data ChildSlot = VideoPlayerSlot
+type StateP g = InstalledState State ChildState Query ChildQuery g ChildSlot
+type QueryP = Coproduct Query (ChildF ChildSlot ChildQuery)
+derive instance genericChildSlot :: Generic ChildSlot
+instance eqChildSlot :: Eq ChildSlot where eq = gEq
+instance ordChildSlot :: Ord ChildSlot where compare = gCompare
+
+-- Useless command for now.
 data Query a = Hello a
 
 -- Define our main UI component.
-ui :: Component State Query AppAff
-ui = component render eval
+ui :: Component (StateP AppAff) QueryP AppAff
+ui = parentComponent render eval
   where
 
     -- Render our UI component.
-    render :: State -> ComponentHTML Query
-    render state = H.p_ [ H.text "Hello!" ]
+    render :: State -> ParentHTML ChildState Query ChildQuery AppAff ChildSlot
+    render state = H.div_
+      [ H.slot VideoPlayerSlot $ \_ ->
+         { component: videoPlayer
+         , initialState: VideoPlayer.initialState "/video.mp4"
+         }
+      ]
 
     -- Process our supported queries.
-    eval :: Natural Query (ComponentDSL State Query AppAff)
+    eval :: Natural Query (ParentDSL State ChildState Query ChildQuery AppAff ChildSlot)
     eval (Hello next) = do
-      liftEff' $ log "Hello to you to!"
       pure next
 
 main :: Eff (AppEffects ()) Unit
 main = runAff throwException (const (pure unit)) do
   liftEff $ log "Starting app"
-  app <- runUI ui State
+  app <- runUI ui (installedState State)
   appendToBody app.node

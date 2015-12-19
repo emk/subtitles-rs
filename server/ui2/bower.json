@@ -12,6 +12,7 @@
   ],
   "dependencies": {
     "purescript-console": "^0.1.0",
-    "purescript-halogen": "~0.5.9"
+    "purescript-halogen": "~0.5.9",
+    "purescript-generics": "~0.7.0"
   }
 }

@@ -11,7 +11,9 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "pulp test"
+    "test": "pulp test",
+    "start": "pulp server",
+    "compile": "pulp browserify -O > ../assets/app.js"
   },
   "author": "Eric Kidd <git@randomhacks.net>",
   "license": "CC0-1.0",
