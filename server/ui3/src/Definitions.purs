@@ -1,29 +1,39 @@
-module Definitions (Time(Time)) where
+module Definitions (
+  AppEffects(), Size(Size), Time(Time), Interval(Interval),
+  onLoadedMetadata, targetSize
+  ) where
 
 import Prelude
+import Control.Monad.Eff (Eff())
+import Control.Monad.Eff.Console
+import Data.Generic
+import qualified React as R
+import qualified React.DOM.Props as RP
+import Unsafe.Coerce
 
---import Data.Maybe (Maybe(..))
---import Control.Monad.Aff (Aff())
---import Control.Monad.Eff.Console
---import Unsafe.Coerce (unsafeCoerce)
---
---import Halogen
---import Halogen.HTML.Core (prop, propName, attrName)
---import Halogen.HTML.Properties.Indexed (IProp(..), I())
---
---
----- The effects used by our application.
---type AppEffects eff = HalogenEffects (console :: CONSOLE | eff)
---
----- The monad in which we'll run most of our computations.
---type AppAff = Aff (AppEffects ())
+-- Our standard effect types.
+type AppEffects eff = (console :: CONSOLE | eff)
+
+-- A width and a height.
+data Size = Size Int Int
+
+derive instance genericSize :: Generic Size
+instance showSize :: Show Size where show = gShow
 
 -- A time in seconds, or fractions thereof.
 newtype Time = Time Number
 
---controls' :: forall i. Boolean -> Prop i
---controls' = prop (propName "controls") (Just $ attrName "controls")
---
----- Video player controls.
---controls :: forall r i. Boolean -> IProp (controls :: I | r) i
---controls = unsafeCoerce controls'
+-- An interval of time.
+data Interval = Interval Time Time
+
+-- An onLoadedMetadata handler, which isn't supplied by the React.DOM
+-- library we're using.
+onLoadedMetadata :: forall eff props state result.
+  (R.Event -> R.EventHandlerContext eff props state result)
+  -> RP.Props
+onLoadedMetadata f = RP.unsafeMkProps "onLoadedMetadata" (R.handle f)
+
+-- Get the video size for an onLoadedMetadata event.
+targetSize :: R.Event -> Size
+targetSize event = Size target.videoWidth target.videoHeight
+  where target = (unsafeCoerce event).target

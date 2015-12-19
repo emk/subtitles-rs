@@ -2,6 +2,8 @@ module Main where
 
 import Prelude
 
+import Data.Either
+import Data.Lens
 import qualified Data.Maybe.Unsafe as Unsafe
 import Data.Nullable (Nullable(), toMaybe)
 import Control.Monad.Eff
@@ -16,28 +18,38 @@ import qualified React.DOM as R
 import qualified React.DOM.Props as RP
 import qualified Thermite as T
 
---import Definitions
---import VideoPlayer
+import Definitions
+import VideoPlayer ()
 
 -- Our application's state.
-data State = State
+type State = { player :: VideoPlayer.State }
 
 -- The actions we can perform on our application.
-data Action = DoNothing
+data Action = PlayerAction VideoPlayer.Action
+
+_PlayerAction :: PrismP Action VideoPlayer.Action
+_PlayerAction = prism PlayerAction \pa ->
+  case pa of
+    PlayerAction act -> Right act
 
 initialState :: State
-initialState = State
+initialState = { player: VideoPlayer.initialState "/video.mp4" }
 
-hello :: forall eff props. T.Spec eff State props Action
-hello = T.simpleSpec performAction render
+_player :: LensP State VideoPlayer.State
+_player = lens _.player (_ { player = _ })
+
+hello :: forall props. T.Spec (AppEffects ()) State props Action
+hello
+  = T.simpleSpec performAction render
+    <> T.focus _player _PlayerAction VideoPlayer.videoPlayer
   where
 
-  --render :: T.Render State props Action
-  render dispatch _ _state _ =
+  render :: T.Render State props Action
+  render dispatch _ state _ =
     [ R.p [ RP.key "hello" ] [ R.text "Hello, world!" ] ]
 
   --performAction :: T.PerformAction eff State props Action
-  performAction DoNothing _ state k = pure unit
+  performAction _ _ state k = pure unit
 
 unsafeFromNullable :: forall a. Nullable a -> a
 unsafeFromNullable = Unsafe.fromJust <<< toMaybe
