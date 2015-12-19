@@ -41,15 +41,14 @@ _player = lens _.player (_ { player = _ })
 hello :: forall props. T.Spec (AppEffects ()) State props Action
 hello
   = T.simpleSpec performAction render
-    <> T.focus _player _PlayerAction VideoPlayer.videoPlayer
-  where
+  <> T.focus _player _PlayerAction VideoPlayer.videoPlayer
 
-  render :: T.Render State props Action
-  render dispatch _ state _ =
-    [ R.p [ RP.key "hello" ] [ R.text "Hello, world!" ] ]
+render :: forall props. T.Render State props Action
+render dispatch _ state _ =
+  [ R.p [ RP.key "hello" ] [ R.text "Hello, world!" ] ]
 
-  --performAction :: T.PerformAction eff State props Action
-  performAction _ _ state k = pure unit
+performAction :: forall props. T.PerformAction (AppEffects ()) State props Action
+performAction _ _ state k = pure unit
 
 unsafeFromNullable :: forall a. Nullable a -> a
 unsafeFromNullable = Unsafe.fromJust <<< toMaybe
@@ -59,5 +58,5 @@ main = void do
   let component = T.createClass hello initialState
   document <- DOM.window >>= DOM.document
   let root = DOM.htmlDocumentToParentNode document
-  container <- unsafeFromNullable <$> DOM.querySelector "#container" root
-  R.render (R.createFactory component {}) container
+  body <- unsafeFromNullable <$> DOM.querySelector "#react" root
+  R.render (R.createFactory component {}) body

@@ -53,6 +53,9 @@ render dispatch _ state _ =
     , RP.src state.url
     , RP.controls "controls"
     , onLoadedMetadata \e -> dispatch (LoadedMetadata (targetSize e))
+    , onTimeUpdate \e -> dispatch (TimeUpdate (targetCurrentTime e))
+    , onPlay \e -> dispatch (PlayingUpdate true)
+    , onPause \e -> dispatch (PlayingUpdate false)
     ] [] ]
 
 performAction :: forall props. T.PerformAction (AppEffects ()) State props Action
@@ -60,5 +63,13 @@ performAction :: forall props. T.PerformAction (AppEffects ()) State props Actio
 performAction (LoadedMetadata size) _ state k = do
   log $ "Setting size: " ++ show size
   k $ state { size = size }
+
+performAction (TimeUpdate time) _ state k = do
+  log $ "Setting time: " ++ show time
+  k $ state { currentTime = time }
+
+performAction (PlayingUpdate playing) _ state k = do
+  log $ "Setting playing: " ++ show playing
+  k $ state { playing = playing }
 
 performAction _ _ state k = pure unit
