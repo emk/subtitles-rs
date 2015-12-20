@@ -4,6 +4,7 @@ import Prelude
 
 import Data.Either
 import Data.Lens
+import Data.Maybe
 import qualified Data.Maybe.Unsafe as Unsafe
 import Data.Nullable (Nullable(), toMaybe)
 import Control.Monad.Eff
@@ -22,7 +23,7 @@ import Definitions
 import VideoPlayer ()
 
 -- Our application's state.
-type State = { player :: VideoPlayer.State }
+type State = { player :: Maybe VideoPlayer.State }
 
 -- The actions we can perform on our application.
 data Action = PlayerAction VideoPlayer.Action
@@ -33,16 +34,16 @@ _PlayerAction = prism PlayerAction \pa ->
     PlayerAction act -> Right act
 
 initialState :: State
-initialState = { player: VideoPlayer.initialState "vid" "/video.mp4" }
+initialState = { player: Just (VideoPlayer.initialState "vid" "/video.mp4") }
 
-_player :: LensP State VideoPlayer.State
+_player :: LensP State (Maybe VideoPlayer.State)
 _player = lens _.player (_ { player = _ })
 
 hello :: forall props. T.Spec AppEffects State props Action
 hello
   = T.simpleSpec performAction render
-  <> T.focus _player _PlayerAction VideoPlayer.videoPlayer
-  <> T.focus _player _PlayerAction testControls
+  <> T.focus _player _PlayerAction (T.split _Just VideoPlayer.videoPlayer)
+  <> T.focus _player _PlayerAction (T.split _Just testControls)
 
 render :: forall props. T.Render State props Action
 render dispatch _ state _ =
