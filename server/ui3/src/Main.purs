@@ -61,13 +61,19 @@ testControls = T.simpleSpec T.defaultPerformAction renderTestControls
 renderTestControls :: forall props.
   T.Render VideoPlayer.State props VideoPlayer.Action
 renderTestControls dispatch _ state _ =
-  [ R.p' [ button "btn-play" VideoPlayer.Play "Play"
-         , button "btn-pause" VideoPlayer.Pause "Pause"
-         , button "btn-toggle" VideoPlayer.TogglePlay "Toggle"
-         , R.text (show state.currentTime)
-         ]
+  [ R.p [ RP.key "controls" ]
+      [ button "btn-play" VideoPlayer.Play "Play"
+      , button "btn-pause" VideoPlayer.Pause "Pause"
+      , button "btn-toggle" VideoPlayer.TogglePlay "Toggle"
+      , button "btn-minus5" (VideoPlayer.SeekRelative (Time (-5.0))) "-5"
+      , button "btn-plus5" (VideoPlayer.SeekRelative (Time 5.0)) "+5"
+      , button "btn-at30" (VideoPlayer.Seek (Time 30.0)) "@30"
+      , button "btn-interval" (VideoPlayer.PlayInterval interval) "Interval"
+      , R.text (show state.currentTime)
+      ]
   ]
   where
+    interval = { begin: Time 25.0, end: Time 30.0 }
     button key act label =
       R.button [ RP.key key, RP.onClick \_ -> dispatch act ] [ R.text label ]
 

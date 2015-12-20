@@ -8,12 +8,15 @@ import Prelude
 
 import Control.Monad.Eff.Console
 import Data.Maybe
+import Data.Tuple
+import Math (max)
 
 import qualified React.DOM as R
 import qualified React.DOM.Props as RP
 import qualified Thermite as T
 
 import Definitions
+import VideoDOM
 
 type State =
   { id :: String
@@ -28,7 +31,7 @@ initialState :: String -> String -> State
 initialState id url =
   { id: id
   , url: url
-  , size: Size 0 0
+  , size: { width: 0, height: 0 }
   , playing: false
   , currentTime: Time 0.0
   , stopAt: Nothing
@@ -64,12 +67,17 @@ render dispatch _ state _ =
 performAction :: forall props. T.PerformAction AppEffects State props Action
 
 performAction (LoadedMetadata size) _ state k = do
-  log $ "Setting size: " ++ show size
+  log $ "Setting size: " ++ show size.width ++ "x" ++ show size.height
   k $ state { size = size }
 
 performAction (TimeUpdate time) _ state k = do
   log $ "Setting time: " ++ show time
-  k $ state { currentTime = time }
+  case (Tuple state.stopAt state.currentTime) of
+    Tuple (Just (Time stop)) (Time current) | current >= stop -> do
+      pause state.id
+      k $ state { currentTime = time, stopAt = Nothing }
+    _ ->
+      k $ state { currentTime = time }
 
 performAction (PlayingUpdate playing) _ state k = do
   log $ "Setting playing: " ++ show playing
@@ -89,4 +97,21 @@ performAction TogglePlay _ state k = do
     else play state.id
   k state
 
-performAction _ _ state k = pure unit
+performAction (PlayInterval interval) _ state k = do
+  setCurrentTime state.id interval.begin
+  if state.playing
+    -- If we're already playing, don't bother with anything else.
+    then k state
+    -- Otherwise, also start playback and set end time.
+    else do
+      play state.id
+      k $ state { stopAt = Just interval.end }
+
+performAction (Seek time) _ state k = do
+  setCurrentTime state.id time
+  k state
+
+performAction (SeekRelative (Time offset)) _ state k = do
+  case state.currentTime of
+    Time current ->
+      setCurrentTime state.id (Time (max 0.0 (current + offset)))
