@@ -1,18 +1,20 @@
 module Definitions (
   AppEffects(), Size(Size), Time(Time), Interval(Interval),
   onLoadedMetadata, targetSize, onTimeUpdate, targetCurrentTime,
-  onPlay, onPause
+  onPlay, onPause, play, pause
   ) where
 
 import Prelude
+import Control.Monad.Eff (Eff())
 import Control.Monad.Eff.Console
 import Data.Generic
+import qualified DOM as DOM
 import qualified React as R
 import qualified React.DOM.Props as RP
 import Unsafe.Coerce
 
 -- Our standard effect types.
-type AppEffects eff = (console :: CONSOLE | eff)
+type AppEffects = (console :: CONSOLE, dom :: DOM.DOM)
 
 -- A width and a height.
 data Size = Size Int Int
@@ -64,3 +66,7 @@ onPause :: forall eff props state result.
   (R.Event -> R.EventHandlerContext eff props state result)
   -> RP.Props
 onPause f = RP.unsafeMkProps "onPause" (R.handle f)
+
+foreign import play :: forall eff. String -> Eff (dom :: DOM.DOM | eff) Unit
+
+foreign import pause :: forall eff. String -> Eff (dom :: DOM.DOM | eff) Unit
