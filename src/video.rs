@@ -10,7 +10,7 @@ use std::process::Command;
 use std::result;
 use std::str::{FromStr, from_utf8};
 
-use err::{err_str, Error, Result};
+use err::{err_str, Result};
 use lang::Lang;
 use time::Period;
 
