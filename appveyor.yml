@@ -1,0 +1,19 @@
+environment:
+  matrix:
+    # The `gcc` crate fails with linker errors on this host.
+    #- RUST_HOST: "i686-pc-windows-gnu"
+    - RUST_HOST: "i686-pc-windows-msvc"
+
+install:
+  - ps: Start-FileDownload "https://static.rust-lang.org/rustup/dist/i686-pc-windows-gnu/rustup-init.exe"
+  - SET PATH=C:\msys64\mingw32\bin;C:\msys64\usr\bin;%PATH%
+  - rustup-init.exe -y --default-host %RUST_HOST%
+  - SET PATH=C:\Users\appveyor\.cargo\bin;%PATH%
+  - rustc -V
+  - cargo -V
+  - cmake --version
+
+build: false
+
+test_script:
+  - cargo test
