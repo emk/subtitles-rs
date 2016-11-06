@@ -9,7 +9,7 @@ description = """Language-learning tools for working with parallel, bilingual
 subtitles and media files."""
 
 homepage = "http://www.randomhacks.net/substudy/"
-documentation = "http://docs.randomhacks.net/substudy/"
+documentation = "http://docs.rs/substudy"
 repository = "https://github.com/emk/substudy"
 readme = "README.md"
 keywords = ["text"]
@@ -26,7 +26,7 @@ log = "0.3.3"
 num = "0.1.28"
 rustc-serialize = "0.3.16"
 regex = "0.1.41"
-uchardet = "1.0.0"
+uchardet = "2.0.0-pre.1"
 
 [dev-dependencies]
 difference = "0.4.1"
