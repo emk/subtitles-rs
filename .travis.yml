@@ -13,13 +13,7 @@ matrix:
   - os: osx
     osx_image: xcode8
     rust: stable
-before_script:
-- |
-  pip install 'travis-cargo<0.2' --user &&
-  export PATH=$HOME/.local/bin:$HOME/Library/Python/2.7/bin:$PATH
 script:
 - |
-  travis-cargo build &&
-  travis-cargo test &&
-  travis-cargo bench &&
-  travis-cargo doc
+  cargo build &&
+  cargo test
