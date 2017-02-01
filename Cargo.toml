@@ -4,3 +4,5 @@ version = "0.1.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
 [dependencies]
+error-chain = "0.8.1"
+nom = "2.1.0"
