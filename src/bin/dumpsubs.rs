@@ -15,7 +15,7 @@ use std::path::Path;
 use std::process;
 
 use vobsub::Result;
-use vobsub::mpeg2::pes;
+use vobsub::mpeg2::ps;
 use vobsub::util::BytesFormatter;
 
 fn run() -> Result<()> {
@@ -33,7 +33,7 @@ fn run() -> Result<()> {
     f.read_exact(&mut data)?;
     println!("{:?}", BytesFormatter(&data));
 
-    println!("{:#?}", pes::ps_packet(&data).unwrap().1);
+    println!("{:#?}", ps::pes_packet(&data).unwrap().1);
 
     Ok(())
 }

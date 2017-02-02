@@ -2,9 +2,12 @@
 //!
 //! This is the container format used at the top-level of a `*.sub` file.
 
+use nom::IResult;
 use std::fmt;
 
+use errors::*;
 use super::clock::{Clock, clock_and_ext};
+use super::pes;
 
 /// A parsed [MPEG-2 Program Stream header][MPEG-PS] (MPEG-PS).
 ///
@@ -54,3 +57,81 @@ named!(pub header<Header>,
         (header)
     )
 );
+
+/// A [Packetized Elementary Stream][pes] packet with a Program Stream
+/// header.
+///
+/// [pes]: http://dvd.sourceforge.net/dvdinfo/pes-hdr.html
+#[derive(Debug, PartialEq, Eq)]
+pub struct PesPacket<'a> {
+    pub ps_header: Header,
+    pub pes_packet: pes::Packet<'a>,
+}
+
+/// Parse a Program Stream packet and the following PES packet.
+named!(pub pes_packet<PesPacket>,
+    do_parse!(
+        ps_header: call!(header) >>
+        pes_packet: call!(pes::packet) >>
+        (PesPacket {
+            ps_header: ps_header,
+            pes_packet: pes_packet,
+        })
+    )
+);
+
+/// An iterator over all the PES packets in an MPEG-2 Program Stream.
+pub struct PesPackets<'a> {
+    /// The remaining input to parse.
+    remaining: &'a [u8],
+}
+
+impl<'a> Iterator for PesPackets<'a> {
+    type Item = Result<PesPacket<'a>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            // Search for the start of a ProgramStream packet.
+            let needle = &[0x00, 0x00, 0x01, 0xba];
+            let start = self.remaining.windows(needle.len())
+                .position(|window| needle == window);
+
+            if let Some(start) = start {
+                // We found the start, so try to parse it.
+                self.remaining = &self.remaining[start..];
+                match pes_packet(self.remaining) {
+                    // We found a packet!
+                    IResult::Done(remaining, packet) => {
+                        self.remaining = remaining;
+                        trace!("Decoded packet {:?}", &packet);
+                        return Some(Ok(packet));
+                    }
+                    // We have only a partial packet, and we hit the end of our
+                    // data.
+                    IResult::Incomplete(needed) => {
+                        self.remaining = &[];
+                        warn!("Incomplete packet, need: {:?}", needed);
+                        return Some(Err("Incomplete PES packet".into()));
+                    }
+                    // We got something that looked like a packet but
+                    // wasn't parseable.  Log it and keep trying.
+                    IResult::Error(err) => {
+                        self.remaining = &self.remaining[needle.len()..];
+                        debug!("Skipping packet {:?}", &err);
+                    }
+                }
+            } else {
+                // We didn't find the start of a packet.
+                self.remaining = &[];
+                debug!("Reached end of data");
+                return None;
+            }
+        }
+    }
+}
+
+/// Iterate over all the PES packets in an MPEG-2 Program Stream (or at
+/// least those which contain subtitles).
+pub fn pes_packets(input: &[u8]) -> PesPackets {
+    PesPackets { remaining: input }
+}
