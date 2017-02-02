@@ -1,4 +1,3 @@
-use nom::IResult;
 use std::fmt;
 
 /// This represents the 90kHz, 33-bit [System Time Clock][STC] (STC) and
@@ -75,6 +74,7 @@ named!(pub clock_and_ext<(&[u8], usize), Clock>,
 
 #[test]
 fn parse_clock() {
+    use nom::IResult;
     assert_eq!(clock((&[0x44, 0x02, 0xc4, 0x82, 0x04][..], 2)),
                IResult::Done((&[0x04][..], 6),
                              Clock::base(0b_000_000000001011000_001000001000000)));

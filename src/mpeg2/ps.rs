@@ -9,7 +9,7 @@ use super::clock::{Clock, clock_and_ext};
 /// A parsed [MPEG-2 Program Stream header][MPEG-PS] (MPEG-PS).
 ///
 /// [MPEG-PS]: https://en.wikipedia.org/wiki/MPEG_program_stream
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Header {
     /// The System Clock Reference (SCR) and SCR extension field.
     pub scr: Clock,

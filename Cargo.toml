@@ -3,6 +3,11 @@ name = "vobsub"
 version = "0.1.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
+[dev-dependencies]
+env_logger = "0.4.0"
+glob = "0.2.11"
+
 [dependencies]
 error-chain = "0.8.1"
+log = "0.3.6"
 nom = "2.1.0"

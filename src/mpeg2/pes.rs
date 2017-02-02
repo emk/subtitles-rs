@@ -3,9 +3,13 @@
 //! These packets are nested inside the MPEG-2 Program Stream packets found
 //! in a `*.sub` file.
 
-use nom::IResult;
+use nom::{be_u8, be_u16, IResult, rest};
+use std::fmt;
 
+use errors::*;
 use super::clock::{Clock, clock};
+use super::ps;
+use util::BytesFormatter;
 
 /// Possible combinations of PTS and DTS data which might appear inside a
 /// PES header.
@@ -14,7 +18,7 @@ use super::clock::{Clock, clock};
 ///
 /// [PES]: http://dvd.sourceforge.net/dvdinfo/pes-hdr.html
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum PtsDtsFlags {
+pub enum PtsDtsFlags {
     /// No time stamps.
     None,
     /// Presentation Time Stamp only.
@@ -23,14 +27,9 @@ enum PtsDtsFlags {
     PtsDts,
 }
 
-impl PtsDtsFlags {
-    /// How many bytes long should our header extension be?
-    fn bytes_expected(self) -> usize {
-        match self {
-            PtsDtsFlags::None => 0,
-            PtsDtsFlags::Pts => 5,
-            PtsDtsFlags::PtsDts => 10,
-        }
+impl Default for PtsDtsFlags {
+    fn default() -> PtsDtsFlags {
+        PtsDtsFlags::None
     }
 }
 
@@ -60,6 +59,7 @@ pub struct PtsDts {
     pub dts: Option<Clock>,
 }
 
+/// Helper for `pts_dts`.  Parses the PTS-only case.
 named!(pts_only<PtsDts>,
     bits!(
         do_parse!(
@@ -70,6 +70,7 @@ named!(pts_only<PtsDts>,
     )
 );
 
+/// Helper for `pts_dts`.  Parses the PTS and DTS case.
 named!(pts_and_dts<PtsDts>,
     bits!(
         do_parse!(
@@ -101,4 +102,305 @@ fn parse_pts_dts() {
                                  pts: Clock::base(2815200),
                                  dts: None,
                              })));
+}
+
+/// Flags specifying which header data fields are present.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct HeaderDataFlags {
+    pub pts_dts_flags: PtsDtsFlags,
+    pub escr_flag: bool,
+    pub es_rate_flag: bool,
+    pub dsm_trick_mode_flag: bool,
+    pub additional_copy_info_flag: bool,
+    pub crc_flag: bool,
+    pub extension_flag: bool,
+}
+
+/// Deserialize a single Boolean flag bit.
+named!(bool_flag<(&[u8], usize), bool>,
+    map!(take_bits!(u8, 1), |b| b == 1)
+);
+
+named!(header_data_flags<HeaderDataFlags>,
+   bits!(
+       do_parse!(
+           pts_dts_flags: call!(pts_dts_flags) >>
+           escr_flag: call!(bool_flag) >>
+           es_rate_flag: call!(bool_flag) >>
+           dsm_trick_mode_flag: call!(bool_flag) >>
+           additional_copy_info_flag: call!(bool_flag) >>
+           crc_flag: call!(bool_flag) >>
+           extension_flag: call!(bool_flag) >>
+           (HeaderDataFlags {
+               pts_dts_flags: pts_dts_flags,
+               escr_flag: escr_flag,
+               es_rate_flag: es_rate_flag,
+               dsm_trick_mode_flag: dsm_trick_mode_flag,
+               additional_copy_info_flag: additional_copy_info_flag,
+               crc_flag: crc_flag,
+               extension_flag: extension_flag,
+           })
+       )
+   )
+);
+
+#[test]
+fn parse_header_data_flags() {
+    assert_eq!(header_data_flags(&[0x80][..]),
+               IResult::Done(&[][..],
+                             HeaderDataFlags {
+                                 pts_dts_flags: PtsDtsFlags::Pts,
+                                 ..HeaderDataFlags::default()
+                             }));
+}
+
+/// Header data fields.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct HeaderData {
+    pub flags: HeaderDataFlags,
+    pub pts_dts: Option<PtsDts>,
+    /// There's lots of other header data we could deserialize here, but
+    /// we're not interested in any of it for subtitles.  Specify a private
+    /// placeholder field so we can extend this without breaking the API.
+    _placeholder: (),
+}
+
+/// Parse variable length header data, ignoring any fields we don't care
+/// about.  We expect to be called by `length_value!` so any extra bytes
+/// will be discarded.
+fn header_data_fields(i: &[u8], flags: HeaderDataFlags)
+                      -> IResult<&[u8], HeaderData> {
+    do_parse!(i,
+        pts_dts: apply!(pts_dts, flags.pts_dts_flags) >>
+        (HeaderData {
+            flags: flags,
+            pts_dts: pts_dts,
+            _placeholder: (),
+        })
+    )
+}
+
+/// Parse PES header data, including the predecing flags and length bytes.
+named!(header_data<HeaderData>,
+    do_parse!(
+        // Grab the flags from our flag byte.
+        flags: call!(header_data_flags) >>
+        // Grab a single length byte, read that many bytes, and recursively
+        // call `header_data_fields` to do the actual parse.  This ensures
+        // that if `header_data_fields` doesn't parse all the header data,
+        // we discard the rest before continuing.
+        data: length_value!(call!(be_u8), apply!(header_data_fields, flags)) >>
+        (data)
+    )
+);
+
+#[test]
+fn parse_header_data() {
+    assert_eq!(header_data(&[0x00, 0x00][..]),
+               IResult::Done(&[][..], HeaderData::default()));
+    assert_eq!(header_data(&[0x80, 0x05, 0x21, 0x00, 0xab, 0xe9, 0xc1][..]),
+               IResult::Done(&[][..],
+                             HeaderData {
+                                 flags: HeaderDataFlags {
+                                     pts_dts_flags: PtsDtsFlags::Pts,
+                                     ..HeaderDataFlags::default()
+                                 },
+                                 pts_dts: Some(PtsDts {
+                                     pts: Clock::base(2815200),
+                                     dts: None,
+                                 }),
+                                 ..HeaderData::default()
+                             }));
+}
+
+/// A [Packetized Elementary Stream][pes] header, not including the
+/// `HeaderData` information (which is parsed separately).
+///
+/// [pes]: http://dvd.sourceforge.net/dvdinfo/pes-hdr.html
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct Header {
+    pub scrambling_control: u8,
+    pub priority: bool,
+    pub data_alignment_indicator: bool,
+    pub copyright: bool,
+    pub original: bool,
+}
+
+/// Parse the first PES header byte after the length.
+named!(header<Header>,
+    bits!(
+        do_parse!(
+            tag_bits!(u8, 2, 0b10) >>
+            scrambling_control: take_bits!(u8, 2) >>
+            priority: call!(bool_flag) >>
+            data_alignment_indicator: call!(bool_flag) >>
+            copyright: call!(bool_flag) >>
+            original: call!(bool_flag) >>
+            (Header {
+                scrambling_control: scrambling_control,
+                priority: priority,
+                data_alignment_indicator: data_alignment_indicator,
+                copyright: copyright,
+                original: original,
+            })
+        )
+    )
+);
+
+/// A [Packetized Elementary Stream][pes] packet.
+///
+/// [pes]: http://dvd.sourceforge.net/dvdinfo/pes-hdr.html
+#[derive(PartialEq, Eq)]
+pub struct Packet<'a> {
+    pub header: Header,
+    pub header_data: HeaderData,
+    pub substream_id: u8,
+    pub data: &'a [u8],
+}
+
+impl<'a> fmt::Debug for Packet<'a> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct("Foo")
+            .field("header", &self.header)
+            .field("header_data", &self.header_data)
+            .field("substream_id", &self.substream_id)
+            .field("data", &BytesFormatter(self.data))
+            .finish()
+    }
+}
+
+named!(packet_helper<Packet>,
+    do_parse!(
+        header: call!(header) >>
+        header_data: call!(header_data) >>
+        substream_id: call!(be_u8) >>
+        data: call!(rest) >>
+        (Packet {
+            header: header,
+            header_data: header_data,
+            substream_id: substream_id,
+            data: data
+        })
+    )
+);
+
+named!(pub packet<Packet>,
+    do_parse!(
+        tag!(&[0x00, 0x00, 0x01, 0xbd]) >>
+        packet: length_value!(call!(be_u16), call!(packet_helper)) >>
+        (packet)
+    )
+);
+
+#[test]
+fn parse_packet() {
+    let input = &[
+        0x00, 0x00, 0x01, 0xbd,
+        0x00, 0x10,
+        0x81,
+        0x80, 0x05, 0x21, 0x00, 0xab, 0xe9, 0xc1,
+        0x20,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0xff,
+    ][..];
+
+    let expected = Packet {
+        header: Header {
+            original: true,
+            ..Header::default()
+        },
+        header_data: HeaderData {
+            flags: HeaderDataFlags {
+                pts_dts_flags: PtsDtsFlags::Pts,
+                ..HeaderDataFlags::default()
+            },
+            pts_dts: Some(PtsDts {
+                pts: Clock::base(2815200),
+                dts: None,
+            }),
+            ..HeaderData::default()
+        },
+        substream_id: 0x20,
+        data: &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+    };
+
+    assert_eq!(packet(input), IResult::Done(&[0xff][..], expected));
+}
+
+/// A [Packetized Elementary Stream][pes] packet with a Program Stream
+/// header.
+///
+/// [pes]: http://dvd.sourceforge.net/dvdinfo/pes-hdr.html
+#[derive(Debug, PartialEq, Eq)]
+pub struct PsPacket<'a> {
+    pub ps_header: ps::Header,
+    pub packet: Packet<'a>,
+}
+
+/// Parse a Program Stream packet and the following PES packet.
+named!(pub ps_packet<PsPacket>,
+    do_parse!(
+        ps_header: call!(ps::header) >>
+        packet: call!(packet) >>
+        (PsPacket {
+            ps_header: ps_header,
+            packet: packet,
+        })
+    )
+);
+
+/// An iterator over all the PES packets in an MPEG-2 Program Stream.
+pub struct PsPackets<'a> {
+    /// The remaining input to parse.
+    remaining: &'a [u8],
+}
+
+impl<'a> Iterator for PsPackets<'a> {
+    type Item = Result<PsPacket<'a>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            // Search for the start of a ProgramStream packet.
+            let needle = &[0x00, 0x00, 0x01, 0xba];
+            let start = self.remaining.windows(needle.len())
+                .position(|window| needle == window);
+
+            if let Some(start) = start {
+                // We found the start, so try to parse it.
+                self.remaining = &self.remaining[start..];
+                match ps_packet(self.remaining) {
+                    // We found a packet!
+                    IResult::Done(remaining, packet) => {
+                        self.remaining = remaining;
+                        trace!("Decoded packet {:?}", &packet);
+                        return Some(Ok(packet));
+                    }
+                    // We have only a partial packet, and we hit the end of our
+                    // data.
+                    IResult::Incomplete(needed) => {
+                        self.remaining = &[];
+                        warn!("Incomplete packet, need: {:?}", needed);
+                        return Some(Err("Incomplete PES packet".into()));
+                    }
+                    // We got something that looked like a packet but
+                    // wasn't parseable.  Log it and keep trying.
+                    IResult::Error(err) => {
+                        self.remaining = &self.remaining[needle.len()..];
+                        debug!("Skipping packet {:?}", &err);
+                    }
+                }
+            } else {
+                // We didn't find the start of a packet.
+                self.remaining = &[];
+                debug!("Reached end of data");
+                return None;
+            }
+        }
+    }
+}
+
+/// Iterate over all the PES packets in an MPEG-2 Program Stream (or at
+/// least those which contain subtitles).
+pub fn ps_packets(input: &[u8]) -> PsPackets {
+    PsPackets { remaining: input }
 }
