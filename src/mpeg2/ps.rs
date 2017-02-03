@@ -123,7 +123,7 @@ impl<'a> Iterator for PesPackets<'a> {
             } else {
                 // We didn't find the start of a packet.
                 self.remaining = &[];
-                debug!("Reached end of data");
+                trace!("Reached end of data");
                 return None;
             }
         }

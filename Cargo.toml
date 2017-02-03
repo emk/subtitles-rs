@@ -8,6 +8,8 @@ env_logger = "0.4.0"
 glob = "0.2.11"
 
 [dependencies]
+cast = "0.1.0"
 error-chain = "0.8.1"
+image = { version = "0.12.2", default-features = false }
 log = "0.3.6"
 nom = "2.1.0"

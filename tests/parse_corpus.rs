@@ -32,9 +32,6 @@ fn process_file(path: &Path) {
     let mut f = fs::File::open(path).unwrap();
     let mut buffer = vec![];
     f.read_to_end(&mut buffer).unwrap();
-
-    for packet in vobsub::mpeg2::ps::pes_packets(&buffer) {
-        let packet = packet.unwrap();
-        trace!("{:#?}", &packet);
-    }
+    let count = vobsub::subtitles(&buffer).map(|s| s.unwrap()).count();
+    debug!("Found {} subtitles", count);
 }

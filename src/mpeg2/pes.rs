@@ -258,7 +258,7 @@ pub struct Packet<'a> {
 
 impl<'a> fmt::Debug for Packet<'a> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct("Foo")
+        fmt.debug_struct("Packet")
             .field("header", &self.header)
             .field("header_data", &self.header_data)
             .field("substream_id", &self.substream_id)
