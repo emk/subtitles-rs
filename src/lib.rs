@@ -11,8 +11,10 @@ extern crate image;
 extern crate log;
 #[macro_use]
 extern crate nom;
+extern crate safemem;
 
 mod errors;
+mod img;
 mod mpeg2;
 mod sub;
 mod util;

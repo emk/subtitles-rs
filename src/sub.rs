@@ -9,6 +9,7 @@ use nom::{be_u16, IResult};
 use std::fmt;
 
 use errors::*;
+use img::{decompress, Size};
 use mpeg2::ps;
 use util::BytesFormatter;
 
@@ -49,6 +50,14 @@ impl Coordinates {
     /// The height of the subtitle.
     pub fn height(&self) -> u16 {
         self.y2 + 1 - self.y1
+    }
+
+    /// The size of the subtitle.
+    fn size(&self) -> Size {
+        Size {
+            w: cast::usize(self.width()),
+            h: cast::usize(self.height()),
+        }
     }
 }
 
@@ -231,15 +240,15 @@ pub struct Subtitle {
     /// Should this subtitle be shown even when subtitles are off?
     pub force: bool,
     /// Coordinates at which to display the subtitle.
-    pub coordinates: Option<Coordinates>,
+    pub coordinates: Coordinates,
     /// Map each of the 4 colors in this subtitle to a 4-bit palette.
-    pub palette: Option<[u8; 4]>,
+    pub palette: [u8; 4],
     /// Map each of the 4 colors in this subtitle to 4 bits of alpha
     /// channel data.
-    pub alpha: Option<[u8; 4]>,
-    /// Our raw subtitle data, which is mostly just the run-length encoded
-    /// image data plus a little overhead.
-    raw_data: Vec<u8>,
+    pub alpha: [u8; 4],
+    /// Our decompressed image, stored with 2 bits per byte in row-major
+    /// order, that can be used as indices into `palette` and `alpha`.
+    pub image: Vec<u8>,
 }
 
 impl<'a> fmt::Debug for Subtitle {
@@ -251,7 +260,6 @@ impl<'a> fmt::Debug for Subtitle {
             .field("coordinates", &self.coordinates)
             .field("palette", &self.palette)
             .field("alpha", &self.alpha)
-            .field("raw_data", &BytesFormatter(&self.raw_data))
             .finish()
     }
 }
@@ -267,7 +275,7 @@ fn parse_be_u16_as_usize(buff: &[u8]) -> Result<(&[u8], usize)> {
 }
 
 /// Parse a subtitle.
-fn subtitle(raw_data: Vec<u8>, base_time: f64) -> Result<Subtitle> {
+fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
     // This parser is somewhat non-standard, because we need to work with
     // explicit offsets into `packet` in several places.
 
@@ -287,6 +295,7 @@ fn subtitle(raw_data: Vec<u8>, base_time: f64) -> Result<Subtitle> {
     let mut coordinates = None;
     let mut palette = None;
     let mut alpha = None;
+    let mut rle_offsets = None;
 
     // Loop over the individual control sequences.
     let mut control_offset = initial_control_offset;
@@ -319,8 +328,8 @@ fn subtitle(raw_data: Vec<u8>, base_time: f64) -> Result<Subtitle> {
                         ControlCommand::Coordinates(ref c) => {
                             coordinates = coordinates.or(Some(c.clone()));
                         }
-                        ControlCommand::RleOffsets(_) => {
-                            // TODO: Handle offsets and decode.
+                        ControlCommand::RleOffsets(r) => {
+                            rle_offsets = Some(r);
                         }
                         ControlCommand::Unsupported(b) => {
                             warn!("unsupported control sequence: {:?}",
@@ -350,13 +359,38 @@ fn subtitle(raw_data: Vec<u8>, base_time: f64) -> Result<Subtitle> {
         }
     }
 
-    // Return our parsed subtitle.
+    // Make sure we found all the control commands that we expect.
     let start_time = start_time.ok_or_else(|| -> Error {
         "no start time for subtitle".into()
     })?;
     let end_time = end_time.ok_or_else(|| -> Error {
         "no end time for subtitle".into()
     })?;
+    let coordinates = coordinates.ok_or_else(|| -> Error {
+        "no coordinates for subtitle".into()
+    })?;
+    let palette = palette.ok_or_else(|| -> Error {
+        "no palette for subtitle".into()
+    })?;
+    let alpha = alpha.ok_or_else(|| -> Error {
+        "no alpha for subtitle".into()
+    })?;
+    let rle_offsets = rle_offsets.ok_or_else(|| -> Error {
+        "no RLE offsets for subtitle".into()
+    })?;
+
+    // Decompress our image.
+    //
+    // We use `initial_control_offset+2`, because the second set of scan
+    // lines is often overlapped with the first `[0x00, 0x00]` bytes of the
+    // control block.
+    let image = decompress(coordinates.size(),
+                           [&raw_data[cast::usize(rle_offsets[0])..
+                                      cast::usize(rle_offsets[1])],
+                            &raw_data[cast::usize(rle_offsets[1])..
+                                      cast::usize(initial_control_offset+2)]])?;
+
+    // Return our parsed subtitle.
     let result = Subtitle {
         start_time: start_time,
         end_time: end_time,
@@ -364,18 +398,9 @@ fn subtitle(raw_data: Vec<u8>, base_time: f64) -> Result<Subtitle> {
         coordinates: coordinates,
         palette: palette,
         alpha: alpha,
-        raw_data: raw_data,
+        image: image,
     };
     trace!("Parsed subtitle: {:?}", &result);
-    if result.coordinates.is_none() {
-        warn!("No coordinates for subtitle");
-    }
-    if result.palette.is_none() {
-        warn!("No palette for subtitle");
-    }
-    if result.alpha.is_none() {
-        warn!("No alpha for subtitle");
-    }
     Ok(result)
 }
 
@@ -447,7 +472,7 @@ impl<'a> Iterator for Subtitles<'a> {
         }
 
         // Parse our subtitle buffer.
-        Some(subtitle(sub_packet, base_time))
+        Some(subtitle(&sub_packet, base_time))
     }
 }
 
@@ -473,9 +498,9 @@ fn parse_subtitles() {
     assert!(sub1.end_time - 50.9 < 0.1);
     assert_eq!(sub1.force, false);
     assert_eq!(sub1.coordinates,
-               Some(Coordinates { x1: 750, y1: 916, x2: 1172, y2: 966 }));
-    assert_eq!(sub1.palette, Some([0,3,1,0]));
-    assert_eq!(sub1.alpha, Some([15,15,15,0]));
+               Coordinates { x1: 750, y1: 916, x2: 1172, y2: 966 });
+    assert_eq!(sub1.palette, [0,3,1,0]);
+    assert_eq!(sub1.alpha, [15,15,15,0]);
     subs.next().expect("missing sub 2").unwrap();
     assert!(subs.next().is_none());
 }
