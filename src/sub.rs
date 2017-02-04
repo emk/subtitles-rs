@@ -248,7 +248,9 @@ pub struct Subtitle {
     pub alpha: [u8; 4],
     /// Our decompressed image, stored with 2 bits per byte in row-major
     /// order, that can be used as indices into `palette` and `alpha`.
-    pub image: Vec<u8>,
+    pub raw_image: Vec<u8>,
+    /// A private placeholder for future extensibility.
+    _placeholder: ()
 }
 
 impl<'a> fmt::Debug for Subtitle {
@@ -398,7 +400,8 @@ fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
         coordinates: coordinates,
         palette: palette,
         alpha: alpha,
-        image: image,
+        raw_image: image,
+        _placeholder: (),
     };
     trace!("Parsed subtitle: {:?}", &result);
     Ok(result)
