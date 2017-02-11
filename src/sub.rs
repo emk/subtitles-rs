@@ -486,11 +486,11 @@ pub fn subtitles(input: &[u8]) -> Subtitles {
 
 #[test]
 fn parse_subtitles() {
-    use env_logger;
+    //use env_logger;
     use std::fs;
     use std::io::prelude::*;
 
-    env_logger::init().unwrap();
+    //env_logger::init().unwrap();
 
     let mut f = fs::File::open("examples/example.sub").unwrap();
     let mut buffer = vec![];
