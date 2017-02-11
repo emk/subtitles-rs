@@ -9,6 +9,8 @@ use nom::{be_u16, IResult};
 use std::fmt;
 
 use errors::*;
+use idx;
+use image::{ImageBuffer, Rgba, RgbaImage};
 use img::{decompress, Size};
 use mpeg2::ps;
 use util::BytesFormatter;
@@ -251,6 +253,22 @@ pub struct Subtitle {
     pub raw_image: Vec<u8>,
     /// A private placeholder for future extensibility.
     _placeholder: ()
+}
+
+impl Subtitle {
+    /// Decompress to subtitle to an RBGA image.
+    pub fn to_image(&self, palette: &idx::Palette) -> RgbaImage {
+        let width = cast::u32(self.coordinates.width());
+        let height = cast::u32(self.coordinates.height());
+        ImageBuffer::from_fn(width, height, |x, y| {
+            let offset = cast::usize(y*width + x);
+            let px = cast::usize(self.raw_image[offset]);
+            let rgb = palette[cast::usize(self.palette[px])].data;
+            let a = self.alpha[px];
+            let aa = a << 4 | a;
+            Rgba { data: [rgb[0], rgb[1], rgb[2], aa] }
+        })
+    }
 }
 
 impl<'a> fmt::Debug for Subtitle {

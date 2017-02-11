@@ -9,6 +9,7 @@ use std::io::prelude::*;
 use std::path::Path;
 
 use errors::*;
+use sub;
 
 /// Parse a single hexadecimal digit.
 named!(hex_digit<u8>,
@@ -91,6 +92,8 @@ pub struct Index {
     //size: Size,
     /// The colors used for the subtitles.
     palette: Palette,
+    /// Our compressed subtitle data.
+    sub_data: Vec<u8>,
 }
 
 impl Index {
@@ -102,6 +105,9 @@ impl Index {
         }
 
         let path = path.as_ref();
+        let mut sub_path = path.to_owned();
+        sub_path.set_extension("sub");
+
         let mkerr = || -> Error {
             format!("Could not parse {}", path.display()).into()
         };
@@ -126,16 +132,26 @@ impl Index {
             }
         }
 
+        let mut sub = fs::File::open(sub_path)?;
+        let mut sub_data = vec![];
+        sub.read_to_end(&mut sub_data)?;
+
         Ok(Index {
             palette: palette_val
                 .ok_or_else(|| Error::from(ErrorKind::MissingKey("palette")))
                 .chain_err(&mkerr)?,
+            sub_data: sub_data,
         })
     }
 
     /// Get the palette associated with this `*.idx` file.
     pub fn palette(&self) -> &Palette {
         &self.palette
+    }
+
+    /// Iterate over the subtitles associated with this `*.idx` file.
+    pub fn subtitles(&self) -> sub::Subtitles {
+        sub::subtitles(&self.sub_data)
     }
 }
 
