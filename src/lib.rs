@@ -34,6 +34,13 @@
 //! options found in `*.idx` files.  It also lacks support for rapidly
 //! finding the subtitle associated with a particular time during playback.
 //!
+//! ## License
+//!
+//! This library is distributed under the CC0 1.0 Universal public domain
+//! grant (plus license), with the exception of `examples/example.sub`,
+//! which contains the first two lines of subtitles from a film as example
+//! data.
+//!
 //! ## Background & References
 //!
 //! VobSub subtitles consist of a simple textual `*.idx` file, and a binary
