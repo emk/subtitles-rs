@@ -8,7 +8,7 @@
 //! extern crate image;
 //! extern crate vobsub;
 //!
-//! let idx = vobsub::Index::open("examples/example.idx").unwrap();
+//! let idx = vobsub::Index::open("../fixtures/example.idx").unwrap();
 //! for sub in idx.subtitles() {
 //!     let sub = sub.unwrap();
 //!     println!("Time: {:0.3}-{:0.3}", sub.start_time, sub.end_time);
@@ -33,13 +33,6 @@
 //! information shown above, and it does not have full support for all the
 //! options found in `*.idx` files.  It also lacks support for rapidly
 //! finding the subtitle associated with a particular time during playback.
-//!
-//! ## License
-//!
-//! This library is distributed under the CC0 1.0 Universal public domain
-//! grant (plus license), with the exception of `examples/example.sub`,
-//! which contains the first two lines of subtitles from a film as example
-//! data.
 //!
 //! ## Background & References
 //!

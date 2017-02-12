@@ -513,7 +513,7 @@ fn parse_subtitles() {
 
     //env_logger::init().unwrap();
 
-    let mut f = fs::File::open("examples/example.sub").unwrap();
+    let mut f = fs::File::open("../fixtures/example.sub").unwrap();
     let mut buffer = vec![];
     f.read_to_end(&mut buffer).unwrap();
     let mut subs = subtitles(&buffer);

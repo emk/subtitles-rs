@@ -161,7 +161,7 @@ fn parse_index() {
 
     env_logger::init().unwrap();
 
-    let idx = Index::open("examples/example.idx").unwrap();
+    let idx = Index::open("../fixtures/example.idx").unwrap();
 
     //assert_eq!(idx.size(), Size { w: 1920, h: 1080 });
     assert_eq!(idx.palette()[0], Rgb { data: [0x00, 0x00, 0x00] });
