@@ -11,5 +11,4 @@ matrix:
     rust: stable
 script:
 - |
-  cargo build --verbose &&
-  cargo test  --verbose
+  cargo test --verbose --all

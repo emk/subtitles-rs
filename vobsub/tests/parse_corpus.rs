@@ -21,7 +21,7 @@ fn private_corpus() {
         require_literal_separator: true,
         require_literal_leading_dot: true,
     };
-    for entry in glob::glob_with("private/**/*.sub", &options).unwrap() {
+    for entry in glob::glob_with("../private/**/*.sub", &options).unwrap() {
         let entry = entry.unwrap();
         process_file(&entry);
     }

@@ -1,0 +1,33 @@
+[package]
+name = "vobsub"
+version = "0.1.1"
+authors = ["Eric Kidd <git@randomhacks.net>"]
+
+description = "Decode DVD VobSub-format subtitles (*.sub/*.idx files)"
+license = "CC0-1.0"
+readme = "README.md"
+repository = "https://github.com/emk/vobsub"
+documentation = "https://docs.rs/vobsub/"
+
+[profile.dev]
+# Enable this if you want to run --ignored tests against a large private corpus.
+#opt-level = 3
+
+[features]
+png = ["image/png_codec"]
+
+[dev-dependencies]
+docopt = "0.7.0"
+env_logger = "0.4.0"
+glob = "0.2.11"
+rustc-serialize = "0.3.22"
+
+[dependencies]
+cast = "0.1.0"
+error-chain = "0.8.1"
+image = { version = "0.12.2", default-features = false }
+lazy_static = "0.2.2"
+log = "0.3.6"
+nom = "2.1.0"
+regex = "0.2.1"
+safemem = "0.2.0"

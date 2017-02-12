@@ -9,5 +9,4 @@ install:
 build: false
 
 test_script:
-  - cargo build --verbose
-  - cargo test --verbose
+  - cargo test --verbose --all
