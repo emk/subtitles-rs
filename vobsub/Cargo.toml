@@ -13,14 +13,9 @@ documentation = "https://docs.rs/vobsub/"
 # Enable this if you want to run --ignored tests against a large private corpus.
 #opt-level = 3
 
-[features]
-png = ["image/png_codec"]
-
 [dev-dependencies]
-docopt = "0.7.0"
 env_logger = "0.4.0"
 glob = "0.2.11"
-rustc-serialize = "0.3.22"
 
 [dependencies]
 cast = "0.1.0"
