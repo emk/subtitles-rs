@@ -1,4 +1,5 @@
 extern crate docopt;
+extern crate env_logger;
 #[macro_use]
 extern crate error_chain;
 extern crate image;
@@ -26,6 +27,8 @@ struct Args {
 quick_main!(run);
 
 fn run() -> Result<()> {
+    env_logger::init().unwrap();
+
     let args: Args = Docopt::new(USAGE)
         .and_then(|d| d.argv(env::args().into_iter()).decode())
         .unwrap_or_else(|e| e.exit());

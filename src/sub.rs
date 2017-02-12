@@ -262,7 +262,10 @@ impl Subtitle {
         let height = cast::u32(self.coordinates.height());
         ImageBuffer::from_fn(width, height, |x, y| {
             let offset = cast::usize(y*width + x);
-            let px = cast::usize(self.raw_image[offset]);
+            // We need to subtract the raw index from 3 to get the same
+            // results as everybody else.  I found this by inspecting the
+            // Handbrake subtitle decoding routines.
+            let px = cast::usize(3-self.raw_image[offset]);
             let rgb = palette[cast::usize(self.palette[px])].data;
             let a = self.alpha[px];
             let aa = a << 4 | a;
