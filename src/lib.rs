@@ -22,12 +22,22 @@
 //! }
 //! ```
 //!
+//! ## Performance
+//!
+//! Performance in debug mode is poor; compile with `--release` before
+//! benchmarking.
+//!
 //! ## Limitations
 //!
 //! The initial version of this library is focused on extracting just the
 //! information shown above, and it does not have full support for all the
 //! options found in `*.idx` files.  It also lacks support for rapidly
 //! finding the subtitle associated with a particular time during playback.
+//!
+//! ## Contributing
+//!
+//! Your feedback and contributions are welcome!  Please see
+//! [GitHub](https://github.com/emk/vobsub) for details.
 
 #![warn(missing_docs)]
 

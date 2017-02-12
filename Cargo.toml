@@ -3,6 +3,12 @@ name = "vobsub"
 version = "0.1.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
+description = "Decode DVD VobSub-format subtitles (*.sub/*.idx files)"
+license = "CC0-1.0"
+readme = "README.md"
+repository = "https://github.com/emk/vobsub"
+documentation = "https://docs.rs/vobsub/"
+
 [profile.dev]
 # Enable this if you want to run --ignored tests against a large private corpus.
 #opt-level = 3
