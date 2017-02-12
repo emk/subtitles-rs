@@ -34,6 +34,36 @@
 //! options found in `*.idx` files.  It also lacks support for rapidly
 //! finding the subtitle associated with a particular time during playback.
 //!
+//! ## Background & References
+//!
+//! VobSub subtitles consist of a simple textual `*.idx` file, and a binary
+//! `*.sub` file.  The binary `*.sub` file is essentially an MPEG-2 Program
+//! Stream containing Packetized Elementary Stream data, but only for a
+//! single subtitle track.
+//!
+//! Useful references include:
+//!
+//! - [Program Stream](https://en.wikipedia.org/wiki/MPEG_program_stream) (PS)
+//! - [Packetized Elementary Stream][PES] (PES)
+//! - [DVD subtitles](http://sam.zoy.org/writings/dvd/subtitles/)
+//! - [System Time Clock](http://www.bretl.com/mpeghtml/STC.HTM)
+//!
+//! [PES]: http://dvd.sourceforge.net/dvdinfo/pes-hdr.html
+//!
+//! There are also any number of open source implementations of subtitles
+//! decoders which might be useful once you get past the Program Stream and
+//! PES wrappers.
+//!
+//! There are two closely-related formats that this library could be
+//! extended to parse without too much work:
+//!
+//! - Subtitles embedded in DVD-format video.  These should contain the
+//!   same subtitle packet format, but the `*.idx` file is replaced by data
+//!   stored in an IFO file.
+//! - Subtitles stored in the Matroska container format.  Again, these use
+//!   the same basic subtitle format, but the `*.idx` file is replaced by
+//!   an internal, stripped-down version of the same data in text format.
+//!
 //! ## Contributing
 //!
 //! Your feedback and contributions are welcome!  Please see
