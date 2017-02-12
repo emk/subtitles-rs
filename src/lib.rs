@@ -96,6 +96,6 @@ mod mpeg2;
 mod sub;
 mod util;
 
-pub use self::errors::{Error, Result};
+pub use self::errors::{Error, ErrorKind, Result};
 pub use self::idx::{Index, Palette};
 pub use self::sub::{Coordinates, Subtitle, Subtitles, subtitles};
