@@ -6,7 +6,7 @@ authors = ["Eric Kidd <git@randomhacks.net>"]
 description = "Decode DVD VobSub-format subtitles (*.sub/*.idx files)"
 license = "CC0-1.0"
 readme = "README.md"
-repository = "https://github.com/emk/vobsub"
+repository = "https://github.com/emk/subtitles-rs"
 documentation = "https://docs.rs/vobsub/"
 
 [profile.dev]

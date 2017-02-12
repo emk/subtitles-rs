@@ -74,7 +74,7 @@
 //! ## Contributing
 //!
 //! Your feedback and contributions are welcome!  Please see
-//! [GitHub](https://github.com/emk/vobsub) for details.
+//! [GitHub](https://github.com/emk/subtitles-rs) for details.
 
 #![warn(missing_docs)]
 
