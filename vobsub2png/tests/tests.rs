@@ -79,7 +79,7 @@ fn generates_png_and_json_files() {
 
 #[test]
 fn defaults_out_dir_based_on_input_name() {
-    let workdir = WorkDir::new("generates_png_and_json_files");
+    let workdir = WorkDir::new("defaults_out_dir_based_on_input_name");
     let status = workdir.cmd()
         .arg(workdir.fixture("../fixtures/example.idx"))
         .status()
