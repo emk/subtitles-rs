@@ -5,7 +5,9 @@
 For documentation and example code, please see
 the [API docs](https://docs.rs/vobsub/).
 
-## Contributions
+## Contributing
 
-Your feedback and contributions are welcome!  Please feel free to submit
-issues and pull requests using GitHub.
+Your feedback and contributions are welcome!  For more information, see
+the [subtitles-rs][] project.
+
+[subtitles-rs]: https://github.com/emk/subtitles-rs
