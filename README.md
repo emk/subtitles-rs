@@ -10,8 +10,14 @@ more details.
 - [vobsub2png][]: A command-line tool for converting sub/idx subtitles to
   PNGs with JSON metadata.
 
+The following related projects can be found in other repositories:
+
+- [substudy][]: Learn foreign languages using audio and subtitles extracted
+  from video files.
+
 [vobsub]: ./vobsub/README.md
 [vobsub2png]: ./vobsub2png/README.md
+[substudy]: https://github.com/emk/substudy
 
 ## License
 
