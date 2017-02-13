@@ -1,5 +1,7 @@
 # Rust subtitle utilities
 
+[![Build Status](https://travis-ci.org/emk/subtitles-rs.svg?branch=master)](https://travis-ci.org/emk/subtitles-rs) [![Build status](https://ci.appveyor.com/api/projects/status/3hn8cwckcdhpcasm/branch/master?svg=true)](https://ci.appveyor.com/project/emk/subtitles-rs/branch/master)
+
 This repository contains a number of related crates for manipulating
 subtitles.  See the `README.md` files in this individual subdirectories for
 more details.
