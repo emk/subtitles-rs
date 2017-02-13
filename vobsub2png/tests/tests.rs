@@ -8,6 +8,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process;
 use std::sync::atomic::{ATOMIC_USIZE_INIT, AtomicUsize, Ordering};
+use std::thread;
+use std::time;
 
 static TEST_ID: AtomicUsize = ATOMIC_USIZE_INIT;
 
@@ -36,8 +38,25 @@ impl WorkDir {
             fs::remove_dir_all(&dir)
                 .expect("Could not remove test output directory");
         }
-        fs::create_dir_all(&dir)
-            .expect("Could not create test output directory");
+
+        // Work around https://github.com/rust-lang/rust/issues/33707.
+        let mut err = None;
+        for _ in 0..10 {
+            match fs::create_dir_all(&dir) {
+                Ok(_) => {
+                    err = None;
+                    break;
+                }
+                Err(e) => {
+                    err = Some(e);
+                }
+            }
+            thread::sleep(time::Duration::from_millis(500));
+        }
+        if let Some(e) = err {
+            panic!("Could not create test output directory: {}", e);
+        }
+
         WorkDir {
             bin: bin_dir.join("vobsub2png"),
             dir: dir,
