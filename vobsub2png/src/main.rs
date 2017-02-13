@@ -4,12 +4,15 @@ extern crate env_logger;
 extern crate error_chain;
 extern crate image;
 extern crate rustc_serialize;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
 extern crate vobsub;
 
 use docopt::Docopt;
 use std::env;
 use std::fs;
-use std::io::prelude::*;
 use std::path::Path;
 use vobsub::{Error, Index, Result, Subtitle};
 
@@ -29,12 +32,12 @@ struct Args {
 
 quick_main!(run);
 
-#[derive(RustcEncodable)]
+#[derive(Serialize)]
 struct IndexInfo {
     subtitles: Vec<SubInfo>,
 }
 
-#[derive(RustcEncodable)]
+#[derive(Serialize)]
 struct SubInfo {
     start: f64,
     end: f64,
@@ -63,6 +66,7 @@ fn run() -> Result<()> {
             Path::new(&format!("{}_subtitles", stem)).to_owned()
         }
     };
+    fs::create_dir_all(&out_dir)?;
 
     let idx = Index::open(path)?;
     let mut info = IndexInfo { subtitles: vec![] };
@@ -84,10 +88,9 @@ fn run() -> Result<()> {
     }
 
     let json_path = out_dir.join("index.json");
-    let json = rustc_serialize::json::encode(&info)
-        .expect("Cannot encode JSON".into());
     let mut json_file: fs::File = fs::File::create(&json_path)?;
-    json_file.write_all(json.as_bytes())?;
+    serde_json::to_writer(&mut json_file, &info)
+        .map_err(|e| format!("error writing index.json: {}", e))?;
 
     Ok(())
 }
