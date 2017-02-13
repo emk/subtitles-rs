@@ -1,2 +1,7 @@
+[profile.dev]
+# Enable this if you want to run `--ignored` tests against a large private
+# corpus, or simply to improve performance in test mode.
+#opt-level = 3
+
 [workspace]
 members = ["vobsub", "vobsub2png"]

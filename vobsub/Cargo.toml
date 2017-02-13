@@ -9,12 +9,6 @@ readme = "README.md"
 repository = "https://github.com/emk/subtitles-rs"
 documentation = "https://docs.rs/vobsub/"
 
-[profile.dev]
-# Disable this if you want faster compile times during development.  Enable
-# this if you want to run `--ignored` tests against a large private corpus,
-# or simply to improve performance in test mode.
-opt-level = 3
-
 [dev-dependencies]
 env_logger = "0.4.0"
 glob = "0.2.11"
