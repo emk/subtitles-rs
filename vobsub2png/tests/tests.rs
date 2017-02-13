@@ -20,7 +20,11 @@ struct WorkDir {
 
 impl WorkDir {
     fn new(test_name: &str) -> WorkDir {
-        let mut bin_dir = env::current_exe().unwrap().parent().unwrap().to_path_buf();
+        let mut bin_dir = env::current_exe()
+            .expect("Could not find executable")
+            .parent()
+            .expect("Could not find parent directory for executable")
+            .to_path_buf();
         if bin_dir.ends_with("deps") {
             bin_dir.pop();
         }
@@ -29,9 +33,11 @@ impl WorkDir {
             .join(test_name)
             .join(format!("{}", id));
         if dir.exists() {
-            fs::remove_dir_all(&dir).unwrap();
+            fs::remove_dir_all(&dir)
+                .expect("Could not remove test output directory");
         }
-        fs::create_dir_all(&dir).unwrap();
+        fs::create_dir_all(&dir)
+            .expect("Could not create test output directory");
         WorkDir {
             bin: bin_dir.join("vobsub2png"),
             dir: dir,
@@ -45,7 +51,9 @@ impl WorkDir {
     }
 
     fn fixture<P: AsRef<Path>>(&self, path: P) -> PathBuf {
-        fs::canonicalize(env::current_dir().unwrap().join(path)).unwrap()
+        let cwd = env::current_dir().expect("Could not get current dir");
+        fs::canonicalize(cwd.join(path))
+            .expect("Could not canonicalize path")
     }
 
     fn expect_path<P: AsRef<Path>>(&self, path: P) {
