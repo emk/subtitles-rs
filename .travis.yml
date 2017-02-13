@@ -11,4 +11,4 @@ matrix:
     rust: stable
 script:
 - |
-  cargo test --verbose --all
+  env RUST_BACKTRACE=1 cargo test --verbose --all
