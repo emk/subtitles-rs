@@ -9,6 +9,9 @@ readme = "README.md"
 repository = "https://github.com/emk/subtitles-rs"
 documentation = "https://github.com/emk/subtitles-rs/blob/master/vobsub2png/README.md"
 
+[[test]]
+name = "tests"
+
 [features]
 png = ["image/png_codec"]
 
