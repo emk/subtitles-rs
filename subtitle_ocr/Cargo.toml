@@ -1,0 +1,15 @@
+[package]
+name = "subtitle_ocr"
+version = "0.1.0"
+authors = ["Eric Kidd <git@randomhacks.net>"]
+
+[dev-dependencies]
+env_logger = "0.4.0"
+glob = "0.2.11"
+vobsub = "0.1.1"
+
+[dependencies]
+cast = "0.2.0"
+error-chain = "0.8.1"
+image = { version = "0.12.2", default-features = false, features = ["png_codec"] }
+log = "0.3.6"
