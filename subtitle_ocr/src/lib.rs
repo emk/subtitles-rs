@@ -54,10 +54,12 @@ extern crate glob;
 extern crate image;
 #[macro_use]
 extern crate log;
+extern crate palette;
 #[cfg(test)]
 extern crate vobsub;
 
 mod bitmap;
 mod errors;
+pub mod pixmap;
 #[cfg(test)]
 mod test_util;
