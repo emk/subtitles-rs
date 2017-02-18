@@ -330,6 +330,15 @@ impl From<RgbaImage> for Pixmap<Rgba<u8>> {
     }
 }
 
+impl<P: Pixel> fmt::Debug for Pixmap<P> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("Pixmap")
+            .field("width", &self.width)
+            .field("height", &self.height)
+            .finish()
+    }
+}
+
 #[test]
 fn blank_fills_image_with_default() {
     let pixmap = Pixmap::<bool>::blank(1, 2);
