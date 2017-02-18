@@ -58,8 +58,9 @@ extern crate palette;
 #[cfg(test)]
 extern crate vobsub;
 
-mod bitmap;
+pub mod binarization;
 mod errors;
 pub mod pixmap;
+pub mod segmentation;
 #[cfg(test)]
 mod test_util;

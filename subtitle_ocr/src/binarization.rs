@@ -1,47 +1,13 @@
-//! Black-and-white images in a format that's optimized for OCR calculations.
+//! Convert images to black and white.
 
 use cast;
-use image::{Rgba, RgbaImage};
+use image::Rgba;
 use std::collections::HashMap;
 
 use errors::*;
+use pixmap::{Pixel, Pixmap};
 #[cfg(test)]
 use test_util::{rgba_hex, test_images};
-
-/// Extension methods for `image::Rgba`.
-trait RgbaExt {
-    /// Is this color transparent or partially transparent?
-    fn is_transparent(&self) -> bool;
-}
-
-impl RgbaExt for Rgba<u8> {
-    fn is_transparent(&self) -> bool {
-        self.data[3] < 0xff
-    }
-}
-
-/// Extension methods for `image::RgbaImage`.
-trait RgbaImageExt {
-    /// Return the value of the pixel at `x` and `y` if those coordinates
-    /// fall inside the image, or `None` if they're out of bounds.
-    fn get_opt(&self, x: i32, y: i32) -> Option<&Rgba<u8>>;
-}
-
-impl RgbaImageExt for RgbaImage {
-    fn get_opt(&self, x: i32, y: i32) -> Option<&Rgba<u8>> {
-        if x < 0 || y < 0 {
-            return None;
-        }
-        // It's safe to assert here because we just checked above.
-        let x = cast::u32(x).expect("x should be in bounds");
-        let y = cast::u32(y).expect("y should be in bounds");
-        if x >= self.width() || y >= self.height() {
-            None
-        } else {
-            Some(self.get_pixel(x, y))
-        }
-    }
-}
 
 /// Different kinds of colors we might find in an image.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -104,14 +70,17 @@ impl AdjacentPixelInfo {
 }
 
 /// Classify the colors in an image as transparent or non-transparent.
-fn classify_colors(image: &RgbaImage) -> Result<HashMap<Rgba<u8>, ColorType>> {
-    // First divide colors into transparent and opaque based on alpha.
+fn classify_colors(image: &Pixmap) -> Result<HashMap<Rgba<u8>, ColorType>> {
+    // First divide colors into transparent and opaque based on alpha.  We
+    // ensure that we always have an entry for the default color to
+    // simplify the logic later on.
     let mut classification = HashMap::new();
+    classification.insert(Rgba::default_color(), ColorType::Transparent);
     for px in image.pixels() {
         if px.is_transparent() {
-            classification.entry(*px).or_insert(ColorType::Transparent);
+            classification.entry(px).or_insert(ColorType::Transparent);
         } else {
-            classification.entry(*px).or_insert(ColorType::Opaque);
+            classification.entry(px).or_insert(ColorType::Opaque);
         }
     }
     debug!("color classification (initial): {:?}", &classification);
@@ -138,22 +107,18 @@ fn classify_colors(image: &RgbaImage) -> Result<HashMap<Rgba<u8>, ColorType>> {
                 }
 
                 // Get our neighboring pixel, if it's in bounds.
-                let px_adj_opt =
-                    image.get_opt(cast::i32(x)? + dx, cast::i32(y)? + dy);
+                let px_adj =
+                    image.get_default(cast::isize(x)? + dx, cast::isize(y)? + dy);
 
-                // Don't count pixels of the same color.
-                if px_adj_opt == Some(px) {
+                // Ignore adjacent pixels of the same color.
+                if px == px_adj {
                     continue;
                 }
 
                 // Classify our neighboring color an increment our counter.
-                let ct_adj = px_adj_opt
-                    .map_or_else(|| ColorType::Transparent,
-                                 |px_adj| {
-                                     *classification.get(px_adj)
-                                         .expect("unknown classification")
-                                 });
-                adjacent.get_mut(px)
+                let ct_adj = *classification.get(&px_adj)
+                    .expect("unknown classification");
+                adjacent.get_mut(&px)
                     .expect("unknown adjacent color")
                     .incr_count(ct_adj);
             }
@@ -193,10 +158,31 @@ fn classify_colors_as_transparent_and_opaque() {
     //env_logger::init().unwrap();
 
     let images = test_images().unwrap();
-    let colors = classify_colors(&images[0]).unwrap();
+    let colors = classify_colors(&Pixmap::from(images[0].clone())).unwrap();
     assert_eq!(colors.len(), 4);
     assert_eq!(*colors.get(&rgba_hex(0x00000000)).unwrap(), ColorType::Transparent);
     assert_eq!(*colors.get(&rgba_hex(0x000000ff)).unwrap(), ColorType::Shadow);
     assert_eq!(*colors.get(&rgba_hex(0x999999ff)).unwrap(), ColorType::Opaque);
     assert_eq!(*colors.get(&rgba_hex(0xf0f0f0ff)).unwrap(), ColorType::Opaque);
+}
+
+/// Reduce an image to two "colors": Areas inside letters, and transparent
+/// background.
+pub fn binarize(pixmap: &Pixmap) -> Result<Pixmap<bool>> {
+    let classification = classify_colors(pixmap)?;
+    Ok(pixmap.map(|px| {
+        let ct = classification.get(&px).expect("Color wasn't classified");
+        ct == &ColorType::Opaque
+    }))
+}
+
+#[test]
+fn binarize_reduces_to_transparent_and_black() {
+    //use env_logger;
+    //env_logger::init().unwrap();
+
+    let images = test_images().unwrap();
+    let _ = binarize(&Pixmap::from(images[0].clone())).unwrap();
+
+    //bitmap.to_image().unwrap().save("binarize.png").unwrap();
 }
