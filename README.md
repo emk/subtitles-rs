@@ -10,14 +10,18 @@ more details.
 - [vobsub2png][]: A command-line tool for converting sub/idx subtitles to
   PNGs with JSON metadata.
 
-The following related projects can be found in other repositories:
+The following subtitle-related projects can be found in other repositories:
 
 - [substudy][]: Learn foreign languages using audio and subtitles extracted
   from video files.
+- [aligner][]: This GPLed library by kaegi uses dynamic programming to
+  re-align out-of-sync subtitles using another subtitle file with
+  known-good timing.
 
 [vobsub]: ./vobsub/README.md
 [vobsub2png]: ./vobsub2png/README.md
 [substudy]: https://github.com/emk/substudy
+[aligner]: https://github.com/kaegi/aligner
 
 ## License
 
