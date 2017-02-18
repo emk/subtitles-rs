@@ -12,5 +12,6 @@ vobsub = "0.1.1"
 cast = "0.2.0"
 error-chain = "0.8.1"
 image = { version = "0.12.2", default-features = false, features = ["png_codec"] }
+lazy_static = "0.2"
 log = "0.3.6"
 palette = "0.2.1"

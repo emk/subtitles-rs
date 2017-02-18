@@ -178,11 +178,11 @@ pub fn binarize(pixmap: &Pixmap) -> Result<Pixmap<bool>> {
 
 #[test]
 fn binarize_reduces_to_transparent_and_black() {
-    //use env_logger;
-    //env_logger::init().unwrap();
+    use env_logger;
+    env_logger::init().unwrap();
 
     let images = test_images().unwrap();
-    let _ = binarize(&Pixmap::from(images[0].clone())).unwrap();
+    let bitmap = binarize(&Pixmap::from(images[0].clone())).unwrap();
 
-    //bitmap.to_image().unwrap().save("binarize.png").unwrap();
+    debug_pixmap!(&bitmap, "binarize.png");
 }

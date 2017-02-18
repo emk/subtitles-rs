@@ -53,10 +53,15 @@ extern crate error_chain;
 extern crate glob;
 extern crate image;
 #[macro_use]
+extern crate lazy_static;
+#[macro_use]
 extern crate log;
 extern crate palette;
 #[cfg(test)]
 extern crate vobsub;
+
+#[macro_use]
+mod logimg;
 
 pub mod binarization;
 mod errors;

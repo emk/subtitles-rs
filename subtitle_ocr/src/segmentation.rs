@@ -147,7 +147,7 @@ pub fn segment(pixmap: &Pixmap<bool>) -> Result<Vec<Segment>> {
                     }
                 }
 
-                //
+                // Record our segment.
                 result.push(Segment {
                     left: x_min,
                     top: y_min,
@@ -159,7 +159,7 @@ pub fn segment(pixmap: &Pixmap<bool>) -> Result<Vec<Segment>> {
     }
 
     // Dump the segment image for debugging.
-    //scratch.to_image().unwrap().save("segment.png").unwrap();
+    debug_pixmap!(&scratch, "segment.png");
 
     Ok(result)
 }
