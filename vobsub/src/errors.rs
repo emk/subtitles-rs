@@ -1,4 +1,7 @@
-/// Custom `Error` and `Result` types, declared using `error-chain`.
+//! Custom `Error` and `Result` types, declared using `error-chain`.
+
+// There's no way for us to document `ErrorrKind::Io`, unfortunately.
+#![allow(missing_docs)]
 
 use nom::IResult;
 use std::default::Default;
