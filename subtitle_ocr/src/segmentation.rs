@@ -18,7 +18,7 @@ use test_util::test_images;
 /// A virtual `Pixel` type which is used to help us extract contiguous
 /// segments from an image.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum SegmentPixel {
+pub enum SegmentPixel {
     /// This pixel is transparent (or was originally a "shadow" pixel that
     /// we've removed).
     Transparent,
@@ -74,7 +74,8 @@ pub struct Segment {
 }
 
 /// Split an image into continguous segments of non-transparent pixels.
-pub fn segment(pixmap: &Pixmap<bool>) -> Result<Vec<Segment>> {
+pub fn segment(pixmap: &Pixmap<bool>)
+               -> Result<(Pixmap<SegmentPixel>, Vec<Segment>)> {
     // Construct a scatch image buffer using `SegmentPixel` as our pixel
     // type.  We'll use this to keep track of the actual floodfill.
     let mut scratch = pixmap.map(|p| {
@@ -158,16 +159,13 @@ pub fn segment(pixmap: &Pixmap<bool>) -> Result<Vec<Segment>> {
         }
     }
 
-    // Dump the segment image for debugging.
-    debug_pixmap!(&scratch, "segment.png");
-
-    Ok(result)
+    Ok((scratch, result))
 }
 
 #[test]
 fn segment_extracts_contiguous_regions() {
     let images = test_images().unwrap();
     let binarized = binarize(&Pixmap::from(images[0].clone())).unwrap();
-    let segments = segment(&binarized).unwrap();
+    let (_segmented, segments) = segment(&binarized).unwrap();
     assert_eq!(segments.len(), 18);
 }
