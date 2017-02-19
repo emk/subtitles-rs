@@ -63,12 +63,13 @@ extern crate vobsub;
 #[macro_use]
 mod logimg;
 
-pub mod binarization;
+mod binarization;
 mod ctx;
 mod errors;
-pub mod pixmap;
-pub mod segmentation;
+mod pixmap;
+mod segmentation;
 #[cfg(test)]
 mod test_util;
 
 pub use self::ctx::OcrContext;
+pub use self::errors::{Error, ErrorKind, Result};
