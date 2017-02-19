@@ -4,4 +4,4 @@
 #opt-level = 3
 
 [workspace]
-members = ["vobsub", "vobsub2png", "subtitle_ocr"]
+members = ["cli_test_dir", "vobsub", "vobsub2png", "subtitle_ocr"]

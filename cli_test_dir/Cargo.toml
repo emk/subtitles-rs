@@ -1,0 +1,6 @@
+[package]
+name = "cli_test_dir"
+version = "0.1.0"
+authors = ["Eric Kidd <git@randomhacks.net>"]
+
+[dependencies]
