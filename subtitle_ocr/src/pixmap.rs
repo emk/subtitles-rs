@@ -10,9 +10,6 @@ use errors::*;
 #[cfg(test)]
 use test_util::rgba_hex;
 
-/// Type alias for a `Pixmap` with boolean pixels.
-pub type Bitmap = Pixmap<bool>;
-
 /// A type which can be used as a pixel in a `Pixmap`.
 pub trait Pixel: Clone + Copy + fmt::Debug + 'static {
     /// This is basically just `Default::default`. We would normally just
