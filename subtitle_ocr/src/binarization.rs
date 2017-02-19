@@ -99,29 +99,21 @@ fn classify_colors(image: &Pixmap) -> Result<HashMap<Rgba<u8>, ColorType>> {
             continue;
         }
         // Look at the 3x3 grid around this pixel.
-        for &dy in &[-1, 0, 1] {
-            for &dx in &[-1, 0, 1] {
-                // Don't compare to ourselves.
-                if dx == 0 && dy == 0 {
-                    continue;
-                }
+        for (x2, y2) in image.all_neighbors(x, y) {
+            // Get our neighboring pixel, if it's in bounds.
+            let px_adj = image.get_default(x2, y2);
 
-                // Get our neighboring pixel, if it's in bounds.
-                let px_adj =
-                    image.get_default(cast::isize(x)? + dx, cast::isize(y)? + dy);
-
-                // Ignore adjacent pixels of the same color.
-                if px == px_adj {
-                    continue;
-                }
-
-                // Classify our neighboring color an increment our counter.
-                let ct_adj = *classification.get(&px_adj)
-                    .expect("unknown classification");
-                adjacent.get_mut(&px)
-                    .expect("unknown adjacent color")
-                    .incr_count(ct_adj);
+            // Ignore adjacent pixels of the same color.
+            if px == px_adj {
+                continue;
             }
+
+            // Classify our neighboring color an increment our counter.
+            let ct_adj = *classification.get(&px_adj)
+                .expect("unknown classification");
+            adjacent.get_mut(&px)
+                .expect("unknown adjacent color")
+                .incr_count(ct_adj);
         }
     }
     debug!("color adjacency: {:?}", &adjacent);
