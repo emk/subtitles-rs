@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use errors::*;
 use pixmap::{Pixel, Pixmap};
 #[cfg(test)]
-use test_util::{rgba_hex, test_images};
+use test_util::{idx_fixture_pixmaps, rgba_hex};
 
 /// Different kinds of colors we might find in an image.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -149,8 +149,7 @@ fn classify_colors_as_transparent_and_opaque() {
     //use env_logger;
     //env_logger::init().unwrap();
 
-    let images = test_images().unwrap();
-    let colors = classify_colors(&Pixmap::from(images[0].clone())).unwrap();
+    let colors = classify_colors(&idx_fixture_pixmaps()[0]).unwrap();
     assert_eq!(colors.len(), 4);
     assert_eq!(*colors.get(&rgba_hex(0x00000000)).unwrap(), ColorType::Transparent);
     assert_eq!(*colors.get(&rgba_hex(0x000000ff)).unwrap(), ColorType::Shadow);
@@ -170,11 +169,8 @@ pub fn binarize(pixmap: &Pixmap) -> Result<Pixmap<bool>> {
 
 #[test]
 fn binarize_reduces_to_transparent_and_black() {
-    use env_logger;
-    env_logger::init().unwrap();
-
-    let images = test_images().unwrap();
-    let bitmap = binarize(&Pixmap::from(images[0].clone())).unwrap();
-
+    //use env_logger;
+    //env_logger::init().unwrap();
+    let bitmap = binarize(&idx_fixture_pixmaps()[0]).unwrap();
     debug_pixmap!(&bitmap, "binarize.png");
 }

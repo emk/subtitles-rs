@@ -6,7 +6,7 @@ use std::path::Path;
 use errors::*;
 use binarization::binarize;
 use pixmap::Pixmap;
-use segmentation::segment;
+use segmentation::{group_into_lines, segment};
 
 /// An `OcrContext` represents a single movie's or episode's worth of
 /// subtitles that we want to OCR.  To use it, create a new context, and
@@ -23,7 +23,7 @@ impl OcrContext {
     pub fn new(source_path: &Path) -> Result<OcrContext> {
         let file_stem = source_path.file_stem()
             .ok_or_else(|| -> Error {
-                format!("expected a file, not the directory {}",
+                format!("expected a filename, not {}",
                         source_path.display()).into()
             })?
             .to_string_lossy()
@@ -42,9 +42,13 @@ impl OcrContext {
         let pixmap = Pixmap::from(image.to_owned());
         debug_pixmap!(&pixmap, "{}_{:04}_input.png", &self.file_stem, id);
         let bitmap = binarize(&pixmap)?;
-        debug_pixmap!(&bitmap, "{}_{:04}_binarized.png", &self.file_stem, id);
-        let (segmented, _segments) = segment(&bitmap)?;
+        trace_pixmap!(&bitmap, "{}_{:04}_binarized.png", &self.file_stem, id);
+        let (segmented, segments) = segment(&bitmap)?;
         debug_pixmap!(&segmented, "{}_{:04}_segmented.png", &self.file_stem, id);
+        let lines = group_into_lines(pixmap.height(), segments)?;
+        if lines.len() > 2 {
+            warn!("3-line subtitle");
+        }
         Ok(())
     }
 }

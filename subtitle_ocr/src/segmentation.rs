@@ -13,7 +13,11 @@ use binarization::binarize;
 use errors::*;
 use pixmap::{Pixel, Pixmap};
 #[cfg(test)]
-use test_util::test_images;
+use test_util::{idx_fixture_pixmaps, png_fixture_pixmap};
+
+/// The maximum permissible gap between two vertically-separated sections
+/// of a letter.
+const INTRA_LETTER_GAP: usize = 6;
 
 /// A virtual `Pixel` type which is used to help us extract contiguous
 /// segments from an image.
@@ -164,8 +168,78 @@ pub fn segment(pixmap: &Pixmap<bool>)
 
 #[test]
 fn segment_extracts_contiguous_regions() {
-    let images = test_images().unwrap();
-    let binarized = binarize(&Pixmap::from(images[0].clone())).unwrap();
+    let binarized = binarize(&idx_fixture_pixmaps()[0]).unwrap();
     let (_segmented, segments) = segment(&binarized).unwrap();
     assert_eq!(segments.len(), 18);
+}
+
+/// Group a list of letter segments into lines.
+pub fn group_into_lines(height: usize, segments: Vec<Segment>)
+                        -> Result<Vec<Vec<Segment>>> {
+    // Find the blank lines.
+    let mut histogram: Vec<u16> = vec![0; height];
+    for segment in &segments {
+        for i in segment.top..segment.top+segment.pixmap.height() {
+            histogram[i] += 1;
+        }
+    }
+    debug!("line histogram: {:?}", &histogram);
+
+    // Find the contiguous non-blank lines.  Note that the bottom edge of
+    // these runs is exclusive.
+    let mut non_zero_runs = Vec::with_capacity(4);
+    let mut i = 0;
+    while i < height {
+        // Skip section of zeros.
+        while i < height && histogram[i] == 0 {
+            i += 1;
+        }
+
+        // Record a second of non-zeros.
+        let begin_run = i;
+        while i < height && histogram[i] != 0 {
+            i += 1;
+        }
+        if i > begin_run {
+            non_zero_runs.push((begin_run, i));
+        }
+    }
+
+    // Merge runs that are suspicously close.
+    let mut merged_runs: Vec<(usize, usize)> = Vec::with_capacity(4);
+    for run in non_zero_runs {
+        if let Some(prev) = merged_runs.last_mut() {
+            if prev.1 + INTRA_LETTER_GAP >= run.0 {
+                prev.1 = run.1;
+                continue;
+            }
+        }
+        merged_runs.push(run);
+    }
+    debug!("merged runs: {:?}", &merged_runs);
+
+    // Sort segments into lines.
+    let mut lines = (0..merged_runs.len()).map(|_| vec![]).collect::<Vec<_>>();
+    for segment in segments {
+        // Again, bottom is exclusive.
+        let line = merged_runs.iter()
+            .position(|&(top, bottom)| {
+                top <= segment.top &&
+                    segment.top + segment.pixmap.height() <= bottom
+            })
+            .expect("letter does not belong to any line");
+        lines[line].push(segment);
+    }
+    Ok(lines)
+}
+
+#[test]
+fn group_into_lines_divides_subtitle_into_lines() {
+    use env_logger;
+    env_logger::init().unwrap();
+
+    let binarized = binarize(&png_fixture_pixmap("two_line_subtitle")).unwrap();
+    let (_segmented, segments) = segment(&binarized).unwrap();
+    let lines = group_into_lines(binarized.height(), segments).unwrap();
+    assert_eq!(lines.len(), 2);
 }

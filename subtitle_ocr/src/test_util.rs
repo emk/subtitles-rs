@@ -1,9 +1,10 @@
 //! Test-only utilities.
 
-use image::{Rgba, RgbaImage};
+use image::{self, Rgba};
+use std::path::Path;
 use vobsub;
 
-use errors::*;
+use pixmap::Pixmap;
 
 /// Construct an RGBA color.
 pub fn rgba_hex(hex: u32) -> Rgba<u8> {
@@ -25,12 +26,22 @@ fn rgba_hex_contructs_rbga_color() {
 }
 
 /// Fetch some test images that we'll use in many tests.
-pub fn test_images() -> Result<Vec<RgbaImage>> {
-    let idx = vobsub::Index::open("../fixtures/example.idx").unwrap();
+pub fn idx_fixture_pixmaps() -> Vec<Pixmap> {
+    let idx = vobsub::Index::open("../fixtures/example.idx")
+        .expect("could not open subtitle");
     let mut images = vec![];
     for sub in idx.subtitles() {
-        let sub = sub?;
-        images.push(sub.to_image(idx.palette()));
+        let sub = sub.expect("could not read subtitle");
+        images.push(Pixmap::from(sub.to_image(idx.palette())));
     }
-    Ok(images)
+    images
+}
+
+/// Load a PNG file from our fixtures directory and convert it to a
+/// `Pixmap`.
+pub fn png_fixture_pixmap(base_name: &str) -> Pixmap {
+    let path_str = format!("../fixtures/{}.png", base_name);
+    let path = Path::new(&path_str);
+    let img = image::open(path).expect("could not load image").to_rgba();
+    Pixmap::from(img)
 }
