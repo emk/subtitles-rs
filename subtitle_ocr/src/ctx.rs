@@ -45,10 +45,7 @@ impl OcrContext {
         trace_pixmap!(&bitmap, "{}_{:04}_binarized.png", &self.file_stem, id);
         let (segmented, segments) = segment(&bitmap)?;
         debug_pixmap!(&segmented, "{}_{:04}_segmented.png", &self.file_stem, id);
-        let lines = group_into_lines(pixmap.height(), segments)?;
-        if lines.len() > 2 {
-            warn!("3-line subtitle");
-        }
+        let _lines = group_into_lines(pixmap.height(), segments)?;
         Ok(())
     }
 }
