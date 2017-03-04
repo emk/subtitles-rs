@@ -14,7 +14,7 @@ use std::path::Path;
 #[test]
 #[ignore]
 fn private_corpus() {
-    env_logger::init().unwrap();
+    let _ = env_logger::init();
 
     let options = glob::MatchOptions {
         case_sensitive: true,

@@ -147,7 +147,7 @@ fn classify_colors(image: &Pixmap) -> Result<HashMap<Rgba<u8>, ColorType>> {
 #[test]
 fn classify_colors_as_transparent_and_opaque() {
     //use env_logger;
-    //env_logger::init().unwrap();
+    //let _ = env_logger::init();
 
     let colors = classify_colors(&idx_fixture_pixmaps()[0]).unwrap();
     assert_eq!(colors.len(), 4);
@@ -170,7 +170,7 @@ pub fn binarize(pixmap: &Pixmap) -> Result<Pixmap<bool>> {
 #[test]
 fn binarize_reduces_to_transparent_and_black() {
     //use env_logger;
-    //env_logger::init().unwrap();
+    //let _ = env_logger::init();
     let bitmap = binarize(&idx_fixture_pixmaps()[0]).unwrap();
     debug_pixmap!(&bitmap, "binarize.png");
 }

@@ -511,7 +511,7 @@ fn parse_subtitles() {
     use std::fs;
     use std::io::prelude::*;
 
-    //env_logger::init().unwrap();
+    //let _ = env_logger::init();
 
     let mut f = fs::File::open("../fixtures/example.sub").unwrap();
     let mut buffer = vec![];

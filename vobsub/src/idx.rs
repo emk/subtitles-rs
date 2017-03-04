@@ -158,8 +158,7 @@ impl Index {
 #[test]
 fn parse_index() {
     use env_logger;
-
-    env_logger::init().unwrap();
+    let _ = env_logger::init();
 
     let idx = Index::open("../fixtures/example.idx").unwrap();
 

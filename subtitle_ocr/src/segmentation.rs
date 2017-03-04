@@ -236,7 +236,7 @@ pub fn group_into_lines(height: usize, segments: Vec<Segment>)
 #[test]
 fn group_into_lines_divides_subtitle_into_lines() {
     use env_logger;
-    env_logger::init().unwrap();
+    let _ = env_logger::init();
 
     let binarized = binarize(&png_fixture_pixmap("two_line_subtitle")).unwrap();
     let (_segmented, segments) = segment(&binarized).unwrap();
