@@ -12,9 +12,10 @@ the [subtitles-rs][] project.
 
 ## Fuzz testing
 
-We test some portions of this crate using the excellent `[cargo fuzz][]`
-tool.  To run these tests, install `cargo fuzz` according to its
-documentation, and seed the corpus with a valid input file:
+We test some portions of this crate using the excellent
+`[cargo fuzz][fuzz]` tool.  To run these tests, install `cargo fuzz`
+according to its documentation, and seed the corpus with a valid input
+file:
 
 ```sh
 mkdir -p fuzz/corpus
@@ -40,4 +41,4 @@ regressions.  Once the bug is fixed, call `cargo fuzz run` again (as shown
 above).
 
 [subtitles-rs]: https://github.com/emk/subtitles-rs
-[cargo fuzz]: https://github.com/rust-fuzz/cargo-fuzz
+[fuzz]: https://github.com/rust-fuzz/cargo-fuzz
