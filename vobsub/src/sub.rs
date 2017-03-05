@@ -303,6 +303,9 @@ fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
     // explicit offsets into `packet` in several places.
 
     // Figure out where our control data starts.
+    if raw_data.len() < 2 {
+        return Err("unexpected end of subtitle data".into());
+    }
     let (_, initial_control_offset) = parse_be_u16_as_usize(&raw_data[2..])?;
 
     // Declare data we want to collect from our control packets.
