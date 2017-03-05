@@ -9,6 +9,12 @@ readme = "README.md"
 repository = "https://github.com/emk/subtitles-rs"
 documentation = "https://docs.rs/vobsub/"
 
+# This is probably ignored anyway, but let's make it explicit.  We don't
+# want to include this in our released gem because (1) it's unnecessary,
+# and (2) we want to be able to include non-CC0 snippets in fuzz/corpus and
+# not release them with this crate.
+exclude = ["fuzz"]
+
 [dev-dependencies]
 env_logger = "0.4.0"
 glob = "0.2.11"
