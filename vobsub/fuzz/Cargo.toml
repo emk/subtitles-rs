@@ -8,6 +8,14 @@ publish = false
 [package.metadata]
 cargo-fuzz = true
 
+[profile.dev]
+# Optimize the code as much as we can before running.
+# https://github.com/rust-fuzz/cargo-fuzz/issues/63
+opt-level = 3
+# How can we pass this?
+# https://github.com/rust-fuzz/cargo-fuzz/issues/64
+#-fsanitize-coverage=trace-cmp
+
 [dependencies.vobsub]
 path = ".."
 [dependencies.libfuzzer-sys]
