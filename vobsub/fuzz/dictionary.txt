@@ -1,0 +1,18 @@
+# This file contains interesting byte sequences that mean something special
+# in an MPEG-2 subtitle file.
+
+# Packet headers.
+ps_start="\x00\x00\x01\xba"
+pes_start="\x00\x00\x01\xbd"
+
+# Subtitle packet control commands.
+"\x00"
+"\x01"
+"\x02"
+"\x03"
+"\x04"
+"\x05"
+"\x06"
+
+# Used to end a number of different things.
+end="\xff"
