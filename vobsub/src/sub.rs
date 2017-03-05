@@ -420,11 +420,15 @@ fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
     // We use `initial_control_offset+2`, because the second set of scan
     // lines is often overlapped with the first `[0x00, 0x00]` bytes of the
     // control block.
+    let start_0 = cast::usize(rle_offsets[0]);
+    let start_1 = cast::usize(rle_offsets[1]);
+    let end = cast::usize(initial_control_offset+2);
+    if start_0 > start_1 || start_1 > end {
+        return Err("invalid scan line offsets".into());
+    }
     let image = decompress(coordinates.size(),
-                           [&raw_data[cast::usize(rle_offsets[0])..
-                                      cast::usize(rle_offsets[1])],
-                            &raw_data[cast::usize(rle_offsets[1])..
-                                      cast::usize(initial_control_offset+2)]])?;
+                           [&raw_data[start_0..start_1],
+                            &raw_data[start_1..end]])?;
 
     // Return our parsed subtitle.
     let result = Subtitle {
