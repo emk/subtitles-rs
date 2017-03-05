@@ -46,8 +46,10 @@ named!(pub header<Header>,
                 take_bits!(u8, 5) >>
                 // Number of bytes of stuffing.
                 stuffing_length: take_bits!(usize, 3) >>
-                // Stuffing bytes.
-                take_bits!(u32, stuffing_length * 8) >>
+                // Stuffing bytes.  We just want to ignore these, but use a
+                // large enough type to prevent overflow panics when
+                // fuzzing.
+                take_bits!(u64, stuffing_length * 8) >>
                 (Header {
                     scr: scr,
                     bit_rate: bit_rate,
