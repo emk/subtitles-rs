@@ -17,8 +17,12 @@ excellent [`cargo fuzz`][fuzz] tool.  To run these tests, install `cargo
 fuzz` according to its documentation.  Then run:
 
 ```sh
-env RUST_BACKTRACE=1 rustup run nightly cargo fuzz run fuzzer_script_1
+env RUST_BACKTRACE=1 rustup run nightly cargo fuzz run fuzzer_script_1 -- \
+    -max_len=200
 ```
+
+You can also pass `-jobs N` to run multiple jobs in parallel.  By default,
+this is limited half the number of available CPU cores.
 
 If it finds a crash, then copy the test case it produces back into our
 standard test suite and run the tests:
