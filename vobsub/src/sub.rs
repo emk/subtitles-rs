@@ -353,6 +353,15 @@ fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
                             alpha = alpha.or(Some(a));
                         }
                         ControlCommand::Coordinates(ref c) => {
+                            // Check for weird bounding boxes.  Ideally we
+                            // would do this while parsing, but I can't
+                            // figure out how to get nom to do what I want.
+                            // Later on, we assume that all bounding boxes
+                            // have non-negative width and height and we'll
+                            // crash if they don't.
+                            if c.x2 <= c.x1 || c.y2 <= c.y1 {
+                                return Err("invalid bounding box".into());
+                            }
                             coordinates = coordinates.or(Some(c.clone()));
                         }
                         ControlCommand::RleOffsets(r) => {
