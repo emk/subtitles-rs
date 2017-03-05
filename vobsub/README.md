@@ -10,4 +10,34 @@ the [API docs](https://docs.rs/vobsub/).
 Your feedback and contributions are welcome!  For more information, see
 the [subtitles-rs][] project.
 
+## Fuzz testing
+
+We test some portions of this crate using the excellent `[cargo fuzz][]`
+tool.  To run these tests, install `cargo fuzz` according to its
+documentation, and seed the corpus with a valid input file:
+
+```sh
+mkdir -p fuzz/corpus
+cp ../fixtures/example.sub fuzz/corpus
+```
+
+Then run:
+
+```sh
+env RUST_BACKTRACE=1 rustup run nightly cargo fuzz run fuzzer_script_1
+```
+
+If it finds a crash, then copy the test case it produces back into our
+standard test suite and run the tests:
+
+```sh
+cp fuzz/artifacts/* ../fixtures/invalid
+cargo test
+```
+
+This will allow us to tell whether the bug is fixed, and to detect any
+regressions.  Once the bug is fixed, call `cargo fuzz run` again (as shown
+above).
+
 [subtitles-rs]: https://github.com/emk/subtitles-rs
+[cargo fuzz]: https://github.com/rust-fuzz/cargo-fuzz

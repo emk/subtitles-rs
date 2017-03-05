@@ -23,15 +23,36 @@ fn private_corpus() {
     };
     for entry in glob::glob_with("../private/**/*.sub", &options).unwrap() {
         let entry = entry.unwrap();
-        process_file(&entry);
+        process_file(&entry, false);
     }
 }
 
-fn process_file(path: &Path) {
+// This corpus was generated using `cargo fuzz`, and it represents all the
+// crashes that we've found so far.
+#[test]
+fn error_corpus() {
+    let _ = env_logger::init();
+
+    let options = glob::MatchOptions {
+        case_sensitive: true,
+        require_literal_separator: true,
+        require_literal_leading_dot: true,
+    };
+    for entry in glob::glob_with("../fixtures/invalid/*", &options).unwrap() {
+        let entry = entry.unwrap();
+        process_file(&entry, true);
+    }
+}
+
+fn process_file(path: &Path, expect_err: bool) {
     debug!("Processing {}", path.display());
     let mut f = fs::File::open(path).unwrap();
     let mut buffer = vec![];
     f.read_to_end(&mut buffer).unwrap();
-    let count = vobsub::subtitles(&buffer).map(|s| s.unwrap()).count();
+    let count = vobsub::subtitles(&buffer)
+        .map(|s| {
+            assert_eq!(s.is_err(), expect_err);
+        })
+        .count();
     debug!("Found {} subtitles", count);
 }
