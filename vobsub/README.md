@@ -13,7 +13,7 @@ the [subtitles-rs][] project.
 ## Fuzz testing
 
 We test some portions of this crate using the excellent
-`[cargo fuzz][fuzz]` tool.  To run these tests, install `cargo fuzz`
+[`cargo fuzz`][fuzz] tool.  To run these tests, install `cargo fuzz`
 according to its documentation, and seed the corpus with a valid input
 file:
 
