@@ -10,19 +10,11 @@ the [API docs](https://docs.rs/vobsub/).
 Your feedback and contributions are welcome!  For more information, see
 the [subtitles-rs][] project.
 
-## Fuzz testing
+### Fuzz testing
 
-We test some portions of this crate using the excellent
-[`cargo fuzz`][fuzz] tool.  To run these tests, install `cargo fuzz`
-according to its documentation, and seed the corpus with a valid input
-file:
-
-```sh
-mkdir -p fuzz/corpus
-cp ../fixtures/example.sub fuzz/corpus
-```
-
-Then run:
+We test some portions of this crate using the
+excellent [`cargo fuzz`][fuzz] tool.  To run these tests, install `cargo
+fuzz` according to its documentation.  Then run:
 
 ```sh
 env RUST_BACKTRACE=1 rustup run nightly cargo fuzz run fuzzer_script_1
