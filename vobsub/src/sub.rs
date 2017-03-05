@@ -304,12 +304,6 @@ fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
 
     // Figure out where our control data starts.
     let (_, initial_control_offset) = parse_be_u16_as_usize(&raw_data[2..])?;
-    if initial_control_offset >= raw_data.len() {
-        return Err(format!("control offset is 0x{:x}, but packet is only 0x{:x} \
-                            bytes",
-                           initial_control_offset,
-                           raw_data.len()).into());
-    }
 
     // Declare data we want to collect from our control packets.
     let mut start_time = None;
@@ -324,6 +318,13 @@ fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
     let mut control_offset = initial_control_offset;
     loop {
         trace!("looking for control sequence at: 0x{:x}", control_offset);
+        if control_offset >= raw_data.len() {
+            return Err(format!("control offset is 0x{:x}, but packet is only 0x{:x} \
+                                bytes",
+                               control_offset,
+                               raw_data.len()).into());
+        }
+
         let control_data = &raw_data[control_offset..];
         match control_sequence(control_data) {
             IResult::Done(_, control) => {
