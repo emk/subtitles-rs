@@ -233,7 +233,7 @@ fn parse_control_sequence() {
 }
 
 /// A single subtitle.
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Subtitle {
     /// Start time of subtitle, in seconds.
     pub start_time: f64,
@@ -417,9 +417,17 @@ fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
 
     // Decompress our image.
     //
-    // We use `initial_control_offset+2`, because the second set of scan
-    // lines is often overlapped with the first `[0x00, 0x00]` bytes of the
-    // control block.
+    // We know the starting points of each set of scan lines, but we don't
+    // really know where they end, because encoders like to reuse bytes
+    // that they're already using for something else.  For example, the
+    // last few bytes of the first set of scan lines may overlap with the
+    // first bytes of the second set of scanlines, and the last bytes of
+    // the second set of scan lines may overlap with the start of the
+    // control sequence.  For now, we limit it to the first two bytes of
+    // the control packet, which are usually `[0x00, 0x00]`.  (We might
+    // actually want to remove `end` entirely here and allow the scan lines
+    // to go to the end of the packet, but I've never seen that in
+    // practice.)
     let start_0 = cast::usize(rle_offsets[0]);
     let start_1 = cast::usize(rle_offsets[1]);
     let end = cast::usize(initial_control_offset+2);
@@ -427,7 +435,7 @@ fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
         return Err("invalid scan line offsets".into());
     }
     let image = decompress(coordinates.size(),
-                           [&raw_data[start_0..start_1],
+                           [&raw_data[start_0..end],
                             &raw_data[start_1..end]])?;
 
     // Return our parsed subtitle.
@@ -544,4 +552,30 @@ fn parse_subtitles() {
     assert_eq!(sub1.alpha, [15,15,15,0]);
     subs.next().expect("missing sub 2").unwrap();
     assert!(subs.next().is_none());
+}
+
+#[test]
+fn parse_subtitles_from_subtitle_edit() {
+    //use env_logger;
+    use idx::Index;
+    //let _ = env_logger::init();
+    let idx = Index::open("../fixtures/tiny.idx").unwrap();
+    for sub in idx.subtitles() {
+        sub.unwrap();
+    }
+}
+
+#[test]
+fn parse_fuzz_corpus_seeds() {
+    //use env_logger;
+    use idx::Index;
+    //let _ = env_logger::init();
+
+    // Make sure these two fuzz corpus inputs still work, and that they
+    // return the same subtitle data.
+    let tiny = Index::open("../fixtures/tiny.idx").unwrap()
+        .subtitles().next().unwrap().unwrap();
+    let split = Index::open("../fixtures/tiny-split.idx").unwrap()
+        .subtitles().next().unwrap().unwrap();
+    assert_eq!(tiny, split);
 }

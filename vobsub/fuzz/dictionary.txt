@@ -1,9 +1,12 @@
 # This file contains interesting byte sequences that mean something special
-# in an MPEG-2 subtitle file.
+# in an MPEG-2 subtitle file.  I'm not sure if this adds much.
 
 # Packet headers.
 ps_start="\x00\x00\x01\xba"
 pes_start="\x00\x00\x01\xbd"
+
+# Marks the end of a scan line in the image (actually only 14 bits of zeros).
+eol="\x00\x00"
 
 # Subtitle packet control commands.
 "\x00"
@@ -14,5 +17,5 @@ pes_start="\x00\x00\x01\xbd"
 "\x05"
 "\x06"
 
-# Used to end a number of different things.
+# Used to end or pad a number of different things.
 end="\xff"
