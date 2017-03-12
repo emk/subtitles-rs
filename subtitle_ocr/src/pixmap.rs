@@ -206,10 +206,22 @@ impl<P: Pixel> Pixmap<P> {
             let rgba = px.to_rgba().data;
             raw.extend_from_slice(&[rgba[0], rgba[1], rgba[2], rgba[3]]);
         }
-        Ok(ImageBuffer::from_raw(cast::u32(self.width)?,
-                                 cast::u32(self.height)?,
+        Ok(ImageBuffer::from_raw(u32_from_usize(self.width)?,
+                                 u32_from_usize(self.height)?,
                                  raw).expect("image bounds mismatch"))
     }
+}
+
+#[cfg(target_pointer_width = "64")]
+fn u32_from_usize(i: usize) -> Result<u32> {
+    // This can fail on 64-bit platforms.
+    Ok(cast::u32(i)?)
+}
+
+#[cfg(target_pointer_width = "32")]
+fn u32_from_usize(i: usize) -> Result<u32> {
+    // This will always succeed on 32-bit platforms.
+    Ok(cast::u32(i))
 }
 
 /// An iterator over all the pixels in an image.
