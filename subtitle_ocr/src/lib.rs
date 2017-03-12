@@ -66,6 +66,8 @@ mod logimg;
 mod binarization;
 mod ctx;
 mod errors;
+mod ext;
+mod geom;
 mod pixmap;
 mod segmentation;
 #[cfg(test)]

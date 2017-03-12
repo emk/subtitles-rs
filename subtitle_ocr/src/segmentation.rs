@@ -1,6 +1,7 @@
 //! Segmentation of images into continguous shapes.
 
 use cast;
+use ext::RangeExt;
 use image::Rgba;
 use palette;
 use palette::FromColor;
@@ -11,6 +12,7 @@ use std::collections::VecDeque;
 #[cfg(test)]
 use binarization::binarize;
 use errors::*;
+use geom::Rect;
 use pixmap::{Pixel, Pixmap};
 #[cfg(test)]
 use test_util::{idx_fixture_pixmaps, png_fixture_pixmap};
@@ -75,6 +77,12 @@ pub struct Segment {
     /// methods can be used to get the width and hight of the segment.
     pub pixmap: Pixmap<bool>,
     _placeholder: (),
+}
+
+impl Segment {
+    fn bounds(&self) -> Rect {
+        Rect::ltwh(self.left, self.top, self.pixmap.width(), self.pixmap.height())
+    }
 }
 
 /// Split an image into continguous segments of non-transparent pixels.
@@ -242,4 +250,71 @@ fn group_into_lines_divides_subtitle_into_lines() {
     let (_segmented, segments) = segment(&binarized).unwrap();
     let lines = group_into_lines(binarized.height(), segments).unwrap();
     assert_eq!(lines.len(), 2);
+}
+
+/// One or more `Segment`s that we believe make up a single letter.  We
+/// attempt to rejoin the dots on "i"s, the two dots of a colon, the
+/// accents above and below Latin letters--but we don't necessarily combine
+/// the two quotes in a double quote.
+///
+/// Technically, these aren't true typographic glyphs, because they may
+/// also be ligatures: Two or more typographic glyphs that are visually
+/// connected.
+pub struct Glyph {
+    bounds: Rect,
+    segments: Vec<Segment>,
+}
+
+impl Glyph {
+    /// Create a new `Glyph` containing a single segment.
+    fn new(segment: Segment) -> Glyph {
+        Glyph {
+            bounds: segment.bounds(),
+            segments: vec![segment],
+        }
+    }
+
+    /// Add a new segment to this glyph.
+    fn add(&mut self, segment: Segment) {
+        self.bounds = self.bounds.union(&segment.bounds());
+        self.segments.push(segment);
+    }
+
+    // Convert this `Glyph` into something we could draw.
+    //fn to_segment_pixmap(&self, id: u16) -> Pixmap<SegmentPixel> {
+    //}
+}
+
+pub fn group_into_glyphs(mut segments: Vec<Segment>) -> Vec<Glyph> {
+    // Sort our segments from left to right (and throw in some secondary
+    // sort keys just to make things a bit more predictable--not sure if
+    // this helps).
+    segments.sort_by_key(|s| (s.left, s.pixmap.width()));
+
+    // Collect glyphs into segments.
+    let mut result: Vec<Glyph> = vec![];
+    for segment in segments {
+        if let Some(prev_glyph) = result.last_mut() {
+            let prev_range = prev_glyph.bounds.horizontal_range();
+            let curr_range = segment.bounds().horizontal_range();
+            let overlap = prev_range.intersection(&curr_range).len();
+            // This will probably need tweaking for best results.
+            if overlap >= prev_range.len() / 3 || overlap >= curr_range.len() / 3 {
+                prev_glyph.add(segment);
+                continue;
+            }
+        }
+        result.push(Glyph::new(segment));
+    }
+    result
+}
+
+#[test]
+fn combine_segments_attaches_dots_and_diacritics() {
+    let binarized = binarize(&png_fixture_pixmap("ligature_2")).unwrap();
+    let (_segmented, segments) = segment(&binarized).unwrap();
+    let lines = group_into_lines(binarized.height(), segments).unwrap();
+    lines.into_iter()
+        .map(|line| group_into_glyphs(line))
+        .collect::<Vec<_>>();
 }
