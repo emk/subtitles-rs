@@ -58,6 +58,9 @@ extern crate lazy_static;
 extern crate log;
 extern crate palette;
 #[cfg(test)]
+#[macro_use]
+extern crate quickcheck;
+#[cfg(test)]
 extern crate vobsub;
 
 #[macro_use]
