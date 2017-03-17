@@ -32,7 +32,7 @@ fn process_file(path: &Path) {
     let mut ctx = subtitle_ocr::OcrContext::new(path).unwrap();
     for sub in idx.subtitles() {
         let sub = sub.unwrap();
-        ctx.add(sub.start_time, sub.end_time, &sub.to_image(idx.palette()))
+        ctx.add(sub.start_time(), sub.end_time(), &sub.to_image(idx.palette()))
             .unwrap();
     }
 }

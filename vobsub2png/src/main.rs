@@ -78,11 +78,11 @@ fn run() -> Result<()> {
         image.save(&image_path)?;
 
         info.subtitles.push(SubInfo {
-            start: sub.start_time,
-            end: sub.end_time,
-            force: sub.force,
-            position: (sub.coordinates.left(), sub.coordinates.top()),
-            size: (sub.coordinates.width(), sub.coordinates.height()),
+            start: sub.start_time(),
+            end: sub.end_time(),
+            force: sub.force(),
+            position: (sub.coordinates().left(), sub.coordinates().top()),
+            size: (sub.coordinates().width(), sub.coordinates().height()),
             path: image_name,
         });
     }

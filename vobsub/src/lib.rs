@@ -11,10 +11,11 @@
 //! let idx = vobsub::Index::open("../fixtures/example.idx").unwrap();
 //! for sub in idx.subtitles() {
 //!     let sub = sub.unwrap();
-//!     println!("Time: {:0.3}-{:0.3}", sub.start_time, sub.end_time);
-//!     println!("Always show: {:?}", sub.force);
-//!     println!("At: {}, {}", sub.coordinates.left(), sub.coordinates.top());
-//!     println!("Size: {}x{}", sub.coordinates.width(), sub.coordinates.height());
+//!     println!("Time: {:0.3}-{:0.3}", sub.start_time(), sub.end_time());
+//!     println!("Always show: {:?}", sub.force());
+//!     let coords = sub.coordinates();
+//!     println!("At: {}, {}", coords.left(), coords.top());
+//!     println!("Size: {}x{}", coords.width(), coords.height());
 //!     let img: image::RgbaImage = sub.to_image(idx.palette());
 //!
 //!     // You can save or manipulate `img` using the APIs provided by the Rust

@@ -236,26 +236,64 @@ fn parse_control_sequence() {
 #[derive(Clone, PartialEq)]
 pub struct Subtitle {
     /// Start time of subtitle, in seconds.
-    pub start_time: f64,
-    /// End time of subtitle, in seconds.
-    pub end_time: f64,
+    start_time: f64,
+    /// End time of subtitle, in seconds.  This may be missing from certain
+    /// subtitles.
+    end_time: Option<f64>,
     /// Should this subtitle be shown even when subtitles are off?
-    pub force: bool,
+    force: bool,
     /// Coordinates at which to display the subtitle.
-    pub coordinates: Coordinates,
+    coordinates: Coordinates,
     /// Map each of the 4 colors in this subtitle to a 4-bit palette.
-    pub palette: [u8; 4],
+    palette: [u8; 4],
     /// Map each of the 4 colors in this subtitle to 4 bits of alpha
     /// channel data.
-    pub alpha: [u8; 4],
+    alpha: [u8; 4],
     /// Our decompressed image, stored with 2 bits per byte in row-major
     /// order, that can be used as indices into `palette` and `alpha`.
-    pub raw_image: Vec<u8>,
-    /// A private placeholder for future extensibility.
-    _placeholder: ()
+    raw_image: Vec<u8>,
 }
 
 impl Subtitle {
+    /// Start time of subtitle, in seconds.
+    pub fn start_time(&self) -> f64 {
+        self.start_time
+    }
+
+    /// End time of subtitle, in seconds.  This may be missing from certain
+    /// subtitles.
+    pub fn end_time(&self) -> f64 {
+        self.end_time
+            .expect("end time should have been set before returning subtitle")
+    }
+
+    /// Should this subtitle be shown even when subtitles are off?
+    pub fn force(&self) -> bool {
+        self.force
+    }
+
+    /// Coordinates at which to display the subtitle.
+    pub fn coordinates(&self) -> &Coordinates {
+        &self.coordinates
+    }
+
+    /// Map each of the 4 colors in this subtitle to a 4-bit palette.
+    pub fn palette(&self) -> &[u8; 4] {
+        &self.palette
+    }
+
+    /// Map each of the 4 colors in this subtitle to 4 bits of alpha
+    /// channel data.
+    pub fn alpha(&self) -> &[u8; 4] {
+        &self.alpha
+    }
+
+    /// Our decompressed image, stored with 2 bits per byte in row-major
+    /// order, that can be used as indices into `palette` and `alpha`.
+    pub fn raw_image(&self) -> &[u8] {
+        &self.raw_image
+    }
+
     /// Decompress to subtitle to an RBGA image.
     pub fn to_image(&self, palette: &idx::Palette) -> RgbaImage {
         let width = cast::u32(self.coordinates.width());
@@ -399,9 +437,6 @@ fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
     let start_time = start_time.ok_or_else(|| -> Error {
         "no start time for subtitle".into()
     })?;
-    let end_time = end_time.ok_or_else(|| -> Error {
-        "no end time for subtitle".into()
-    })?;
     let coordinates = coordinates.ok_or_else(|| -> Error {
         "no coordinates for subtitle".into()
     })?;
@@ -447,15 +482,9 @@ fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
         palette: palette,
         alpha: alpha,
         raw_image: image,
-        _placeholder: (),
     };
     trace!("Parsed subtitle: {:?}", &result);
     Ok(result)
-}
-
-/// An iterator over subtitles.
-pub struct Subtitles<'a> {
-    pes_packets: ps::PesPackets<'a>,
 }
 
 /// Like `?` and `try!`, but assume that we're working with
@@ -471,7 +500,14 @@ macro_rules! try_iter {
     }
 }
 
-impl<'a> Iterator for Subtitles<'a> {
+/// An internal iterator over subtitles.  These subtitles may not have a
+/// valid `end_time`, so we'll try to fix them up before letting the user
+/// see them.
+struct SubtitlesInternal<'a> {
+    pes_packets: ps::PesPackets<'a>,
+}
+
+impl<'a> Iterator for SubtitlesInternal<'a> {
     type Item = Result<Subtitle>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -525,9 +561,71 @@ impl<'a> Iterator for Subtitles<'a> {
     }
 }
 
+/// An iterator over subtitles.
+pub struct Subtitles<'a> {
+    internal: SubtitlesInternal<'a>,
+    prev: Option<Subtitle>,
+}
+
+impl<'a> Iterator for Subtitles<'a> {
+    type Item = Result<Subtitle>;
+
+    // This whole routine exists to make sure that `end_time` is set to a
+    // useful value even if the subtitles themselves didn't supply one.
+    // I'm not even sure this is valid, but it has been observed in the
+    // wild.
+    fn next(&mut self) -> Option<Self::Item> {
+        // If we don't currently have a previous subtitle, attempt to fetch
+        // one.
+        if self.prev.is_none() {
+            match self.internal.next() {
+                Some(Ok(sub)) => { self.prev = Some(sub); }
+                other => return other,
+            }
+        }
+        debug_assert!(self.prev.is_some());
+
+        match self.internal.next() {
+            // We have a another subtitle!  We want to return `self.prev`
+            // and store the new subtitle as `self.prev`.
+            Some(Ok(curr)) => {
+                // `unwrap` is safe because of the invariant above.
+                let mut prev = self.prev.take().unwrap();
+                if prev.end_time.is_none() {
+                    // Our subtitle has no end time, so end it just before
+                    // the next subtitle.
+                    prev.end_time = Some(curr.start_time - 0.001);
+                }
+                self.prev = Some(curr);
+                Some(Ok(prev))
+            }
+            // We encountered an error.  We could, I suppose, attempt to
+            // first return `self.prev` and save the error for next time,
+            // but that's too much trouble.
+            Some(Err(err)) => Some(Err(err)),
+            // The only subtitle left to return is `self.prev`.
+            None => {
+                self.prev.take().map(|mut sub| {
+                    if sub.end_time.is_none() {
+                        // Our subtitle has no end time, and it's the last
+                        // subtitle, so just pick something.
+                        sub.end_time = Some(sub.start_time + 3.0);
+                    }
+                    Ok(sub)
+                })
+            }
+        }
+    }
+}
+
 /// Return an iterator over the subtitles in this data stream.
 pub fn subtitles(input: &[u8]) -> Subtitles {
-    Subtitles { pes_packets: ps::pes_packets(input) }
+    Subtitles {
+        internal: SubtitlesInternal {
+            pes_packets: ps::pes_packets(input)
+        },
+        prev: None,
+    }
 }
 
 #[test]
@@ -544,7 +642,7 @@ fn parse_subtitles() {
     let mut subs = subtitles(&buffer);
     let sub1 = subs.next().expect("missing sub 1").unwrap();
     assert!(sub1.start_time - 49.4 < 0.1);
-    assert!(sub1.end_time - 50.9 < 0.1);
+    assert!(sub1.end_time.unwrap() - 50.9 < 0.1);
     assert_eq!(sub1.force, false);
     assert_eq!(sub1.coordinates,
                Coordinates { x1: 750, y1: 916, x2: 1172, y2: 966 });
@@ -560,9 +658,9 @@ fn parse_subtitles_from_subtitle_edit() {
     use idx::Index;
     //let _ = env_logger::init();
     let idx = Index::open("../fixtures/tiny.idx").unwrap();
-    for sub in idx.subtitles() {
-        sub.unwrap();
-    }
+    let mut subs = idx.subtitles();
+    subs.next().expect("missing sub").unwrap();
+    assert!(subs.next().is_none());
 }
 
 #[test]
