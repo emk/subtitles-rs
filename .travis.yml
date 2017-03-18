@@ -16,5 +16,4 @@ matrix:
     osx_image: xcode8
     rust: stable
 script:
-- cargo build --verbose
 - cargo test --verbose
