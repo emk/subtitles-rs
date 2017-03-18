@@ -604,7 +604,8 @@ impl<'a> Iterator for Subtitles<'a> {
                     // Our subtitle has no end time, so end it just before
                     // the next subtitle.
                     let new_end = curr.start_time - DEFAULT_SUBTITLE_SPACING;
-                    prev.end_time = Some(new_end.min(DEFAULT_SUBTITLE_LENGTH));
+                    let alt_end = prev.start_time + DEFAULT_SUBTITLE_LENGTH;
+                    prev.end_time = Some(new_end.min(alt_end));
                 }
                 self.prev = Some(curr);
                 Some(Ok(prev))
