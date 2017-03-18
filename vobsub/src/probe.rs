@@ -19,7 +19,7 @@ fn has_magic(path: &Path, magic: &[u8]) -> Result<bool> {
 /// Does the specified path appear to point to an `*.idx` file?
 pub fn is_idx_file<P: AsRef<Path>>(path: P) -> Result<bool> {
     has_magic(path.as_ref(),
-              b"# VobSub index file, v7 (do not modify this line!)")
+              b"# VobSub index file")
 }
 
 #[test]
