@@ -18,7 +18,7 @@ fuzz` according to its documentation.  Then run:
 
 ```sh
 env RUST_BACKTRACE=1 rustup run nightly cargo fuzz run fuzzer_script_1 -- \
-    -dict=dictionary.txt -detect_leaks=0 -max_len=250
+    -dict=dictionary.txt -detect_leaks=0
 ```
 
 You can also pass `-jobs N` to run multiple jobs in parallel.  By default,
