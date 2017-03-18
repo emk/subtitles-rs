@@ -1,12 +1,14 @@
 language: rust
-sudo: required
-rust:
-- "1.10.0"
-- "stable"
-- "beta"
-- "nightly"
 matrix:
   include:
+  - os: linux
+    rust: 1.15.1
+  - os: linux
+    rust: stable
+  - os: linux
+    rust: beta
+  - os: linux
+    rust: nightly
   - os: osx
     osx_image: xcode7.3
     rust: stable
@@ -14,6 +16,5 @@ matrix:
     osx_image: xcode8
     rust: stable
 script:
-- |
-  cargo build &&
-  cargo test
+- cargo build --verbose
+- cargo test --verbose

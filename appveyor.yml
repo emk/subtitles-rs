@@ -16,4 +16,5 @@ install:
 build: false
 
 test_script:
-  - cargo test
+  - cargo build --verbose
+  - cargo test --verbose
