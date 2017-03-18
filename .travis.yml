@@ -2,6 +2,8 @@ language: rust
 matrix:
   include:
   - os: linux
+    rust: 1.15.1
+  - os: linux
     rust: stable
   - os: linux
     rust: beta
