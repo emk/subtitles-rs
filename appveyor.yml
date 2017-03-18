@@ -9,9 +9,14 @@ install:
   - SET PATH=C:\msys64\mingw32\bin;C:\msys64\usr\bin;%PATH%
   - rustup-init.exe -y --default-host %RUST_HOST%
   - SET PATH=C:\Users\appveyor\.cargo\bin;%PATH%
+  - ps: Start-FileDownload "https://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-3.2.4-win32-static.zip"
+  - 7z x ffmpeg-3.2.4-win32-static.zip
+  - move ffmpeg-3.2.4-win32-static c:\ffmpeg
+  - SET PATH=C:\ffmpeg\bin;%PATH%
   - rustc -V
   - cargo -V
   - cmake --version
+  - ffmpeg -version
 
 build: false
 

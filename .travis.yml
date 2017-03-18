@@ -1,4 +1,5 @@
 language: rust
+dist: trusty
 matrix:
   include:
   - os: linux
@@ -15,5 +16,17 @@ matrix:
   - os: osx
     osx_image: xcode8
     rust: stable
+before_install:
+- |
+  if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+    sudo apt-add-repository ppa:mc3man/trusty-media -y
+    sudo apt-get -qq update
+    sudo apt-get install -y ffmpeg
+  elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+    brew install ffmpeg
+  else
+    echo "Don't know how to install ffmpeg"
+    exit 1
+  fi
 script:
 - cargo test --verbose

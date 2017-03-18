@@ -62,13 +62,13 @@ able to install as follows:
 # MacOS X with `brew` installed.
 brew install cmake ffmpeg
 
-# Ubuntu.
-sudo apt-get install cmake
+# Ubuntu 16.04.
+sudo apt-get install cmake ffmpeg
 ```
 
-Installing `ffmpeg` on Ubuntu is a bit more complicated, because you need
-to get the latest version from a third-party repository.  Do not try to
-replace `ffmpeg` with older versions of `libav`; they may eat up a huge
+Installing `ffmpeg` on Ubuntu 14.04 is a bit more complicated, because you
+need to get the latest version from a third-party repository.  Do not try
+to replace `ffmpeg` with older versions of `libav`; they may eat up a huge
 amount of memory and then crash.
 
 ```sh
