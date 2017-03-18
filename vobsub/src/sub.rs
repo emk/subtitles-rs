@@ -15,6 +15,15 @@ use img::{decompress, Size};
 use mpeg2::ps;
 use util::BytesFormatter;
 
+/// The default time between two adjacent subtitles if no end time is
+/// provided.  This is chosen to be a value that's usually representable in
+/// SRT format, barring rounding errors.
+const DEFAULT_SUBTITLE_SPACING: f64 = 0.001;
+
+/// The default length of a subtitle if no end time is provided and no
+/// subtitle follows immediately after.
+const DEFAULT_SUBTITLE_LENGTH: f64 = 5.0;
+
 /// Parse four 4-bit palette entries.
 named!(palette_entries<[u8; 4]>, bits!(count_fixed!(u8, take_bits!(u8, 4), 4)));
 
@@ -594,7 +603,8 @@ impl<'a> Iterator for Subtitles<'a> {
                 if prev.end_time.is_none() {
                     // Our subtitle has no end time, so end it just before
                     // the next subtitle.
-                    prev.end_time = Some(curr.start_time - 0.001);
+                    let new_end = curr.start_time - DEFAULT_SUBTITLE_SPACING;
+                    prev.end_time = Some(new_end.min(DEFAULT_SUBTITLE_LENGTH));
                 }
                 self.prev = Some(curr);
                 Some(Ok(prev))
@@ -609,7 +619,8 @@ impl<'a> Iterator for Subtitles<'a> {
                     if sub.end_time.is_none() {
                         // Our subtitle has no end time, and it's the last
                         // subtitle, so just pick something.
-                        sub.end_time = Some(sub.start_time + 3.0);
+                        sub.end_time =
+                            Some(sub.start_time + DEFAULT_SUBTITLE_LENGTH);
                     }
                     Ok(sub)
                 })
