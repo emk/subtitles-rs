@@ -1,4 +1,4 @@
-[![Latest version](https://img.shields.io/crates/v/substudy.svg)](https://crates.io/crates/substudy) [![License](https://img.shields.io/crates/l/substudy.svg)](https://creativecommons.org/publicdomain/zero/1.0/) [![Build Status](https://travis-ci.org/emk/substudy.svg?branch=master)](https://travis-ci.org/emk/substudy)
+[![Latest version](https://img.shields.io/crates/v/substudy.svg)](https://crates.io/crates/substudy) [![License](https://img.shields.io/crates/l/substudy.svg)](https://creativecommons.org/publicdomain/zero/1.0/) [![Build Status](https://travis-ci.org/emk/substudy.svg?branch=master)](https://travis-ci.org/emk/substudy) [![Build status (AppVeyor)](https://ci.appveyor.com/api/projects/status/188eau91m9umve8u/branch/master?svg=true)](https://ci.appveyor.com/project/emk/substudy/branch/master)
 
 This is an experimental tool to help language-learners exploit parallel
 subtitles in various ways.  Among other things, it can generate bilingual
@@ -40,18 +40,19 @@ substudy export review episode_01_01.mkv \
 ## Installing `substudy`
 
 The easiest way to install `substudy` is using the `cargo install` command.
-To get access to this, you'll to install Rust 1.5.  If you already have
-[`multirust`][multirust] installed, you can run:
+To use this, you'll need Rust 1.15.1 or newer.  If you already
+have [`rustup`][rustup] installed, you can run:
 
 ```sh
-multirust update stable
+rustup update stable
 ```
 
-If you've never heard of `multirust`, you can look at the instructions on
-the [Rust install page][install-rust], or you can just run the following:
+If you've never heard of `rustup`, you can look at the instructions on
+the [`rustup` page][rustup], or you can just run the following:
 
 ```sh
-curl -sSf https://static.rust-lang.org/rustup.sh | sh
+# Mac and Linux only.  Windows see above.
+curl https://sh.rustup.rs -sSf | sh
 ```
 
 You will also need to have a working copies of `cmake` and the
@@ -64,17 +65,11 @@ brew install cmake ffmpeg
 
 # Ubuntu 16.04.
 sudo apt-get install cmake ffmpeg
-```
 
-Installing `ffmpeg` on Ubuntu 14.04 is a bit more complicated, because you
-need to get the latest version from a third-party repository.  Do not try
-to replace `ffmpeg` with older versions of `libav`; they may eat up a huge
-amount of memory and then crash.
-
-```sh
+# Ubuntu 14.04.
 sudo apt-add-repository ppa:mc3man/trusty-media
 sudo apt-get update
-sudo apt-get install ffmpeg
+sudo apt-get install cmake ffmpeg
 sudo apt-add-repository -r ppa:mc3man/trusty-media
 sudo apt-get update
 ```
@@ -85,8 +80,11 @@ Once all that is set up, you can then install `substudy` by running:
 cargo install substudy
 ```
 
-[install-rust]: https://www.rust-lang.org/downloads.html
-[multirust]: https://github.com/brson/multirust
+It should also be possible to get `substudy` working on Windows, but it's
+more complicated.  See our [AppVeyor file](./appveyor.yml) for some
+console-based scripts that you can use as a starting point.
+
+[rustup]: https://www.rustup.rs/
 [ffmpeg]: https://ffmpeg.org/download.html
 
 ## Building `substudy`
