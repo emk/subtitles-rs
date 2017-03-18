@@ -10,7 +10,7 @@ use docopt::Docopt;
 use std::path::Path;
 use std::process::exit;
 
-use substudy::err::Result;
+use substudy::errors::Result;
 use substudy::srt::SubtitleFile;
 use substudy::align::combine_files;
 use substudy::video;
