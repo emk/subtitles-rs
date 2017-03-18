@@ -15,18 +15,19 @@ readme = "README.md"
 keywords = ["text"]
 
 [dependencies]
-cld2 = "1.0.0"
+cld2 = "1.0.1"
 csv = "0.14.3"
 docopt = "0.6.76"
 encoding = "0.2.32"
 env_logger = "0.3.2"
+error-chain = "0.10"
 handlebars = "0.11.3"
 lazy_static = "0.1.15"
 log = "0.3.3"
 num = "0.1.28"
 rustc-serialize = "0.3.16"
 regex = "0.1.41"
-uchardet = "2.0.0-pre.1"
+uchardet = "2.0.0"
 
 [dev-dependencies]
 difference = "0.4.1"

@@ -9,7 +9,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use align::align_available_files;
-use err::{err_str, Result};
+use errors::*;
 use lang::Lang;
 use srt::{Subtitle, SubtitleFile};
 use time::{Period, ToTimestamp};

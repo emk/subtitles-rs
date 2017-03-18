@@ -11,6 +11,7 @@ extern crate cld2;
 extern crate csv;
 #[cfg(test)] extern crate difference;
 extern crate encoding;
+#[macro_use] extern crate error_chain;
 extern crate handlebars;
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate log;
@@ -19,7 +20,7 @@ extern crate regex;
 extern crate rustc_serialize;
 extern crate uchardet;
 
-pub mod err;
+pub mod errors;
 pub mod contexts;
 pub mod decode;
 mod grammar;

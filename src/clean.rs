@@ -3,7 +3,7 @@
 
 use regex::Regex;
 use srt::{Subtitle,SubtitleFile};
-use err::Result;
+use errors::*;
 
 /// Remove the formatting from a subtitle.
 pub fn strip_formatting(line: &str) -> String {

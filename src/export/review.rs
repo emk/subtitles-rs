@@ -5,7 +5,7 @@ use rustc_serialize::json::{ToJson, Json};
 use std::collections::BTreeMap;
 use std::str::from_utf8;
 
-use err::Result;
+use errors::*;
 use export::Exporter;
 use lang::Lang;
 use time::Period;

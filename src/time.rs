@@ -3,7 +3,7 @@
 use rustc_serialize::{Encodable, Encoder};
 use std::result;
 
-use err::{err_str, Result};
+use errors::*;
 
 /// The minimum spacing between two points in time to count as
 /// unambiguously different.  This is related to the typical precision used
@@ -208,7 +208,7 @@ impl Period {
     ///
     /// ```
     /// use substudy::time::Period;
-    /// 
+    ///
     /// let p1 = Period::new(1.0, 2.0).unwrap();
     /// let p2 = Period::new(2.0, 3.0).unwrap();
     /// let p3 = Period::new(2.5, 3.0).unwrap();

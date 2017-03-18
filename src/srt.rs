@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-use err::Result;
+use errors::*;
 use decode::smart_decode;
 use clean::{clean_subtitle_file, strip_formatting};
 use grammar;

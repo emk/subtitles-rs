@@ -4,7 +4,7 @@ use csv;
 use regex::Regex;
 
 use contexts::ItemsInContextExt;
-use err::Result;
+use errors::*;
 use export::Exporter;
 use srt::Subtitle;
 use time::seconds_to_hhmmss_sss;

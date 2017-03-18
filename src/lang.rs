@@ -1,4 +1,4 @@
-//! Naming and identifying languages.  We use 
+//! Naming and identifying languages.  We use
 
 use cld2;
 use rustc_serialize::json::{ToJson, Json};
@@ -9,7 +9,7 @@ use std::iter::FromIterator;
 use std::str::from_utf8;
 use std::result;
 
-use err::{err_str, Result};
+use errors::*;
 
 // Use the third-party `lazy_static!` macro to declare variables that will
 // initialized the first time we use them.

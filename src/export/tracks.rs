@@ -4,7 +4,7 @@
 use std::default::Default;
 use std::io::{Cursor, Write};
 
-use err::Result;
+use errors::*;
 use export::Exporter;
 use time::{Period, seconds_to_hhmmss};
 use video::Id3Metadata;
@@ -92,7 +92,7 @@ pub fn export_tracks(exporter: &mut Exporter) -> Result<()> {
                conv.period.begin(), conv.period.end(), conv.period.duration());
 
         // Build our track name.
-        let name = format!("{} {}", seconds_to_hhmmss(conv.period.begin()), 
+        let name = format!("{} {}", seconds_to_hhmmss(conv.period.begin()),
                            truncate(32, &conv.text).replace("\n", " "));
 
         // Compute our metadata.
