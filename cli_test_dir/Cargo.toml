@@ -3,4 +3,10 @@ name = "cli_test_dir"
 version = "0.1.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
+description = "Tools for testing Rust command-line utilities"
+license = "CC0-1.0"
+readme = "README.md"
+repository = "https://github.com/emk/subtitles-rs"
+documentation = "https://docs.rs/cli_test_dir/"
+
 [dependencies]
