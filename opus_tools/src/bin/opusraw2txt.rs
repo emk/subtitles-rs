@@ -15,6 +15,7 @@ use quick_xml::events::Event as XmlEvent;
 use std::fs;
 use std::io;
 use std::io::prelude::*;
+use std::path::Path;
 
 /// Use `error-chain` to handle errors in a standardized fashion.
 mod errors {
@@ -70,13 +71,22 @@ fn run() -> Result<()> {
     let stdout = io::stdout();
     let mut output = io::BufWriter::new(stdout.lock());
 
+    process_tar_gz(Path::new(&args.arg_raw_tar_gz), &mut output, args.flag_quiet)
+        .chain_err(|| -> Error {
+            format!("couldn't process {}", &args.arg_raw_tar_gz).into()
+        })
+}
+
+/// Handle an individual input file.
+fn process_tar_gz<W: io::Write>(path: &Path, output: &mut W, quiet: bool)
+                                -> Result<()> {
     // Some counters to help keep track of what we've processed.
     let mut file_count = 0;
     let mut sentence_count = 0;
 
     // Iterate over files in the `*.tar.gz`, being careful to always stream
     // data.
-    let f = fs::File::open(&args.arg_raw_tar_gz)?;
+    let f = fs::File::open(path)?;
     let buffered = io::BufReader::new(f);
     let unzipped = GzDecoder::new(buffered)?;
     let mut tar = tar::Archive::new(unzipped);
@@ -97,30 +107,38 @@ fn run() -> Result<()> {
 
         // Decide how to decompress the file, and pass it to our sentence
         // extractor.
-        if utf8_file_name.ends_with(".xml.gz") {
+        let result = if utf8_file_name.ends_with(".xml.gz") {
             debug!("Decompressing and parsing {}", path.display());
-            let unzipped = GzDecoder::new(io::BufReader::new(file))?;
-            sentence_count +=
-                extract_sentences(io::BufReader::new(unzipped),
-                                  &mut output)?;
             file_count += 1;
+            let unzipped = GzDecoder::new(io::BufReader::new(file))?;
+            extract_sentences(io::BufReader::new(unzipped), output)
         } else if utf8_file_name.ends_with(".xml") {
             debug!("Parsing {}", path.display());
-            sentence_count +=
-                extract_sentences(io::BufReader::new(file),
-                                  &mut output)?;
             file_count += 1;
+            extract_sentences(io::BufReader::new(file), output)
         } else {
             debug!("Skipping {}", path.display());
+            Ok(0)
+        };
+        match result {
+            Ok(sentences) => { sentence_count += sentences }
+            Err(err) => {
+                writeln!(io::stderr(),
+                         "couldn't process {} (skipping): {}",
+                         error_chain::ChainedError::display(&err),
+                         path.display())
+                    .expect("Error writing to stderr");
+
+            }
         }
     }
 
     // Print out how much work we did.
-    if !args.flag_quiet {
-        write!(io::stderr(),
-               "Extracted {} sentences from {} files.",
-               sentence_count,
-               file_count)?;
+    if !quiet {
+        writeln!(io::stderr(),
+                 "Extracted {} sentences from {} files.",
+                 sentence_count,
+                 file_count)?;
     }
 
     Ok(())

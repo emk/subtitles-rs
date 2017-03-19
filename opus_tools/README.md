@@ -22,7 +22,17 @@ opusraw2txt ca.raw.tar.gz
 This will print a huge number of sentences on standard output in UTF-8
 format for further processing.
 
+If you want to process an entire directory of files, you could install GNU
+`parallel` and [`szip`][szip], and run:
+
+```sh
+ls *.raw.tar.gz |
+    sed 's/\.raw\.tar\.gz$//' |
+    parallel --joblog out.log 'opusraw2txt {}.raw.tar.gz | szip > {}.sz'
+```
+
 [subs]: http://opus.lingfil.uu.se/OpenSubtitles2016.php
+[szip]: https://github.com/BurntSushi/rust-snappy
 
 ## Contributing
 
