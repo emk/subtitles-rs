@@ -1,0 +1,175 @@
+extern crate docopt;
+extern crate env_logger;
+#[macro_use]
+extern crate error_chain;
+extern crate flate2;
+#[macro_use]
+extern crate log;
+extern crate quick_xml;
+extern crate rustc_serialize;
+extern crate tar;
+
+use flate2::bufread::GzDecoder;
+use quick_xml::reader::Reader as XmlReader;
+use quick_xml::events::Event as XmlEvent;
+use std::fs;
+use std::io;
+use std::io::prelude::*;
+
+/// Use `error-chain` to handle errors in a standardized fashion.
+mod errors {
+    use super::*;
+
+    error_chain! {
+        foreign_links {
+            Io(io::Error);
+            Xml(quick_xml::errors::Error);
+        }
+    }
+}
+
+use errors::*;
+
+const USAGE: &'static str = "
+Usage: opusraw2txt [options] <raw-tar-gz>
+
+Options:
+  --quiet, -q   Don't print out summary of what we did.
+
+Given a `*.raw.tar.gz` file from the Opus project, attempt to extract as
+many sentences as possible, and print them one-to-a-line on standard
+output.
+
+For example, see the files in the right-most column at
+http://opus.lingfil.uu.se/OpenSubtitles2016.php
+";
+
+/// Command-line arguments.
+#[derive(Debug, RustcDecodable)]
+struct Args {
+    arg_raw_tar_gz: String,
+    flag_quiet: bool,
+}
+
+// Have `error-check` set up a boiler-plate entry function that handles
+// errors.
+quick_main!(run);
+
+/// Our actual entry point.
+fn run() -> Result<()> {
+    env_logger::init().expect("can't init env_logger");
+
+    // Parse our arguments.
+    let args: Args = docopt::Docopt::new(USAGE)
+        .and_then(|d| d.decode())
+        .unwrap_or_else(|e| e.exit());
+    trace!("Arguments: {:?}", args);
+
+    // Take exclusive control of standard output and buffer it for maximum
+    // performance.
+    let stdout = io::stdout();
+    let mut output = io::BufWriter::new(stdout.lock());
+
+    // Some counters to help keep track of what we've processed.
+    let mut file_count = 0;
+    let mut sentence_count = 0;
+
+    // Iterate over files in the `*.tar.gz`, being careful to always stream
+    // data.
+    let f = fs::File::open(&args.arg_raw_tar_gz)?;
+    let buffered = io::BufReader::new(f);
+    let unzipped = GzDecoder::new(buffered)?;
+    let mut tar = tar::Archive::new(unzipped);
+    for file in tar.entries()? {
+        let file = file?;
+        let path = file.header().path()?.into_owned();
+        trace!("Found file: {}", path.display());
+
+        // Get the file name of this entry as a UTF-8 string.
+        let file_name = match path.file_name() {
+            Some(file_name) => file_name,
+            None => {
+                debug!("Skipping {}", path.display());
+                continue;
+            }
+        };
+        let utf8_file_name = file_name.to_string_lossy();
+
+        // Decide how to decompress the file, and pass it to our sentence
+        // extractor.
+        if utf8_file_name.ends_with(".xml.gz") {
+            debug!("Decompressing and parsing {}", path.display());
+            let unzipped = GzDecoder::new(io::BufReader::new(file))?;
+            sentence_count +=
+                extract_sentences(io::BufReader::new(unzipped),
+                                  &mut output)?;
+            file_count += 1;
+        } else if utf8_file_name.ends_with(".xml") {
+            debug!("Parsing {}", path.display());
+            sentence_count +=
+                extract_sentences(io::BufReader::new(file),
+                                  &mut output)?;
+            file_count += 1;
+        } else {
+            debug!("Skipping {}", path.display());
+        }
+    }
+
+    // Print out how much work we did.
+    if !args.flag_quiet {
+        write!(io::stderr(),
+               "Extracted {} sentences from {} files.",
+               sentence_count,
+               file_count)?;
+    }
+
+    Ok(())
+}
+
+/// Given a reader `rdr` which outputs XML text in OPUS raw format, write
+/// the text of the sentences to the writer `wtr`.  For performance, `wtr`
+/// should be a `BufWriter` or other writer than can handle many small
+/// writes efficiently.  Returns the number of sentences found.
+fn extract_sentences<R, W>(rdr: R, wtr: &mut W) -> Result<usize>
+    where R: io::BufRead, W: io::Write
+{
+    let mut count = 0;
+    let mut first_text = true;
+    let mut depth: usize = 0;
+    let mut buf = vec![];
+    let mut xml = XmlReader::from_reader(rdr);
+    loop {
+        let event = xml.read_event(&mut buf)?;
+        match event {
+            XmlEvent::Start(ref e) if e.name() == b"s" => {
+                first_text = true;
+                depth += 1;
+                if depth > 1 {
+                    warn!("<s> tags nested to depth {}", depth);
+                }
+            }
+            XmlEvent::End(ref e) if e.name() == b"s" => {
+                write!(wtr, "\n")?;
+                if depth > 0 {
+                    depth -= 1;
+                } else {
+                    warn!("unbalanced </s>");
+                }
+                count += 1;
+            }
+            XmlEvent::Text(ref e) => {
+                if depth > 0 {
+                    if first_text {
+                        first_text = false;
+                        write!(wtr, " ")?;
+                    }
+                    let s = e.unescape_and_decode(&xml)?;
+                    write!(wtr, "{}", s.trim())?;
+                }
+            }
+            XmlEvent::Eof => break,
+            _ => {}
+        }
+    }
+    Ok(count)
+}

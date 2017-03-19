@@ -1,0 +1,23 @@
+[package]
+name = "opus_tools"
+version = "0.1.0"
+authors = ["Eric Kidd <git@randomhacks.net>"]
+
+description = "Miscellaneous tools for working with the OPUS parallel text corpus"
+license = "CC0-1.0"
+readme = "README.md"
+repository = "https://github.com/emk/subtitles-rs"
+documentation = "https://github.com/emk/subtitles-rs/blob/master/opus_tools/README.md"
+
+[dependencies]
+docopt = "0.7"
+env_logger = "0.4"
+error-chain = "0.10.0"
+flate2 = "0.2"
+log = "0.3"
+quick-xml = "0.6"
+rustc-serialize = "0.3"
+tar = "0.4"
+
+[dev-dependencies]
+cli_test_dir = { version = "0.1", path = "../cli_test_dir" }
