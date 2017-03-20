@@ -31,6 +31,22 @@ ls *.raw.tar.gz |
     parallel --joblog out.log 'opusraw2txt {}.raw.tar.gz | szip > {}.sz'
 ```
 
+This will rapidly extract a huge number of sentences:
+
+```txt
+Extracted 26782811 sentences from 27605 files.
+Extracted 80140630 sentences from 90319 files.
+Extracted 79320 sentences from 89 files.
+Extracted 112360292 sentences from 124815 files.
+Extracted 22917237 sentences from 23492 files.
+Extracted 229583 sentences from 188 files.
+Extracted 7335505 sentences from 6438 files.
+Extracted 38677592 sentences from 44584 files.
+Extracted 101502145 sentences from 114150 files.
+```
+
+...and so on.
+
 [subs]: http://opus.lingfil.uu.se/OpenSubtitles2016.php
 [szip]: https://github.com/BurntSushi/rust-snappy
 
