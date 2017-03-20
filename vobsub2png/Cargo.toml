@@ -1,6 +1,6 @@
 [package]
 name = "vobsub2png"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
 description = "Tool to convert DVD VobSub-format subtitles (*.sub/*.idx files) to PNGs"
@@ -22,4 +22,4 @@ rustc-serialize = "0.3.22"
 serde = "0.9"
 serde_derive = "0.9"
 serde_json = "0.9"
-vobsub = { version = "0.2", path = "../vobsub" }
+vobsub = { version = "0.2.2", path = "../vobsub" }

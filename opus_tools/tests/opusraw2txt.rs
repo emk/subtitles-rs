@@ -1,9 +1,6 @@
 extern crate cli_test_dir;
 
 use cli_test_dir::*;
-use std::io;
-use std::io::prelude::*;
-use std::str::from_utf8;
 
 #[test]
 fn parse_file() {
