@@ -5,14 +5,12 @@
 
 extern crate cli_test_dir;
 
-use cli_test_dir::TestDir;
+use cli_test_dir::*;
 
 #[test]
 fn does_not_fail() {
     let workdir = TestDir::new("subtitles2srt", "does_not_fail");
-    let status = workdir.cmd()
+    workdir.cmd()
         .arg(workdir.src_path("../fixtures/example.idx"))
-        .status()
-        .expect("could not run command");
-    assert!(status.success());
+        .expect_success();
 }

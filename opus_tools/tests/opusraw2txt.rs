@@ -1,6 +1,6 @@
 extern crate cli_test_dir;
 
-use cli_test_dir::TestDir;
+use cli_test_dir::*;
 use std::io;
 use std::io::prelude::*;
 use std::str::from_utf8;
@@ -10,26 +10,16 @@ fn parse_file() {
     let testdir = TestDir::new("opusraw2txt", "parse_file");
     let output = testdir.cmd()
         .arg(testdir.src_path("../fixtures/opus.raw.tar.gz"))
-        .output()
-        .expect("could not run opusraw2txt");
-    if !output.status.success() {
-        io::stderr().write(&output.stderr).expect("write stderr");
-    }
-    assert!(output.status.success());
-    assert!(from_utf8(&output.stdout).unwrap().find("Sentence 1").is_some());
-    assert!(from_utf8(&output.stderr).unwrap().find("4 sentences").is_some());
+        .expect_success();
+    assert!(output.stdout_str().contains("Sentence 1"));
+    assert!(output.stderr_str().contains("4 sentences"));
 }
 
 #[test]
 #[ignore]
 fn parse_large_file() {
     let testdir = TestDir::new("opusraw2txt", "parse_large_file");
-    let output = testdir.cmd()
+    testdir.cmd()
         .arg(testdir.src_path("../private/opus_open_subtitles/ca.raw.tar.gz"))
-        .output()
-        .expect("could not run opusraw2txt");
-    if !output.status.success() {
-        io::stderr().write(&output.stderr).expect("write stderr");
-    }
-    assert!(output.status.success());
+        .expect_success();
 }
