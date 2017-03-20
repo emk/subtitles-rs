@@ -10,6 +10,8 @@ curl https://sh.rustup.rs -sSf | sh
 cargo install opus_tools
 ```
 
+[OPUS]: http://opus.lingfil.uu.se/OpenSubtitles2016.php
+
 ## `opusraw2txt`: Extract raw text from raw, monolingual file
 
 Download the file `ca.raw.tar.gz` from the right-hand column of
@@ -46,6 +48,19 @@ Extracted 101502145 sentences from 114150 files.
 ```
 
 ...and so on.
+
+If you see:
+
+```txt
+couldn't process OpenSubtitles2016/raw/es/2015/4544966/6155032.xml.gz (skipping):
+Error: corrupt deflate stream
+Error: couldn't process es.raw.tar.gz
+Caused by: corrupt deflate stream
+```
+
+...this means that the file you downloaded was truncated before the end.
+As far as I can tell, this affects that master copies of `es.raw.tar.gz`
+and `pt_br.raw.tar.gz`.
 
 [subs]: http://opus.lingfil.uu.se/OpenSubtitles2016.php
 [szip]: https://github.com/BurntSushi/rust-snappy
