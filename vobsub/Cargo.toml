@@ -25,6 +25,6 @@ error-chain = "0.8.1"
 image = { version = "0.12.2", default-features = false }
 lazy_static = "0.2.2"
 log = "0.3.6"
-nom = "2.1.0"
+nom = "2.1.0, <2.2.0"
 regex = "0.2.1"
 safemem = "0.2.0"
