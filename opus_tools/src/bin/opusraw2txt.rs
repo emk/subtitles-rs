@@ -123,12 +123,11 @@ fn process_tar_gz<W: io::Write>(path: &Path, output: &mut W, quiet: bool)
         match result {
             Ok(sentences) => { sentence_count += sentences }
             Err(err) => {
-                writeln!(io::stderr(),
-                         "couldn't process {} (skipping): {}",
-                         error_chain::ChainedError::display(&err),
-                         path.display())
+                write!(io::stderr(),
+                       "couldn't process {} (skipping):\n{}",
+                       path.display(),
+                       error_chain::ChainedError::display(&err))
                     .expect("Error writing to stderr");
-
             }
         }
     }
@@ -179,6 +178,7 @@ fn extract_sentences<R, W>(rdr: R, wtr: &mut W) -> Result<usize>
                 if depth > 0 {
                     if first_text {
                         first_text = false;
+                    } else {
                         write!(wtr, " ")?;
                     }
                     let s = e.unescape_and_decode(&xml)?;
