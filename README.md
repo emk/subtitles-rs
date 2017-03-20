@@ -9,6 +9,9 @@ more details.
 - [vobsub][]: A Rust library for parsing subtitles in sub/idx format.
 - [vobsub2png][]: A command-line tool for converting sub/idx subtitles to
   PNGs with JSON metadata.
+- [opus_tools][]: Utilties for parsing subtitle data from the OPUS project,
+  for use as input to various language models.
+- [cli_test_dir][]: A simple integration testing harness for CLI tools.
 
 The following subtitle-related projects can be found in other repositories:
 
@@ -17,9 +20,12 @@ The following subtitle-related projects can be found in other repositories:
 - [aligner][]: This GPLed library by kaegi uses dynamic programming to
   re-align out-of-sync subtitles using another subtitle file with
   known-good timing.
+- [subparse][]: This library by kaegi parses many common subtitle formats.
 
 [vobsub]: ./vobsub/README.md
 [vobsub2png]: ./vobsub2png/README.md
+[opus_tools]: ./opus_tools/README.md
+[cli_test_dir]: ./cli_test_dir/README.md
 [substudy]: https://github.com/emk/substudy
 [aligner]: https://github.com/kaegi/aligner
 
