@@ -61,7 +61,8 @@
 //! top-level of our crate, and `expect_path` can be used to make sure an
 //! output file exists:
 //!
-//! ```
+//! ```rust,no_run
+//! # // Don't run because `cp` will have path problems on Windows.
 //! # use cli_test_dir::*;
 //! let testdir = TestDir::new("cp", "cp_copies_files");
 //! testdir.cmd()
