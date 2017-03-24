@@ -8,7 +8,12 @@ fn parse_file() {
     let output = testdir.cmd()
         .arg(testdir.src_path("../fixtures/opus.raw.tar.gz"))
         .expect_success();
-    assert!(output.stdout_str().contains("Sentence 1"));
+    assert_eq!(output.stdout_str(), "\
+Sentence 1.
+Sentence 2.
+Sentence 1.
+Sentence 2.
+");
     assert!(output.stderr_str().contains("4 sentences"));
 }
 

@@ -176,13 +176,19 @@ fn extract_sentences<R, W>(rdr: R, wtr: &mut W) -> Result<usize>
             }
             XmlEvent::Text(ref e) => {
                 if depth > 0 {
-                    if first_text {
-                        first_text = false;
-                    } else {
-                        write!(wtr, " ")?;
+                    let raw = e.unescape_and_decode(&xml)?;
+                    let trimmed = raw.trim();
+
+                    // We ignore pure-whitespace blocks.
+                    if !trimmed.is_empty() {
+                        if first_text {
+                            first_text = false;
+                        } else {
+                            // Insert space between blocks.
+                            write!(wtr, " ")?;
+                        }
+                        write!(wtr, "{}", trimmed)?;
                     }
-                    let s = e.unescape_and_decode(&xml)?;
-                    write!(wtr, "{}", s.trim())?;
                 }
             }
             XmlEvent::Eof => break,

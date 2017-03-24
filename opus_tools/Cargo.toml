@@ -1,6 +1,6 @@
 [package]
 name = "opus_tools"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
 description = "Miscellaneous tools for working with the OPUS parallel text corpus"
