@@ -16,7 +16,7 @@ use unicode_segmentation::UnicodeSegmentation;
 
 mod errors;
 
-use self::errors::*;
+pub use self::errors::{Result, Error, ErrorKind};
 
 const MODEL_SIZE_LIMIT: usize = 10000;
 
@@ -117,7 +117,9 @@ impl ModelBuilder {
         let mut tar = tar::Builder::new(gzip);
         self.append_model_part(&mut tar, "graphemes.csv", &self.grapheme_counts)?;
         self.append_model_part(&mut tar, "pairs.csv", &self.pair_counts)?;
-        self.append_model_part(&mut tar, "words.csv", &self.word_counts)
+        self.append_model_part(&mut tar, "words.csv", &self.word_counts)?;
+        tar.into_inner()?.finish()?;
+        Ok(())
     }
 
     /// Append a file to our model.
@@ -129,8 +131,12 @@ impl ModelBuilder {
         let mut csv = vec![];
         self.frequencies(counts, &mut csv)?;
 
-        let mut header = tar::Header::new_gnu();
+        let mut header = tar::Header::new_old();
         header.set_path(path)?;
+        // TODO: Can this fail with a cast error?
+        header.set_size(csv.len() as u64);
+        header.set_mode(0o500);
+        header.set_cksum();
         builder.append(&header, io::Cursor::new(&csv))?;
         Ok(())
     }
