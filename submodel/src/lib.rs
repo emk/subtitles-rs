@@ -135,7 +135,7 @@ impl ModelBuilder {
         header.set_path(path)?;
         // TODO: Can this fail with a cast error?
         header.set_size(csv.len() as u64);
-        header.set_mode(0o500);
+        header.set_mode(0o600);
         header.set_cksum();
         builder.append(&header, io::Cursor::new(&csv))?;
         Ok(())
