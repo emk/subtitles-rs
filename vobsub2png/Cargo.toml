@@ -15,7 +15,7 @@ cli_test_dir = { version = "0.1.0", path = "../cli_test_dir" }
 [dependencies]
 docopt = "0.7.0"
 env_logger = "0.4.0"
-error-chain = "0.8.1"
+error-chain = "0.10.0"
 image = { version = "0.13.0", default-features = false, features = ["png_codec"] }
 log = "0.3.6"
 rustc-serialize = "0.3.22"
