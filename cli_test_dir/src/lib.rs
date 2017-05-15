@@ -55,6 +55,25 @@
 //! testdir.cmd().expect_success();
 //! ```
 //!
+//! ## Testing that the program exited with an error.
+//!
+//! Sometimes you want to test that a program fails to run successfully.
+//!
+//! ```
+//! # use cli_test_dir::*;
+//! let testdir = TestDir::new("false", "false_fails");
+//! testdir.cmd().expect_failure();
+//! ```
+//!
+//! And as you would expect, this test would fail:
+//!
+//! ```rust,should_panic
+//! # use cli_test_dir::*;
+//! // Fails.
+//! let testdir = TestDir::new("true", "true_fails");
+//! testdir.cmd().expect_failure();
+//! ```
+//!
 //! ## File input and output
 //!
 //! The `src_path` function can be used to build paths relative to the
@@ -326,6 +345,10 @@ pub trait ExpectStatus {
     /// Expect the child process to succeed, and return a
     /// `std::process::Output` object with its output.
     fn expect_success(self) -> process::Output;
+
+    /// Expect the child process to fail, and return `std::process::Output`
+    /// object with its output.
+    fn expect_failure(self) -> process::Output;
 }
 
 impl ExpectStatus for process::Output {
@@ -339,6 +362,18 @@ impl ExpectStatus for process::Output {
         }
         self
     }
+
+    fn expect_failure(self) -> process::Output {
+        if self.status.success() {
+            io::stdout().write_all(&self.stdout)
+                .expect("could not write to stdout");
+            io::stderr().write_all(&self.stderr)
+                .expect("could not write to stderr");
+            panic!("expected command to fail, got {:?}", self.status)
+        }
+        self
+    }
+
 }
 
 impl<ES: ExpectStatus, E: fmt::Debug> ExpectStatus for Result<ES, E> {
@@ -350,16 +385,36 @@ impl<ES: ExpectStatus, E: fmt::Debug> ExpectStatus for Result<ES, E> {
             Err(err) => panic!("error running command: {:?}", err),
         }
     }
+
+    fn expect_failure(self) -> process::Output {
+        // Unwrap the result, fail on error, and pass `expect_failure` to
+        // our wrapped type.
+        match self {
+            Ok(es) => es.expect_failure(),
+            // Note that this means we couldn't _run_ the command (perhaps
+            // because it doesn't exist or wasn't in our path), not that it
+            // ran but failed.
+            Err(err) => panic!("error running command: {:?}", err),
+        }
+    }
 }
 
 impl<'a> ExpectStatus for &'a mut process::Command {
     fn expect_success(self) -> process::Output {
         self.output().expect_success()
     }
+
+    fn expect_failure(self) -> process::Output {
+        self.output().expect_failure()
+    }
 }
 
 impl ExpectStatus for process::Child {
     fn expect_success(self) -> process::Output {
         self.wait_with_output().expect_success()
+    }
+
+    fn expect_failure(self) -> process::Output {
+        self.wait_with_output().expect_failure()
     }
 }
