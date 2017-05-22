@@ -1,6 +1,6 @@
 [package]
 name = "vobsub2png"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
 description = "Tool to convert DVD VobSub-format subtitles (*.sub/*.idx files) to PNGs"
