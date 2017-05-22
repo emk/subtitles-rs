@@ -1,6 +1,6 @@
 [package]
 name = "vobsub"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
 description = "Decode DVD VobSub-format subtitles (*.sub/*.idx files)"
