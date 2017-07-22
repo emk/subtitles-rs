@@ -236,7 +236,7 @@ impl TestDir {
     /// If `path` does not point to valid path, fail the current test.
     pub fn expect_path<P: AsRef<Path>>(&self, path: P) {
         let path = self.dir.join(path);
-        assert!(path.exists(), format!("{} exists", path.display()));
+        assert!(path.exists(), format!("{} should exist", path.display()));
     }
 
     /// Verify that the file contains the specified data.
