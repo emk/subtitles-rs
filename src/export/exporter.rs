@@ -63,8 +63,9 @@ pub struct Exporter {
     /// efficiently as possible.
     extractions: Vec<Extraction>,
 
-    /// The number of seconds to limit processing to.
-    processing_limit: Option<f32>,
+    /// The number of seconds to end processing at. If not set,
+    /// process the entire video.
+    end_at: Option<f32>,
 }
 
 impl Exporter {
@@ -75,7 +76,7 @@ impl Exporter {
                foreign_subtitles: SubtitleFile,
                native_subtitles: Option<SubtitleFile>,
                label: &str,
-               processing_limit: Option<f32>) ->
+               end_at: Option<f32>) ->
         Result<Exporter>
     {
         let foreign = LanguageResources::new(foreign_subtitles);
@@ -104,7 +105,7 @@ impl Exporter {
             file_stem: file_stem,
             dir: dir,
             extractions: vec!(),
-            processing_limit: processing_limit,
+            end_at: end_at,
         })
     }
 
@@ -134,9 +135,9 @@ impl Exporter {
         self.native.as_ref()
     }
 
-    /// Get the seconds to limit processing to.
-    pub fn processing_limit(&self) -> Option<f32> {
-        self.processing_limit
+    /// Get the number of seconds to end processing at.
+    pub fn end_at(&self) -> Option<f32> {
+        self.end_at
     }
 
     /// Align our two sets of subtitles.

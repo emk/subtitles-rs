@@ -54,9 +54,9 @@ fn cmd_combine() {
     assert!(from_utf8(&output.stdout).unwrap().find("¡Si!").is_some());
 }
 
-static FIRST_LINE: &'static str = "[sound:empty_00060_828-00066_164.es.mp3],0:01:00.828,empty,\"<img src=\"\"empty_00063_496.jpg\"\" />\",¡Si! ¡Aang ha vuelto!,Yay! Yay! Aang\'s back!,,,¡Lo sabía!,I knew it!\n";
+static FIRST_LINE: &'static str = "¡Si! ¡Aang ha vuelto!,Yay! Yay! Aang\'s back!,,,¡Lo sabía!,I knew it!";
 
-static LAST_LINE: &'static str = "[sound:empty_00077_124-00083_379.es.mp3],0:01:17.124,empty,\"<img src=\"\"empty_00080_251.jpg\"\" />\",\"El no ha hecho nada, Sokka, fué un accidente.\",Aang didn\'t do anything.,harás que vengan a nosotros.,\"You\'re leading them straight to us, aren\'t you?\",,\n";
+static LAST_LINE: &'static str = "\"El no ha hecho nada, Sokka, fué un accidente.\",Aang didn\'t do anything.,harás que vengan a nosotros.,\"You\'re leading them straight to us, aren\'t you?\"";
 
 #[test]
 fn cmd_export_csv() {
@@ -77,10 +77,10 @@ fn cmd_export_csv() {
 }
 
 #[test]
-fn cmd_export_csv_limit() {
-    let testdir = TestDir::new("substudy", "cmd_export_csv_limit");
+fn cmd_export_csv_end_at() {
+    let testdir = TestDir::new("substudy", "cmd_export_csv_end_at");
     let output = testdir.cmd()
-        .args(&["export", "csv", "--limit=65"])
+        .args(&["export", "csv", "--end-at=65"])
         .arg(testdir.src_path("fixtures/empty.mp4"))
         .arg(testdir.src_path("fixtures/sample.es.srt"))
         .arg(testdir.src_path("fixtures/sample.en.srt"))
@@ -90,9 +90,8 @@ fn cmd_export_csv_limit() {
     testdir.expect_path("empty_csv/cards.csv");
     testdir.expect_path("empty_csv/empty_00063_496.jpg");
     testdir.expect_path("empty_csv/empty_00060_828-00066_164.es.mp3");
-    testdir.expect_file_contents("empty_csv/cards.csv", FIRST_LINE);
+    testdir.expect_contains("empty_csv/cards.csv", FIRST_LINE);
 }
-
 
 #[test]
 fn cmd_export_review() {
@@ -111,10 +110,40 @@ fn cmd_export_review() {
 }
 
 #[test]
+fn cmd_export_review_end_at() {
+    let testdir = TestDir::new("substudy", "cmd_export_review_end_at");
+    let output = testdir.cmd()
+        .args(&["export", "review", "--end-at=65"])
+        .arg(testdir.src_path("fixtures/empty.mp4"))
+        .arg(testdir.src_path("fixtures/sample.es.srt"))
+        .arg(testdir.src_path("fixtures/sample.en.srt"))
+        .output()
+        .expect("could not run substudy");
+    assert!(output.status.success());
+    testdir.expect_path("empty_review/index.html");
+    testdir.expect_path("empty_review/empty_00063_496.jpg");
+    testdir.expect_path("empty_review/empty_00061_828-00065_164.es.mp3");
+}
+
+#[test]
 fn cmd_export_tracks() {
     let testdir = TestDir::new("substudy", "cmd_export_tracks");
     let output = testdir.cmd()
         .args(&["export", "tracks"])
+        .arg(testdir.src_path("fixtures/empty.mp4"))
+        .arg(testdir.src_path("fixtures/sample.es.srt"))
+        .output()
+        .expect("could not run substudy");
+    assert!(output.status.success());
+    testdir.expect_path("empty_tracks/playlist.m3u8");
+    testdir.expect_path("empty_tracks/empty_00059_828-00067_164.es.mp3");
+}
+
+#[test]
+fn cmd_export_tracks_end_at() {
+    let testdir = TestDir::new("substudy", "cmd_export_tracks_end_at");
+    let output = testdir.cmd()
+        .args(&["export", "tracks", "--end-at=65"])
         .arg(testdir.src_path("fixtures/empty.mp4"))
         .arg(testdir.src_path("fixtures/sample.es.srt"))
         .output()
