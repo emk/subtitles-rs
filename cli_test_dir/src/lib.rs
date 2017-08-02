@@ -106,6 +106,20 @@
 //! testdir.expect_file_contents("output.txt", "Hello, world!\n");
 //! ```
 //!
+//! There are also negative versions of these functions where useful:
+//!
+//! ```
+//! # use cli_test_dir::*;
+//! let testdir = TestDir::new("cp", "negative_tests");
+//! testdir.create_file("input.txt", "Hello, world!\n");
+//! testdir.cmd()
+//!   .arg("input.txt")
+//!   .arg("output.txt")
+//!   .expect_success();
+//! testdir.expect_does_not_contain("output.txt", "Goodbye");
+//! testdir.expect_no_such_path("does_not_exist.txt");
+//! ```
+//!
 //! ## Standard input and output
 //!
 //! We can also test standard input and output:
@@ -239,6 +253,12 @@ impl TestDir {
         assert!(path.exists(), format!("{} should exist", path.display()));
     }
 
+    /// If `path` does not point to valid path, fail the current test.
+    pub fn expect_no_such_path<P: AsRef<Path>>(&self, path: P) {
+        let path = self.dir.join(path);
+        assert!(!path.exists(), format!("{} should not exist", path.display()));
+    }
+
     /// Verify that the file contains the specified data.
     pub fn expect_file_contents<P, S>(&self, path: P, expected: S)
         where P: AsRef<Path>, S: AsRef<[u8]>
@@ -252,6 +272,16 @@ impl TestDir {
         expect_data_eq(path.display(), &found, expected);
     }
 
+    /// (Internal.) Read a `Path` and return a `String`.
+    fn read_file(&self, path: &Path) -> String
+    {
+        self.expect_path(&path);
+        let mut f = fs::File::open(&path).expect("could not open file");
+        let mut found = vec![];
+        f.read_to_end(&mut found).expect("could not read file");
+        str::from_utf8(&found).expect("expected UTF-8 file").to_owned()
+    }
+
     /// Verify that the contents of the file match the specified pattern.
     /// Someday this should support `std::str::pattern::Pattern` so that we
     /// can support both strings and regular expressions, but that hasn't
@@ -260,14 +290,24 @@ impl TestDir {
         where P: AsRef<Path>
     {
         let path = self.dir.join(path);
-        self.expect_path(&path);
-        let mut f = fs::File::open(&path).expect("could not open file");
-        let mut found = vec![];
-        f.read_to_end(&mut found).expect("could not read file");
-        let found = str::from_utf8(&found).expect("expected UTF-8 file");
-        assert!(found.contains(pattern),
+        let contents = self.read_file(&path);
+        assert!(contents.contains(pattern),
                 format!("expected {} to match {:?}, but it contained {:?}",
-                        path.display(), pattern, found));
+                        path.display(), pattern, contents));
+    }
+
+    /// Verify that the contents of the file do not match the specified pattern.
+    /// Someday this should support `std::str::pattern::Pattern` so that we can
+    /// support both strings and regular expressions, but that hasn't been
+    /// stabilized yet.
+    pub fn expect_does_not_contain<P>(&self, path: P, pattern: &str)
+        where P: AsRef<Path>
+    {
+        let path = self.dir.join(path);
+        let contents = self.read_file(&path);
+        assert!(!contents.contains(pattern),
+                format!("expected {} to not match {:?}, but it contained {:?}",
+                        path.display(), pattern, contents));
     }
 }
 
