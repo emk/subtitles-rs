@@ -3,7 +3,6 @@ extern crate env_logger;
 #[macro_use]
 extern crate error_chain;
 extern crate image;
-extern crate rustc_serialize;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -11,7 +10,6 @@ extern crate serde_json;
 extern crate vobsub;
 
 use docopt::Docopt;
-use std::env;
 use std::fs;
 use std::path::Path;
 use vobsub::{Error, Index, Result, Subtitle};
@@ -24,7 +22,7 @@ Options:
                       of the *.idx file.
 ";
 
-#[derive(RustcDecodable)]
+#[derive(Debug, Deserialize)]
 struct Args {
     arg_idx_file: String,
     flag_out_dir: Option<String>,
@@ -51,7 +49,7 @@ fn run() -> Result<()> {
     env_logger::init().unwrap();
 
     let args: Args = Docopt::new(USAGE)
-        .and_then(|d| d.argv(env::args().into_iter()).decode())
+        .and_then(|d| d.deserialize())
         .unwrap_or_else(|e| e.exit());
 
     let path = Path::new(&args.arg_idx_file);

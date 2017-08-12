@@ -5,12 +5,13 @@ extern crate error_chain;
 extern crate image;
 #[macro_use]
 extern crate log;
-extern crate rustc_serialize;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 extern crate subtitle_ocr;
 extern crate vobsub;
 
 use docopt::Docopt;
-use std::env;
 use std::path::Path;
 use subtitle_ocr::OcrContext;
 use vobsub::Index;
@@ -32,7 +33,7 @@ const USAGE: &'static str = "
 Usage: subtitles2srt <idx-file>
 ";
 
-#[derive(RustcDecodable)]
+#[derive(Debug, Deserialize)]
 struct Args {
     arg_idx_file: String,
 }
@@ -43,8 +44,9 @@ fn run() -> Result<()> {
     env_logger::init().unwrap();
 
     let args: Args = Docopt::new(USAGE)
-        .and_then(|d| d.argv(env::args().into_iter()).decode())
+        .and_then(|d| d.deserialize())
         .unwrap_or_else(|e| e.exit());
+    debug!("args: {:?}", &args);
     let path = Path::new(&args.arg_idx_file);
 
     let mut ctx = OcrContext::new(&path)?;

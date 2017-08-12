@@ -6,7 +6,9 @@ extern crate flate2;
 #[macro_use]
 extern crate log;
 extern crate quick_xml;
-extern crate rustc_serialize;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 extern crate tar;
 
 use flate2::bufread::GzDecoder;
@@ -46,7 +48,7 @@ http://opus.lingfil.uu.se/OpenSubtitles2016.php
 ";
 
 /// Command-line arguments.
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, Deserialize)]
 struct Args {
     arg_raw_tar_gz: String,
     flag_quiet: bool,
@@ -62,7 +64,7 @@ fn run() -> Result<()> {
 
     // Parse our arguments.
     let args: Args = docopt::Docopt::new(USAGE)
-        .and_then(|d| d.decode())
+        .and_then(|d| d.deserialize())
         .unwrap_or_else(|e| e.exit());
     trace!("Arguments: {:?}", args);
 

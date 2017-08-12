@@ -1,6 +1,8 @@
 //! Support for logging image files to a specified directory using the same
 //! log levels as the `log` framework.
 
+#![allow(unused_macros)]
+
 use std::env;
 use std::fs;
 use std::thread;

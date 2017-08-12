@@ -10,16 +10,15 @@ repository = "https://github.com/emk/subtitles-rs"
 documentation = "https://github.com/emk/subtitles-rs/blob/master/vobsub2png/README.md"
 
 [dev-dependencies]
-cli_test_dir = { version = "0.1.0", path = "../cli_test_dir" }
+cli_test_dir = { version = "0.1", path = "../cli_test_dir" }
 
 [dependencies]
-docopt = "0.7.0"
-env_logger = "0.4.0"
-error-chain = "0.10.0"
-image = { version = "0.13.0", default-features = false, features = ["png_codec"] }
-log = "0.3.6"
-rustc-serialize = "0.3.22"
-serde = "0.9"
-serde_derive = "0.9"
-serde_json = "0.9"
-vobsub = { version = "0.2.2", path = "../vobsub" }
+docopt = "0.8"
+env_logger = "0.4"
+error-chain = "0.10"
+image = { version = "0.13", default-features = false, features = ["png_codec"] }
+log = "0.3"
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+vobsub = { version = "0.2", path = "../vobsub" }
