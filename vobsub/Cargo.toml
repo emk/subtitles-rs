@@ -22,7 +22,7 @@ glob = "0.2.11"
 [dependencies]
 cast = "0.2.0"
 error-chain = "0.10.0"
-image = { version = "0.13.0", default-features = false }
+image = { version = "0.15.0", default-features = false }
 lazy_static = "0.2.2"
 log = "0.3.6"
 nom = "2.1.0, <2.2.0"
