@@ -105,10 +105,10 @@ impl Decodable for Fraction {
 #[allow(missing_docs, dead_code)]
 pub struct Stream {
     pub index: usize,
-    pub codec_name: String,
+    pub codec_name: Option<String>,
     pub codec_long_name: Option<String>,
     pub codec_type: CodecType,
-    pub codec_time_base: Fraction,
+    pub codec_time_base: Option<Fraction>,
     pub codec_tag_string: String,
     pub codec_tag: String,
     pub profile: Option<String>,
