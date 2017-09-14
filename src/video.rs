@@ -99,7 +99,6 @@ impl Decodable for Fraction {
     }
 }
 
-
 /// An individual content stream within a video.
 #[derive(Debug, RustcDecodable)]
 #[allow(missing_docs, dead_code)]
@@ -271,6 +270,7 @@ impl Video {
             .output();
         let output = try!(cmd);
         let stdout = try!(from_utf8(&output.stdout));
+        debug!("Video metadata: {}", stdout);
         let metadata = try!(json::decode(stdout));
 
         Ok(Video { path: path.to_owned(), metadata: metadata })
