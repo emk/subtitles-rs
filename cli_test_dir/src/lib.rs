@@ -228,6 +228,20 @@ impl TestDir {
         cmd
     }
 
+    /// Construct a path relative to our test directory.
+    ///
+    /// ```
+    /// # use cli_test_dir::*;
+    /// let testdir = TestDir::new("touch", "path_builds_paths");
+    /// testdir.cmd()
+    ///   .arg("example.txt")
+    ///   .expect_success();
+    /// assert!(testdir.path("example.txt").exists());
+    /// ```
+    pub fn path<P: AsRef<Path>>(&self, path: P) -> PathBuf {
+        self.dir.join(path)
+    }
+
     /// Return a path relative to the source directory of the current
     /// crate.  Useful for finding fixtures.
     pub fn src_path<P: AsRef<Path>>(&self, path: P) -> PathBuf {
