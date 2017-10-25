@@ -117,7 +117,7 @@ pub struct Stream {
     //sample_aspect_ratio
     //display_aspect_ratio
     pub pix_fmt: Option<String>,
-    pub level: Option<u32>,
+    //pub level: Option<i32>,
     pub sample_rate: Option<f64>,
     pub channels: Option<usize>,
     pub bits_per_sample: Option<u32>,
