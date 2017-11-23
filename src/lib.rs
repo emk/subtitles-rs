@@ -9,7 +9,7 @@
 
 extern crate cld2;
 extern crate csv;
-#[cfg(test)] extern crate difference;
+#[cfg(test)] #[macro_use] extern crate difference;
 extern crate encoding;
 #[macro_use] extern crate error_chain;
 extern crate handlebars;
@@ -17,7 +17,9 @@ extern crate handlebars;
 #[macro_use] extern crate log;
 extern crate num;
 extern crate regex;
-extern crate rustc_serialize;
+extern crate serde;
+#[macro_use] extern crate serde_derive;
+extern crate serde_json;
 extern crate uchardet;
 
 pub mod errors;

@@ -1,8 +1,10 @@
 //! Command-line iterface to substudy.
 
-extern crate rustc_serialize;
 extern crate docopt;
 extern crate env_logger;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 
 extern crate substudy;
 
@@ -33,7 +35,7 @@ will be automatically detected, but try converting to UTF-8 if you
 have problems.
 ";
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, Deserialize)]
 struct Args {
     cmd_clean: bool,
     cmd_combine: bool,
@@ -139,7 +141,7 @@ fn main() {
 
     // Parse our command-line arguments using docopt (very shiny).
     let args: Args = Docopt::new(USAGE)
-        .and_then(|d| d.decode())
+        .and_then(|d| d.deserialize())
         .unwrap_or_else(|e| e.exit());
 
     // Decide which command to run, and run it.

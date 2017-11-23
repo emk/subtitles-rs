@@ -1,6 +1,7 @@
 //! Tools for working with time.
 
-use rustc_serialize::{Encodable, Encoder};
+use serde::{Serialize, Serializer};
+use serde::ser::SerializeTuple;
 use std::result;
 
 use errors::*;
@@ -222,12 +223,15 @@ impl Period {
     }
 }
 
-impl Encodable for Period {
-    fn encode<S: Encoder>(&self, s: &mut S) -> result::Result<(), S::Error> {
-        s.emit_seq(2, |s1| {
-            try!(s1.emit_seq_elt(0, |s2| s2.emit_f32(self.begin)));
-            s1.emit_seq_elt(1, |s2| s2.emit_f32(self.end))
-        })
+impl Serialize for Period {
+    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
+    where
+        S: Serializer
+    {
+        let mut tuple = serializer.serialize_tuple(2)?;
+        tuple.serialize_element(&self.begin)?;
+        tuple.serialize_element(&self.end)?;
+        tuple.end()
     }
 }
 

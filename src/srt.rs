@@ -20,7 +20,7 @@ pub fn format_time(time: f32) -> String {
 
 /// A single SRT-format subtitle, minus some of the optional fields used in
 /// various versions of the file format.
-#[derive(Debug, PartialEq, Clone, RustcEncodable)]
+#[derive(Debug, PartialEq, Clone, Serialize)]
 pub struct Subtitle {
     /// The index of this subtitle.  We should normalize these to start
     /// with 1 on output.
@@ -44,7 +44,7 @@ impl Subtitle {
 
     /// Return a plain-text version of this subtitle.
     pub fn plain_text(&self) -> String {
-        strip_formatting(&self.lines.join(" "))
+        strip_formatting(&self.lines.join(" ")).into_owned()
     }
 }
 

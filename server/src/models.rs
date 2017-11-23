@@ -5,7 +5,7 @@ use substudy::align::align_available_files;
 use substudy::srt;
 use substudy::time::Period;
 
-#[derive(RustcEncodable)]
+#[derive(Debug, Serialize)]
 pub struct Subtitle {
     pub period: Period,
     pub foreign: Option<String>,
@@ -28,7 +28,7 @@ impl Subtitle {
     }
 }
 
-#[derive(RustcEncodable)]
+#[derive(Debug, Serialize)]
 pub struct Video {
     pub url: String,
     pub subtitles: Vec<Subtitle>,

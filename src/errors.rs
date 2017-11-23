@@ -2,11 +2,11 @@
 
 // `error-chain` makes it hard to document all the definitions it
 // generates.
-#![allow(missing_docs)]
+#![allow(missing_docs, unused_doc_comment)]
 
 use csv;
 use handlebars;
-use rustc_serialize::json;
+use serde_json;
 use std::io;
 use std::str;
 use uchardet;
@@ -21,9 +21,9 @@ error_chain! {
     foreign_links {
         Csv(csv::Error);
         Io(io::Error);
-        JsonDecoder(json::DecoderError);
         Parse(grammar::ParseError);
         Render(handlebars::RenderError);
+        SerdeJson(serde_json::Error);
         Template(handlebars::TemplateError);
         Utf8(str::Utf8Error);
     }

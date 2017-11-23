@@ -1,8 +1,6 @@
 //! Export to web-page based "review" format.
 
 use handlebars::Handlebars;
-use rustc_serialize::json::{ToJson, Json};
-use std::collections::BTreeMap;
 use std::str::from_utf8;
 
 use errors::*;
@@ -11,8 +9,7 @@ use lang::Lang;
 use time::Period;
 
 /// Information about a subtitle for use by our Handlebars HTML template.
-/// This needs to implement `ToJson`, because that's what Handlebars wants
-/// as input.
+#[derive(Debug, Serialize)]
 struct SubtitleInfo {
     index: usize,
     image_path: String,
@@ -21,35 +18,13 @@ struct SubtitleInfo {
     native_text: Option<String>,
 }
 
-impl ToJson for SubtitleInfo {
-    fn to_json(&self) -> Json {
-        let mut m: BTreeMap<String, Json> = BTreeMap::new();
-        m.insert("index".to_string(), self.index.to_json());
-        m.insert("image_path".to_string(), self.image_path.to_json());
-        m.insert("audio_path".to_string(), self.audio_path.to_json());
-        m.insert("foreign_text".to_string(), self.foreign_text.to_json());
-        m.insert("native_text".to_string(), self.native_text.to_json());
-        m.to_json()
-    }
-}
-
 /// Export-related information for use by our Handlebars HTML template.
+#[derive(Debug, Serialize)]
 struct ExportInfo {
     filename: String,
     subtitles: Vec<SubtitleInfo>,
     foreign_lang: Option<Lang>,
     native_lang: Option<Lang>,
-}
-
-impl ToJson for ExportInfo {
-    fn to_json(&self) -> Json {
-        let mut m: BTreeMap<String, Json> = BTreeMap::new();
-        m.insert("filename".to_string(), self.filename.to_json());
-        m.insert("subtitles".to_string(), self.subtitles.to_json());
-        m.insert("foreign_lang".to_string(), self.foreign_lang.to_json());
-        m.insert("native_lang".to_string(), self.native_lang.to_json());
-        m.to_json()
-    }
 }
 
 /// Export the video and subtitles as a web page in "reviewable" format.

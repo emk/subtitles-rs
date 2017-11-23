@@ -3,10 +3,11 @@
 
 use regex::Regex;
 use srt::{Subtitle,SubtitleFile};
+use std::borrow::Cow;
 use errors::*;
 
 /// Remove the formatting from a subtitle.
-pub fn strip_formatting(line: &str) -> String {
+pub fn strip_formatting(line: &str) -> Cow<str> {
     let formatting = Regex::new(r"<[a-z/][^>]*>").unwrap();
     formatting.replace_all(&line, "")
 }

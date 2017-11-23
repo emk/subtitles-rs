@@ -2,7 +2,9 @@
 
 use num::rational::Ratio;
 use regex::Regex;
-use rustc_serialize::{Decodable, Decoder, json};
+use serde::{Deserialize, Deserializer};
+use serde::de;
+use serde_json;
 use std::collections::BTreeMap;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
@@ -59,9 +61,10 @@ pub enum CodecType {
     Other(String),
 }
 
-impl Decodable for CodecType {
-    fn decode<D: Decoder>(d: &mut D) -> result::Result<Self, D::Error> {
-        match &try!(d.read_str())[..] {
+impl<'de> Deserialize<'de> for CodecType {
+    fn deserialize<D: Deserializer<'de>>(d: D) -> result::Result<Self, D::Error> {
+        let s = String::deserialize(d)?;
+        match &s[..] {
             "audio" => Ok(CodecType::Audio),
             "video" => Ok(CodecType::Video),
             "subtitle" => Ok(CodecType::Subtitle),
@@ -75,24 +78,24 @@ impl Decodable for CodecType {
 pub struct Fraction(Ratio<u32>);
 
 impl Fraction {
-    fn decode_parts<D>(d: &mut D) -> result::Result<(u32, u32), D::Error>
-        where D: Decoder
+    fn deserialize_parts<'de, D>(d: D) -> result::Result<(u32, u32), D::Error>
+        where D: Deserializer<'de>
     {
-        let s = try!(d.read_str());
+        let s = String::deserialize(d)?;
         let re = Regex::new(r"^(\d+)/(\d+)$").unwrap();
         let cap = try!(re.captures(&s).ok_or_else(|| {
-            d.error(&format!("Expected fraction: {}", &s))
+            <D::Error as de::Error>::custom(format!("Expected fraction: {}", &s))
         }));
-        Ok((FromStr::from_str(cap.at(1).unwrap()).unwrap(),
-            FromStr::from_str(cap.at(2).unwrap()).unwrap()))
+        Ok((FromStr::from_str(cap.get(1).unwrap().as_str()).unwrap(),
+            FromStr::from_str(cap.get(2).unwrap().as_str()).unwrap()))
     }
 }
 
-impl Decodable for Fraction {
-    fn decode<D: Decoder>(d: &mut D) -> result::Result<Self, D::Error> {
-        let (num, denom) = try!(Fraction::decode_parts(d));
+impl<'de> Deserialize<'de> for Fraction {
+    fn deserialize<D: Deserializer<'de>>(d: D) -> result::Result<Self, D::Error> {
+        let (num, denom) = try!(Fraction::deserialize_parts(d));
         if denom == 0 {
-            Err(d.error("Found fraction with a denominator of 0"))
+            Err(<D::Error as de::Error>::custom("Found fraction with a denominator of 0"))
         } else {
             Ok(Fraction(Ratio::new(num, denom)))
         }
@@ -100,32 +103,12 @@ impl Decodable for Fraction {
 }
 
 /// An individual content stream within a video.
-#[derive(Debug, RustcDecodable)]
-#[allow(missing_docs, dead_code)]
+#[derive(Debug, Deserialize)]
+#[allow(missing_docs)]
 pub struct Stream {
     pub index: usize,
-    pub codec_name: Option<String>,
-    pub codec_long_name: Option<String>,
     pub codec_type: CodecType,
-    pub codec_time_base: Option<Fraction>,
-    pub codec_tag_string: String,
-    pub codec_tag: String,
-    pub profile: Option<String>,
-    pub width: Option<usize>,
-    pub height: Option<usize>,
-    //has_b_frames
-    //sample_aspect_ratio
-    //display_aspect_ratio
-    pub pix_fmt: Option<String>,
-    //pub level: Option<i32>,
-    pub sample_rate: Option<f64>,
-    pub channels: Option<usize>,
-    pub bits_per_sample: Option<u32>,
-    //avg_frame_rate
-    pub time_base: Fraction,
-    pub start_time: f64,
-    //duration
-    pub tags: Option<BTreeMap<String, String>>,
+    tags: Option<BTreeMap<String, String>>,
 }
 
 impl Stream {
@@ -161,7 +144,7 @@ fn test_stream_decode() {
   }
 }
 ";
-    let stream: Stream = json::decode(json).unwrap();
+    let stream: Stream = serde_json::from_str(json).unwrap();
     assert_eq!(CodecType::Audio, stream.codec_type);
     assert_eq!(Some(Lang::iso639("en").unwrap()),
                stream.language())
@@ -240,7 +223,7 @@ impl Extraction {
 }
 
 /// Metadata associated with a video.
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, Deserialize)]
 struct Metadata {
     streams: Vec<Stream>,
 }
@@ -271,7 +254,7 @@ impl Video {
         let output = try!(cmd);
         let stdout = try!(from_utf8(&output.stdout));
         debug!("Video metadata: {}", stdout);
-        let metadata = try!(json::decode(stdout));
+        let metadata = try!(serde_json::from_str(stdout));
 
         Ok(Video { path: path.to_owned(), metadata: metadata })
     }

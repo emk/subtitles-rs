@@ -90,7 +90,7 @@ fn group_contains(group: &Vec<usize>, items: &Vec<Option<usize>>, i: usize) ->
 }
 
 /// Find a good way to align two subtitle files.
-fn alignment(file1: &SubtitleFile, file2: &SubtitleFile) -> Alignment {  
+fn alignment(file1: &SubtitleFile, file2: &SubtitleFile) -> Alignment {
     let (subs1, subs2) = (&file1.subtitles, &file2.subtitles);
     // assert!(subs1 && subs2 contain valid subs in ascending order)
     let matches1 = best_matches(subs1, subs2);
@@ -256,7 +256,6 @@ pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile)
 
 #[test]
 fn test_combine_files() {
-    use difference::assert_diff;
     use std::path::Path;
 
     // Load sample subtitles.
@@ -266,7 +265,7 @@ fn test_combine_files() {
     let srt_en = SubtitleFile::from_path(&path_en).unwrap();
     let path_combined = Path::new("fixtures/combined.srt");
     let expected = SubtitleFile::from_path(&path_combined).unwrap();
-    assert_diff(&expected.to_string(),
-                &combine_files(&srt_es, &srt_en).to_string(),
-                "\n", 0);
+    assert_diff!(&expected.to_string(),
+                 &combine_files(&srt_es, &srt_en).to_string(),
+                 "\n", 0);
 }

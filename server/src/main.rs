@@ -2,7 +2,6 @@ extern crate docopt;
 extern crate env_logger;
 extern crate iron;
 extern crate mount;
-extern crate rustc_serialize;
 extern crate rustless;
 extern crate substudy;
 extern crate staticfile;
@@ -11,7 +10,6 @@ use docopt::Docopt;
 use iron::headers::ContentType;
 use iron::middleware::Handler;
 use mount::Mount;
-use rustc_serialize::json;
 use rustless::Nesting;
 use staticfile::Static;
 use std::path::Path;
@@ -35,7 +33,7 @@ For now, all subtitles must be in *.srt format, and video must be in
 a browser-compatible format.
 ";
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, Deserialize)]
 struct Args {
     arg_video: String,
     arg_foreign_subs: String,
