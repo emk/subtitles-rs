@@ -2,6 +2,8 @@
 
 extern crate docopt;
 extern crate env_logger;
+#[macro_use]
+extern crate error_chain;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -10,7 +12,6 @@ extern crate substudy;
 
 use docopt::Docopt;
 use std::path::Path;
-use std::process::exit;
 
 use substudy::errors::Result;
 use substudy::srt::SubtitleFile;
@@ -155,7 +156,7 @@ fn cmd_export(
     Ok(())
 }
 
-fn main() {
+fn real_main() -> Result<()> {
     env_logger::init().unwrap();
 
     // Parse our command-line arguments using docopt (very shiny).
@@ -164,9 +165,7 @@ fn main() {
         .unwrap_or_else(|e| e.exit());
 
     // Decide which command to run, and run it.
-    if let Err(ref err) = run(&args) {
-        // Print any error and exit with an error status.
-        println!("{}", err);
-        exit(1);
-    }
+    run(&args)
 }
+
+quick_main!(real_main);

@@ -2,7 +2,7 @@
 //! it easy to skip backwards a conversation with most MP3 players.
 
 use std::default::Default;
-use std::io::{Cursor, Write};
+use std::io::Write;
 
 use errors::*;
 use export::Exporter;
@@ -93,7 +93,7 @@ pub fn export_tracks(exporter: &mut Exporter) -> Result<()> {
     //
     // TODO: Genre, artist, album, track title, track number.
     let foreign_lang = exporter.foreign().language;
-    let mut playlist = Cursor::new(vec![]);
+    let mut playlist = vec![];
     for (i, conv) in convs.iter().enumerate() {
         debug!(
             "Conv: {:7.1} -> {:7.1} for {:7.1}",
@@ -122,9 +122,11 @@ pub fn export_tracks(exporter: &mut Exporter) -> Result<()> {
         // Export as an audio file, and record the path in our playlist.
         let path =
             exporter.schedule_audio_export_ext(foreign_lang, conv.period, metadata);
-        writeln!(playlist, "{}", &path)?;
+        writeln!(playlist, "{}", &path).chain_err(|| {
+            err_str("error serializing playlist to memory")
+        })?;
     }
-    exporter.export_data_file("playlist.m3u8", &playlist.get_ref())?;
+    exporter.export_data_file("playlist.m3u8", &playlist)?;
 
     // Extract our media files.
     exporter.finish_exports()?;

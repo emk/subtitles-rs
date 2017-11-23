@@ -65,16 +65,19 @@ impl SubtitleFile {
         // that's present in much Windows UTF-8 data. Note that if it appears
         // multiple times, we would remove all the copies, but we've never seen
         // that in the wild.
-        Ok(grammar::subtitle_file(data.trim_left_matches("\u{FEFF}"))?)
+        grammar::subtitle_file(data.trim_left_matches("\u{FEFF}")).chain_err(|| {
+            err_str("could not parse subtitles")
+        })
     }
 
     /// Parse the subtitle file found at the specified path.
     pub fn from_path(path: &Path) -> Result<SubtitleFile> {
-        let mut file = File::open(path)?;
+        let mkerr = || ErrorKind::read_file(path);
+        let mut file = File::open(path).chain_err(&mkerr)?;
         let mut bytes = Vec::new();
-        file.read_to_end(&mut bytes)?;
-        let data = smart_decode(&bytes)?;
-        SubtitleFile::from_str(&data)
+        file.read_to_end(&mut bytes).chain_err(&mkerr)?;
+        let data = smart_decode(&bytes).chain_err(&mkerr)?;
+        SubtitleFile::from_str(&data).chain_err(&mkerr)
     }
 
     /// Parse and normalize the subtitle file found at the specified path.

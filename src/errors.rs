@@ -4,28 +4,54 @@
 // generates.
 #![allow(missing_docs, unused_doc_comment)]
 
-use csv;
 use handlebars;
-use serde_json;
-use std::io;
+use std::path::PathBuf;
 use std::str;
+
 use uchardet;
 
-use grammar;
-
 error_chain! {
-    links {
-        Uchardet(uchardet::Error, uchardet::ErrorKind);
+    foreign_links {
+        Render(handlebars::RenderError);
+        Template(handlebars::TemplateError);
+        Uchardet(uchardet::Error);
     }
 
-    foreign_links {
-        Csv(csv::Error);
-        Io(io::Error);
-        Parse(grammar::ParseError);
-        Render(handlebars::RenderError);
-        SerdeJson(serde_json::Error);
-        Template(handlebars::TemplateError);
-        Utf8(str::Utf8Error);
+    errors {
+        CreateDir(path: PathBuf) {
+            description("error creating directory")
+            display("error creating directory {:?}", path.display())
+        }
+        ReadFile(path: PathBuf) {
+            description("error reading file")
+            display("error reading {:?}", path.display())
+        }
+        RunCommand(command: String) {
+            description("error running external command")
+            display("error running {:?}", command)
+        }
+        WriteFile(path: PathBuf) {
+            description("error writing file")
+            display("error writing {:?}", path.display())
+        }
+    }
+}
+
+impl ErrorKind {
+    pub fn create_dir<P: Into<PathBuf>>(path: P) -> ErrorKind {
+        ErrorKind::CreateDir(path.into())
+    }
+
+    pub fn read_file<P: Into<PathBuf>>(path: P) -> ErrorKind {
+        ErrorKind::ReadFile(path.into())
+    }
+
+    pub fn run_command<S: Into<String>>(command: S) -> ErrorKind {
+        ErrorKind::RunCommand(command.into())
+    }
+
+    pub fn write_file<P: Into<PathBuf>>(path: P) -> ErrorKind {
+        ErrorKind::WriteFile(path.into())
     }
 }
 

@@ -258,6 +258,7 @@ impl Video {
         })?;
 
         // Run our probe command.
+        let mkerr = || ErrorKind::run_command("ffprobe");
         let cmd = Command::new("ffprobe")
             .arg("-v")
             .arg("quiet")
@@ -266,10 +267,10 @@ impl Video {
             .arg("json")
             .arg(path)
             .output();
-        let output = cmd?;
-        let stdout = from_utf8(&output.stdout)?;
+        let output = cmd.chain_err(&mkerr)?;
+        let stdout = from_utf8(&output.stdout).chain_err(&mkerr)?;
         debug!("Video metadata: {}", stdout);
-        let metadata = serde_json::from_str(stdout)?;
+        let metadata = serde_json::from_str(stdout).chain_err(&mkerr)?;
 
         Ok(Video {
             path: path.to_owned(),
@@ -315,7 +316,7 @@ impl Video {
         let time_base = extraction.spec.earliest_time();
         let mut cmd = self.extract_command(time_base);
         extraction.add_args(&mut cmd, time_base);
-        cmd.output()?;
+        cmd.output().chain_err(|| ErrorKind::run_command("ffmpg"))?;
         Ok(())
     }
 
@@ -334,7 +335,7 @@ impl Video {
             assert!(e.spec.can_be_batched());
             e.add_args(&mut cmd, time_base);
         }
-        cmd.output()?;
+        cmd.output().chain_err(|| ErrorKind::run_command("ffmpg"))?;
         Ok(())
     }
 

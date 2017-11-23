@@ -99,7 +99,8 @@ pub fn export_csv(exporter: &mut Exporter) -> Result<()> {
                     foreign_next: foreign.next.map(|s| s.plain_text()),
                     native_next: native.next.map(|s| s.plain_text()),
                 };
-                wtr.serialize(&note)?;
+                wtr.serialize(&note)
+                    .chain_err(|| err_str("error serializing to RAM"))?;
             }
         }
     }

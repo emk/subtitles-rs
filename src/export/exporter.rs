@@ -91,7 +91,7 @@ impl Exporter {
                 &dir.to_string_lossy()
             )));
         }
-        fs::create_dir_all(&dir)?;
+        fs::create_dir_all(&dir).chain_err(|| ErrorKind::create_dir(&dir))?;
 
         Ok(Exporter {
             video: video,
@@ -198,8 +198,10 @@ impl Exporter {
     where
         P: AsRef<Path>,
     {
-        let mut f = fs::File::create(self.dir.join(rel_path.as_ref()))?;
-        f.write_all(data)?;
+        let path = self.dir.join(rel_path.as_ref());
+        let mkerr = || ErrorKind::write_file(&path);
+        let mut f = fs::File::create(&path).chain_err(&mkerr)?;
+        f.write_all(data).chain_err(&mkerr)?;
         Ok(())
     }
 

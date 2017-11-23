@@ -1,7 +1,6 @@
 //! Export to web-page based "review" format.
 
 use handlebars::Handlebars;
-use std::str::from_utf8;
 
 use errors::*;
 use export::Exporter;
@@ -66,7 +65,7 @@ pub fn export_review(exporter: &mut Exporter) -> Result<()> {
     exporter.export_data_file("play.svg", include_bytes!("play.svg"))?;
 
     // Render and write out our HTML.
-    let template = from_utf8(include_bytes!("review.html.hbs"))?;
+    let template = include_str!("review.html.hbs");
     let mut handlebars = Handlebars::new();
     handlebars.register_template_string("review", template.to_owned())?;
     let html = handlebars.render("review", &bindings)?;
