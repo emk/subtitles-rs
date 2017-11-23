@@ -31,7 +31,6 @@ extern crate uchardet;
 pub mod errors;
 pub mod contexts;
 pub mod decode;
-mod grammar;
 pub mod lang;
 pub mod srt;
 pub mod clean;
@@ -40,3 +39,8 @@ pub mod time;
 pub mod align;
 pub mod video;
 pub mod export;
+
+mod grammar {
+    // Include generated source code for grammar.
+    include!(concat!(env!("OUT_DIR"), "/grammar.rs"));
+}

@@ -16,6 +16,11 @@ keywords = ["text"]
 
 exclude = ["fixtures/empty.mp4"]
 
+build = "build.rs"
+
+[build-dependencies]
+peg = "0.5"
+
 [dependencies]
 cld2 = "1.0"
 csv = "1.0.0-beta.5"

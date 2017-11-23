@@ -1,20 +1,14 @@
-// Generate using:
-//
-// ```sh
-// multirust update nightly-2015-11-11
-// multirust run nightly-2015-11-11 cargo install peg
-// multirust run nightly-2015-11-11 peg grammar.rustpeg > grammar.rs
-// ```
+// Compiled automatically using `build.rs` script and `peg`.
 
 use std::str::FromStr;
 
-use srt::{Subtitle,SubtitleFile};
+use srt::{Subtitle, SubtitleFile};
 use time::Period;
 
 #[pub]
 subtitle_file -> SubtitleFile
-    = bom? blank_lines? result:subtitles blank_lines? {
-        SubtitleFile{subtitles: result}
+    = blank_lines? result:subtitles blank_lines? {
+        SubtitleFile { subtitles: result }
     }
 
 subtitles -> Vec<Subtitle>
@@ -22,7 +16,7 @@ subtitles -> Vec<Subtitle>
 
 subtitle -> Subtitle
     = index:digits newline p:time_period newline l:lines {
-        Subtitle{index: index, period: p, lines: l}
+        Subtitle { index: index, period: p, lines: l }
     }
 
 time_period -> Period
@@ -42,19 +36,16 @@ lines -> Vec<String>
     = lines:line ** newline { lines }
 
 line -> String
-    = [^\r\n]+ { match_str.to_string() }
+    = text:$([^\r\n]+) { text.to_string() }
 
 digits -> usize
-    = [0-9]+ { FromStr::from_str(match_str).unwrap() }
+    = digits:$([0-9]+) { FromStr::from_str(digits).unwrap() }
 
 comma_float -> f32
-    = [0-9]+ "," [0-9]+ {
-        let fixed: String = match_str.replace(",", ".");
+    = float_str:$([0-9]+ "," [0-9]+) {
+        let fixed: String = float_str.replace(",", ".");
         FromStr::from_str(&fixed).unwrap()
     }
-
-bom
-    = "\uFEFF"
 
 newline
     = "\r"? "\n"

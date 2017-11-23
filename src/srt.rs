@@ -61,7 +61,11 @@ pub struct SubtitleFile {
 impl SubtitleFile {
     /// Parse raw subtitle text into an appropriate structure.
     pub fn from_str(data: &str) -> Result<SubtitleFile> {
-        Ok(grammar::subtitle_file(data)?)
+        // Use `trim_left_matches` to remove the leading BOM ("byte order mark")
+        // that's present in much Windows UTF-8 data. Note that if it appears
+        // multiple times, we would remove all the copies, but we've never seen
+        // that in the wild.
+        Ok(grammar::subtitle_file(data.trim_left_matches("\u{FEFF}"))?)
     }
 
     /// Parse the subtitle file found at the specified path.
