@@ -250,13 +250,10 @@ pub struct Video {
 impl Video {
     /// Create a new video file, given a path.
     pub fn new(path: &Path) -> Result<Video> {
-        // Ensure we have an actual file name before doing anything else.
-        path.file_name().ok_or_else(|| {
-            format_err!(
-                "Video path does not have a filename: {}",
-                path.to_string_lossy()
-            )
-        })?;
+        // Ensure we have an actual file before doing anything else.
+        if !path.is_file() {
+            return Err(format_err!("No such file {:?}", path.display()))
+        }
 
         // Run our probe command.
         let mkerr = || RunCommand::new("ffprobe");
