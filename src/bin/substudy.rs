@@ -2,8 +2,6 @@
 
 extern crate docopt;
 extern crate env_logger;
-#[macro_use]
-extern crate error_chain;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -11,7 +9,10 @@ extern crate serde_derive;
 extern crate substudy;
 
 use docopt::Docopt;
+use std::io;
+use std::io::prelude::*;
 use std::path::Path;
+use std::process;
 
 use substudy::errors::Result;
 use substudy::srt::SubtitleFile;
@@ -156,16 +157,29 @@ fn cmd_export(
     Ok(())
 }
 
-fn real_main() -> Result<()> {
-    env_logger::init().unwrap();
+fn main() {
+    env_logger::init().expect("could not initialize logging");
 
     // Parse our command-line arguments using docopt (very shiny).
     let args: Args = Docopt::new(USAGE)
         .and_then(|d| d.deserialize())
         .unwrap_or_else(|e| e.exit());
 
-    // Decide which command to run, and run it.
-    run(&args)
+    // Decide which command to run, and run it, and print any errors.
+    if let Err(err) = run(&args) {
+        let mut opt_cause = Some(err.cause());
+        let mut first = true;
+        while let Some(cause) = opt_cause {
+            if first {
+                first = false;
+            } else {
+                write!(io::stderr(), ": ").expect("unable to write error to stderr");
+            }
+            write!(io::stderr(), "{}", cause)
+                .expect("unable to write error to stderr");
+            opt_cause = cause.cause();
+        }
+        write!(io::stderr(), "\n").expect("unable to write error to stderr");
+        process::exit(1);
+    }
 }
-
-quick_main!(real_main);

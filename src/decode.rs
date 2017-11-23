@@ -2,20 +2,20 @@
 
 use encoding::label::encoding_from_whatwg_label;
 use encoding::types::DecoderTrap;
+use failure::SyncFailure;
 use uchardet::detect_encoding_name;
 
 use errors::*;
 
 /// Guess the encoding of a byte buffer and decode it to a string.
 pub fn smart_decode(bytes: &[u8]) -> Result<String> {
-    let name = detect_encoding_name(bytes)?;
+    let name = detect_encoding_name(bytes).map_err(SyncFailure::new)?;
     debug!("detected encoding name: {}", name);
-    let encoding = encoding_from_whatwg_label(&name).ok_or_else(|| -> Error {
-        format!("Unknown encoding: {}", &name).into()
-    })?;
+    let encoding = encoding_from_whatwg_label(&name)
+        .ok_or_else(|| -> Error { format_err!("Unknown encoding: {}", &name) })?;
     match encoding.decode(bytes, DecoderTrap::Strict) {
         Ok(result) => Ok(result),
-        Err(msg) => Err(err_str(msg.into_owned())),
+        Err(msg) => Err(format_err!("{}", msg)),
     }
 }
 

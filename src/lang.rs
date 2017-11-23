@@ -101,7 +101,7 @@ impl Lang {
             (true, 3) => Ok(Lang {
                 code: [c[0], c[1], c[2]],
             }),
-            _ => Err(err_str(format!("Unsupported language code: {}", code))),
+            _ => Err(format_err!("Unsupported language code: {}", code)),
         }
     }
 

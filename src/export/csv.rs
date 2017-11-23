@@ -1,6 +1,7 @@
 //! Exporting to CSV (compatible with Anki import).
 
 use csv;
+use failure::ResultExt;
 use regex::Regex;
 
 use contexts::ItemsInContextExt;
@@ -100,7 +101,7 @@ pub fn export_csv(exporter: &mut Exporter) -> Result<()> {
                     native_next: native.next.map(|s| s.plain_text()),
                 };
                 wtr.serialize(&note)
-                    .chain_err(|| err_str("error serializing to RAM"))?;
+                    .with_context(|_| format_err!("error serializing to RAM"))?;
             }
         }
     }

@@ -1,61 +1,73 @@
 //! Error-handling for this library.
 
-// `error-chain` makes it hard to document all the definitions it
-// generates.
-#![allow(missing_docs, unused_doc_comment)]
+use failure;
+use std::fmt;
+use std::path::{Path, PathBuf};
+use std::result;
 
-use handlebars;
-use std::path::PathBuf;
-use std::str;
+/// Our standard error type. If you need more information, you may be able to
+/// downcast it to one of the `Fail` implementations defined in this module.
+pub type Error = failure::Error;
 
-use uchardet;
+/// The result type returned by the functions in this library.
+pub type Result<T> = result::Result<T, Error>;
 
-error_chain! {
-    foreign_links {
-        Render(handlebars::RenderError);
-        Template(handlebars::TemplateError);
-        Uchardet(uchardet::Error);
-    }
+/// Declare a custom failure type that wraps a `PathBuf`. This is used to help
+/// tie error messages to the associated file system location.
+macro_rules! failure_with_pathbuf {
+    ($type:ident, $msg:expr) => (
 
-    errors {
-        CreateDir(path: PathBuf) {
-            description("error creating directory")
-            display("error creating directory {:?}", path.display())
+        /// An error occurred performing an operation on a path.
+        #[derive(Debug, Fail)]
+        pub struct $type {
+            path: PathBuf
         }
-        ReadFile(path: PathBuf) {
-            description("error reading file")
-            display("error reading {:?}", path.display())
+
+        impl $type {
+            /// Create a new error for the specified path.
+            pub fn new<P: Into<PathBuf>>(path: P) -> $type {
+                $type { path: path.into() }
+            }
+
+            /// The path associated with this error.
+            pub fn path(&self) -> &Path {
+                &self.path
+            }
         }
-        RunCommand(command: String) {
-            description("error running external command")
-            display("error running {:?}", command)
+
+        impl fmt::Display for $type {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                write!(f, $msg, self.path.display())
+            }
         }
-        WriteFile(path: PathBuf) {
-            description("error writing file")
-            display("error writing {:?}", path.display())
-        }
-    }
+    )
 }
 
-impl ErrorKind {
-    pub fn create_dir<P: Into<PathBuf>>(path: P) -> ErrorKind {
-        ErrorKind::CreateDir(path.into())
-    }
+/// An error occurred while trying to create a directory.
+failure_with_pathbuf!(CreateDir, "error creating directory {:?}");
+/// An error occured while trying to read a file.
+failure_with_pathbuf!(ReadFile, "error reading {:?}");
+/// An error occured while trying to write a file.
+failure_with_pathbuf!(WriteFile, "error writing {:?}");
 
-    pub fn read_file<P: Into<PathBuf>>(path: P) -> ErrorKind {
-        ErrorKind::ReadFile(path.into())
-    }
-
-    pub fn run_command<S: Into<String>>(command: S) -> ErrorKind {
-        ErrorKind::RunCommand(command.into())
-    }
-
-    pub fn write_file<P: Into<PathBuf>>(path: P) -> ErrorKind {
-        ErrorKind::WriteFile(path.into())
-    }
+/// An error occurred running an external command.
+#[derive(Debug, Fail)]
+#[fail(display = "error running external command {:?}", command)]
+pub struct RunCommand {
+    command: String,
 }
 
-/// Create a new error from something that can be turned into a string.
-pub fn err_str<T: Into<String>>(message: T) -> Error {
-    From::from(message.into())
+impl RunCommand {
+    /// Create a new error for the specified command. This is private because
+    /// we probably want to add the command arguments at some point.
+    pub(crate) fn new<S: Into<String>>(command: S) -> RunCommand {
+        RunCommand {
+            command: command.into(),
+        }
+    }
+
+    /// The name of the command that failed.
+    pub fn command(&self) -> &String {
+        &self.command
+    }
 }

@@ -1,5 +1,6 @@
 //! SRT-format subtitle support.
 
+use failure::ResultExt;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
@@ -65,19 +66,18 @@ impl SubtitleFile {
         // that's present in much Windows UTF-8 data. Note that if it appears
         // multiple times, we would remove all the copies, but we've never seen
         // that in the wild.
-        grammar::subtitle_file(data.trim_left_matches("\u{FEFF}")).chain_err(|| {
-            err_str("could not parse subtitles")
-        })
+        Ok(grammar::subtitle_file(data.trim_left_matches("\u{FEFF}"))
+            .with_context(|_| format_err!("could not parse subtitles"))?)
     }
 
     /// Parse the subtitle file found at the specified path.
     pub fn from_path(path: &Path) -> Result<SubtitleFile> {
-        let mkerr = || ErrorKind::read_file(path);
-        let mut file = File::open(path).chain_err(&mkerr)?;
+        let mkerr = || ReadFile::new(path);
+        let mut file = File::open(path).with_context(|_| mkerr())?;
         let mut bytes = Vec::new();
-        file.read_to_end(&mut bytes).chain_err(&mkerr)?;
-        let data = smart_decode(&bytes).chain_err(&mkerr)?;
-        SubtitleFile::from_str(&data).chain_err(&mkerr)
+        file.read_to_end(&mut bytes).with_context(|_| mkerr())?;
+        let data = smart_decode(&bytes).with_context(|_| mkerr())?;
+        Ok(SubtitleFile::from_str(&data).with_context(|_| mkerr())?)
     }
 
     /// Parse and normalize the subtitle file found at the specified path.

@@ -1,5 +1,6 @@
 //! Tools for working with video files.
 
+use failure::ResultExt;
 use num::rational::Ratio;
 use regex::Regex;
 use serde::{Deserialize, Deserializer};
@@ -251,14 +252,14 @@ impl Video {
     pub fn new(path: &Path) -> Result<Video> {
         // Ensure we have an actual file name before doing anything else.
         path.file_name().ok_or_else(|| {
-            err_str(format!(
+            format_err!(
                 "Video path does not have a filename: {}",
                 path.to_string_lossy()
-            ))
+            )
         })?;
 
         // Run our probe command.
-        let mkerr = || ErrorKind::run_command("ffprobe");
+        let mkerr = || RunCommand::new("ffprobe");
         let cmd = Command::new("ffprobe")
             .arg("-v")
             .arg("quiet")
@@ -267,10 +268,10 @@ impl Video {
             .arg("json")
             .arg(path)
             .output();
-        let output = cmd.chain_err(&mkerr)?;
-        let stdout = from_utf8(&output.stdout).chain_err(&mkerr)?;
+        let output = cmd.with_context(|_| mkerr())?;
+        let stdout = from_utf8(&output.stdout).with_context(|_| mkerr())?;
         debug!("Video metadata: {}", stdout);
-        let metadata = serde_json::from_str(stdout).chain_err(&mkerr)?;
+        let metadata = serde_json::from_str(stdout).with_context(|_| mkerr())?;
 
         Ok(Video {
             path: path.to_owned(),
@@ -316,7 +317,7 @@ impl Video {
         let time_base = extraction.spec.earliest_time();
         let mut cmd = self.extract_command(time_base);
         extraction.add_args(&mut cmd, time_base);
-        cmd.output().chain_err(|| ErrorKind::run_command("ffmpg"))?;
+        cmd.output().with_context(|_| RunCommand::new("ffmpg"))?;
         Ok(())
     }
 
@@ -335,7 +336,7 @@ impl Video {
             assert!(e.spec.can_be_batched());
             e.add_args(&mut cmd, time_base);
         }
-        cmd.output().chain_err(|| ErrorKind::run_command("ffmpg"))?;
+        cmd.output().with_context(|_| RunCommand::new("ffmpg"))?;
         Ok(())
     }
 

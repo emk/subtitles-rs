@@ -1,5 +1,6 @@
 //! Code shared between multiple exporters.
 
+use failure::ResultExt;
 use std::convert::AsRef;
 use std::default::Default;
 use std::io::Write;
@@ -86,12 +87,12 @@ impl Exporter {
         let file_stem = os_str_to_string(video.file_stem());
         let dir = Path::new("./").join(format!("{}_{}", &file_stem, label));
         if fs::metadata(&dir).is_ok() {
-            return Err(err_str(format!(
+            return Err(format_err!(
                 "Directory already exists: {}",
                 &dir.to_string_lossy()
-            )));
+            ));
         }
-        fs::create_dir_all(&dir).chain_err(|| ErrorKind::create_dir(&dir))?;
+        fs::create_dir_all(&dir).with_context(|_| CreateDir::new(&dir))?;
 
         Ok(Exporter {
             video: video,
@@ -199,9 +200,9 @@ impl Exporter {
         P: AsRef<Path>,
     {
         let path = self.dir.join(rel_path.as_ref());
-        let mkerr = || ErrorKind::write_file(&path);
-        let mut f = fs::File::create(&path).chain_err(&mkerr)?;
-        f.write_all(data).chain_err(&mkerr)?;
+        let mkerr = || WriteFile::new(&path);
+        let mut f = fs::File::create(&path).with_context(|_| mkerr())?;
+        f.write_all(data).with_context(|_| mkerr())?;
         Ok(())
     }
 

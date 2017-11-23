@@ -1,6 +1,7 @@
 //! Output a video as a series of short audio tracks, short enough to make
 //! it easy to skip backwards a conversation with most MP3 players.
 
+use failure::ResultExt;
 use std::default::Default;
 use std::io::Write;
 
@@ -122,9 +123,8 @@ pub fn export_tracks(exporter: &mut Exporter) -> Result<()> {
         // Export as an audio file, and record the path in our playlist.
         let path =
             exporter.schedule_audio_export_ext(foreign_lang, conv.period, metadata);
-        writeln!(playlist, "{}", &path).chain_err(|| {
-            err_str("error serializing playlist to memory")
-        })?;
+        writeln!(playlist, "{}", &path)
+            .with_context(|_| format_err!("error serializing playlist to memory"))?;
     }
     exporter.export_data_file("playlist.m3u8", &playlist)?;
 

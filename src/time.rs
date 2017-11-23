@@ -73,11 +73,11 @@ impl Period {
                 end: end,
             })
         } else {
-            Err(err_str(format!(
+            Err(format_err!(
                 "Beginning of range is before end: {}-{}",
                 begin,
                 end
-            )))
+            ))
         }
     }
 
@@ -165,11 +165,11 @@ impl Period {
     /// Make sure this subtitle begins after `limit`.
     pub fn begin_after(&mut self, limit: f32) -> Result<()> {
         if limit > self.end - 2.0 * MIN_SPACING {
-            Err(err_str(format!(
+            Err(format_err!(
                 "Cannot begin time period {:?} after {}",
                 self,
                 limit
-            )))?;
+            ))?;
         }
 
         self.begin = self.begin.max(limit + MIN_SPACING);
@@ -180,11 +180,11 @@ impl Period {
     /// `2*MIN_SPACING` greater than the begin time.
     pub fn end_before(&mut self, limit: f32) -> Result<()> {
         if limit < self.begin + 2.0 * MIN_SPACING {
-            Err(err_str(format!(
+            Err(format_err!(
                 "Cannot truncate time period {:?} at {}",
                 self,
                 limit
-            )))?;
+            ))?;
         }
 
         self.end = self.end.min(limit - MIN_SPACING);
