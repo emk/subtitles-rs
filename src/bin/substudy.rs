@@ -52,9 +52,13 @@ struct Args {
 
 fn export_type(args: &Args) -> &str {
     match *args {
-        Args{cmd_csv: true, ..} => "csv",
-        Args{cmd_review: true, ..} => "review",
-        Args{cmd_tracks: true, ..} => "tracks",
+        Args { cmd_csv: true, .. } => "csv",
+        Args {
+            cmd_review: true, ..
+        } => "review",
+        Args {
+            cmd_tracks: true, ..
+        } => "tracks",
         _ => panic!("Cannot determine export type: {:?}", args),
     }
 }
@@ -62,24 +66,38 @@ fn export_type(args: &Args) -> &str {
 // Choose and run the appropriate command.
 fn run(args: &Args) -> Result<()> {
     match *args {
-        Args{flag_version: true, ..} =>
-            cmd_version(),
-        Args{cmd_clean: true, arg_subs: ref path, ..} =>
-            cmd_clean(&Path::new(path)),
-        Args{cmd_combine: true, arg_foreign_subs: ref path1,
-             arg_native_subs: Some(ref path2), ..} =>
-            cmd_combine(&Path::new(path1), &Path::new(path2)),
-        Args{cmd_export: true, arg_video: ref video_path,
-             arg_foreign_subs: ref foreign_path,
-             arg_native_subs: ref native_path, ..} =>
-        {
-            cmd_export(export_type(args), &Path::new(video_path),
-                       &Path::new(foreign_path),
-                       native_path.as_ref().map(|p| Path::new(p)))
-        }
-        Args{cmd_tracks: true, arg_video: ref path, ..} =>
-            cmd_tracks(&Path::new(path)),
-        _ => panic!("Unexpected argument combination: {:?}", args)
+        Args {
+            flag_version: true, ..
+        } => cmd_version(),
+        Args {
+            cmd_clean: true,
+            arg_subs: ref path,
+            ..
+        } => cmd_clean(&Path::new(path)),
+        Args {
+            cmd_combine: true,
+            arg_foreign_subs: ref path1,
+            arg_native_subs: Some(ref path2),
+            ..
+        } => cmd_combine(&Path::new(path1), &Path::new(path2)),
+        Args {
+            cmd_export: true,
+            arg_video: ref video_path,
+            arg_foreign_subs: ref foreign_path,
+            arg_native_subs: ref native_path,
+            ..
+        } => cmd_export(
+            export_type(args),
+            &Path::new(video_path),
+            &Path::new(foreign_path),
+            native_path.as_ref().map(|p| Path::new(p)),
+        ),
+        Args {
+            cmd_tracks: true,
+            arg_video: ref path,
+            ..
+        } => cmd_tracks(&Path::new(path)),
+        _ => panic!("Unexpected argument combination: {:?}", args),
     }
 }
 
@@ -89,20 +107,20 @@ fn cmd_version() -> Result<()> {
 }
 
 fn cmd_clean(path: &Path) -> Result<()> {
-    let file1 = try!(SubtitleFile::cleaned_from_path(path));
+    let file1 = SubtitleFile::cleaned_from_path(path)?;
     print!("{}", file1.to_string());
     Ok(())
 }
 
 fn cmd_combine(path1: &Path, path2: &Path) -> Result<()> {
-    let file1 = try!(SubtitleFile::cleaned_from_path(path1));
-    let file2 = try!(SubtitleFile::cleaned_from_path(path2));
+    let file1 = SubtitleFile::cleaned_from_path(path1)?;
+    let file2 = SubtitleFile::cleaned_from_path(path2)?;
     print!("{}", combine_files(&file1, &file2).to_string());
     Ok(())
 }
 
 fn cmd_tracks(path: &Path) -> Result<()> {
-    let v = try!(video::Video::new(path));
+    let v = video::Video::new(path)?;
     for stream in v.streams() {
         let lang = stream.language();
         let lang_str = lang.map(|l| l.as_str().to_owned())
@@ -112,24 +130,25 @@ fn cmd_tracks(path: &Path) -> Result<()> {
     Ok(())
 }
 
-fn cmd_export(kind: &str, video_path: &Path, foreign_sub_path: &Path,
-              native_sub_path: Option<&Path>) ->
-    Result<()>
-{
+fn cmd_export(
+    kind: &str,
+    video_path: &Path,
+    foreign_sub_path: &Path,
+    native_sub_path: Option<&Path>,
+) -> Result<()> {
     // Load our input files.
-    let video = try!(video::Video::new(video_path));
-    let foreign_subs = try!(SubtitleFile::cleaned_from_path(foreign_sub_path));
+    let video = video::Video::new(video_path)?;
+    let foreign_subs = SubtitleFile::cleaned_from_path(foreign_sub_path)?;
     let native_subs = match native_sub_path {
         None => None,
-        Some(p) => Some(try!(SubtitleFile::cleaned_from_path(p))),
+        Some(p) => Some(SubtitleFile::cleaned_from_path(p)?),
     };
 
-    let mut exporter =
-        try!(export::Exporter::new(video, foreign_subs, native_subs, kind));
+    let mut exporter = export::Exporter::new(video, foreign_subs, native_subs, kind)?;
     match kind {
-        "csv" => try!(export::export_csv(&mut exporter)),
-        "review" => try!(export::export_review(&mut exporter)),
-        "tracks" => try!(export::export_tracks(&mut exporter)),
+        "csv" => export::export_csv(&mut exporter)?,
+        "review" => export::export_review(&mut exporter)?,
+        "tracks" => export::export_tracks(&mut exporter)?,
         _ => panic!("Uknown export type: {}", kind),
     }
 

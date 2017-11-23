@@ -2,7 +2,7 @@
 //! kind of normalized format.
 
 use regex::Regex;
-use srt::{Subtitle,SubtitleFile};
+use srt::{Subtitle, SubtitleFile};
 use std::borrow::Cow;
 use errors::*;
 
@@ -24,18 +24,28 @@ fn clean_line(line: &str) -> String {
     // Used to compress and normalize consecutive whitespace.
     let whitespace = Regex::new(r"\s+").unwrap();
 
-    whitespace.replace_all(&clutter.replace_all(line, ""), " ")
-        .trim().to_string()
+    whitespace
+        .replace_all(&clutter.replace_all(line, ""), " ")
+        .trim()
+        .to_string()
 }
 
 // Clean up a subtitle, or discard it if it looks useless.
 fn clean_subtitle(sub: &Subtitle) -> Option<Subtitle> {
-    let lines: Vec<String> = sub.lines.iter()
+    let lines: Vec<String> = sub.lines
+        .iter()
         .map(|l| clean_line(&l))
         .filter(|l| l.len() > 0)
-        .map(|l| l.to_string()).collect();
-    if lines.len() == 0 { return None; }
-    Some(Subtitle{index: sub.index, period: sub.period, lines: lines})
+        .map(|l| l.to_string())
+        .collect();
+    if lines.len() == 0 {
+        return None;
+    }
+    Some(Subtitle {
+        index: sub.index,
+        period: sub.period,
+        lines: lines,
+    })
 }
 
 /// Clean up various issues with subtitle files, including:
@@ -54,22 +64,23 @@ pub fn clean_subtitle_file(file: &SubtitleFile) -> Result<SubtitleFile> {
 
     // Fix overlaps.
     if subs.len() >= 2 {
-        for i in 0..subs.len()-1 {
-            let limit = subs[i+1].period.begin();
-            try!(subs[i].period.end_before(limit));
+        for i in 0..subs.len() - 1 {
+            let limit = subs[i + 1].period.begin();
+            subs[i].period.end_before(limit)?;
         }
     }
 
     // Renumber and return.
     for (i, ref mut sub) in subs.iter_mut().enumerate() {
-        sub.index = i+1;
+        sub.index = i + 1;
     }
-    Ok(SubtitleFile{subtitles: subs})
+    Ok(SubtitleFile { subtitles: subs })
 }
 
 #[test]
 fn test_clean_subtitle_file() {
-    let dirty = SubtitleFile::from_str(r"19
+    let dirty = SubtitleFile::from_str(
+        r"19
 00:01:03,163 --> 00:01:04,664
 They've arrived.
 ( <i>door slams</i> )
@@ -93,7 +104,8 @@ Out of order.
 52
 00:02:42,658 --> 00:02:48,865
 Overlapping.
-").unwrap();
+",
+    ).unwrap();
 
     let cleaned = "\u{FEFF}1
 00:01:02,328 --> 00:01:03,162

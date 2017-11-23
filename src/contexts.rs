@@ -41,7 +41,8 @@ impl<'a, T> Context<&'a T> {
     /// Transform a `Context<&'a T>` to `Context<U>` by applying `f` to all
     /// embedded values.
     pub fn map<U, F>(&self, mut f: F) -> Context<U>
-        where F: FnMut(&'a T) -> U
+    where
+        F: FnMut(&'a T) -> U,
     {
         Context {
             prev: self.prev.as_ref().map(|t| f(t)),
@@ -83,7 +84,10 @@ pub struct OptContext<T> {
 }
 
 /// Iterator type for `ItemsInContextExt`.
-pub struct ItemsInContext<'a, T> where T: 'a {
+pub struct ItemsInContext<'a, T>
+where
+    T: 'a,
+{
     slice: &'a [T],
     idx: usize,
 }
@@ -95,12 +99,11 @@ impl<'a, T> Iterator for ItemsInContext<'a, T> {
         if self.idx >= self.slice.len() {
             None
         } else {
-            let prev =
-                if self.idx == 0 {
-                    None
-                } else {
-                    self.slice.get(self.idx - 1)
-                };
+            let prev = if self.idx == 0 {
+                None
+            } else {
+                self.slice.get(self.idx - 1)
+            };
             let result = Context {
                 prev: prev,
                 curr: &self.slice[self.idx],
@@ -126,7 +129,10 @@ impl<'a, T> ItemsInContextExt for &'a [T] {
     type Item = T;
 
     fn items_in_context(&self) -> ItemsInContext<Self::Item> {
-        ItemsInContext { slice: self, idx: 0 }
+        ItemsInContext {
+            slice: self,
+            idx: 0,
+        }
     }
 }
 
@@ -136,6 +142,9 @@ impl<T> ItemsInContextExt for Vec<T> {
     type Item = T;
 
     fn items_in_context(&self) -> ItemsInContext<Self::Item> {
-        ItemsInContext { slice: &self, idx: 0 }
+        ItemsInContext {
+            slice: &self,
+            idx: 0,
+        }
     }
 }

@@ -9,16 +9,22 @@
 
 extern crate cld2;
 extern crate csv;
-#[cfg(test)] #[macro_use] extern crate difference;
+#[cfg(test)]
+#[macro_use]
+extern crate difference;
 extern crate encoding;
-#[macro_use] extern crate error_chain;
+#[macro_use]
+extern crate error_chain;
 extern crate handlebars;
-#[macro_use] extern crate lazy_static;
-#[macro_use] extern crate log;
+#[macro_use]
+extern crate lazy_static;
+#[macro_use]
+extern crate log;
 extern crate num;
 extern crate regex;
 extern crate serde;
-#[macro_use] extern crate serde_derive;
+#[macro_use]
+extern crate serde_derive;
 extern crate serde_json;
 extern crate uchardet;
 

@@ -40,7 +40,8 @@ impl Id3Metadata {
             cmd.arg("-metadata").arg(format!("album={}", album));
         }
         if let Some((track, total)) = self.track_number {
-            cmd.arg("-metadata").arg(format!("track={}/{}", track, total));
+            cmd.arg("-metadata")
+                .arg(format!("track={}/{}", track, total));
         }
         if let Some(ref track_name) = self.track_name {
             cmd.arg("-metadata").arg(format!("title={}", track_name));
@@ -79,23 +80,28 @@ pub struct Fraction(Ratio<u32>);
 
 impl Fraction {
     fn deserialize_parts<'de, D>(d: D) -> result::Result<(u32, u32), D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         let s = String::deserialize(d)?;
         let re = Regex::new(r"^(\d+)/(\d+)$").unwrap();
-        let cap = try!(re.captures(&s).ok_or_else(|| {
+        let cap = re.captures(&s).ok_or_else(|| {
             <D::Error as de::Error>::custom(format!("Expected fraction: {}", &s))
-        }));
-        Ok((FromStr::from_str(cap.get(1).unwrap().as_str()).unwrap(),
-            FromStr::from_str(cap.get(2).unwrap().as_str()).unwrap()))
+        })?;
+        Ok((
+            FromStr::from_str(cap.get(1).unwrap().as_str()).unwrap(),
+            FromStr::from_str(cap.get(2).unwrap().as_str()).unwrap(),
+        ))
     }
 }
 
 impl<'de> Deserialize<'de> for Fraction {
     fn deserialize<D: Deserializer<'de>>(d: D) -> result::Result<Self, D::Error> {
-        let (num, denom) = try!(Fraction::deserialize_parts(d));
+        let (num, denom) = Fraction::deserialize_parts(d)?;
         if denom == 0 {
-            Err(<D::Error as de::Error>::custom("Found fraction with a denominator of 0"))
+            Err(<D::Error as de::Error>::custom(
+                "Found fraction with a denominator of 0",
+            ))
         } else {
             Ok(Fraction(Ratio::new(num, denom)))
         }
@@ -115,7 +121,8 @@ impl Stream {
     /// Return the language associated with this stream, if we can figure
     /// it out.
     pub fn language(&self) -> Option<Lang> {
-        self.tags.as_ref()
+        self.tags
+            .as_ref()
             .and_then(|tags| tags.get("language"))
             .and_then(|lang| Lang::iso639(lang).ok())
     }
@@ -146,8 +153,7 @@ fn test_stream_decode() {
 ";
     let stream: Stream = serde_json::from_str(json).unwrap();
     assert_eq!(CodecType::Audio, stream.codec_type);
-    assert_eq!(Some(Lang::iso639("en").unwrap()),
-               stream.language())
+    assert_eq!(Some(Lang::iso639("en").unwrap()), stream.language())
 }
 
 /// What kind of data do we want to extract, and from what position in the
@@ -187,20 +193,25 @@ impl ExtractionSpec {
         match self {
             &ExtractionSpec::Image(time) => {
                 let scale_filter =
-                    format!("scale=iw*min(1\\,min({}/iw\\,{}/ih)):-1",
-                            240, 160);
-                cmd.arg("-ss").arg(format!("{}", time - time_base))
-                    .arg("-vframes").arg("1")
-                    .arg("-filter_complex").arg(&scale_filter)
-                    .arg("-f").arg("image2");
+                    format!("scale=iw*min(1\\,min({}/iw\\,{}/ih)):-1", 240, 160);
+                cmd.arg("-ss")
+                    .arg(format!("{}", time - time_base))
+                    .arg("-vframes")
+                    .arg("1")
+                    .arg("-filter_complex")
+                    .arg(&scale_filter)
+                    .arg("-f")
+                    .arg("image2");
             }
             &ExtractionSpec::Audio(stream, period, ref metadata) => {
                 if let Some(sid) = stream {
                     cmd.arg("-map").arg(format!("0:{}", sid));
                 }
                 metadata.add_args(cmd);
-                cmd.arg("-ss").arg(format!("{}", period.begin() - time_base))
-                    .arg("-t").arg(format!("{}", period.duration()));
+                cmd.arg("-ss")
+                    .arg(format!("{}", period.begin() - time_base))
+                    .arg("-t")
+                    .arg(format!("{}", period.duration()));
             }
         }
     }
@@ -239,24 +250,31 @@ impl Video {
     /// Create a new video file, given a path.
     pub fn new(path: &Path) -> Result<Video> {
         // Ensure we have an actual file name before doing anything else.
-        try!(path.file_name().ok_or_else(|| {
-            err_str(format!("Video path does not have a filename: {}",
-                            path.to_string_lossy()))
-        }));
+        path.file_name().ok_or_else(|| {
+            err_str(format!(
+                "Video path does not have a filename: {}",
+                path.to_string_lossy()
+            ))
+        })?;
 
         // Run our probe command.
         let cmd = Command::new("ffprobe")
-            .arg("-v").arg("quiet")
+            .arg("-v")
+            .arg("quiet")
             .arg("-show_streams")
-            .arg("-of").arg("json")
+            .arg("-of")
+            .arg("json")
             .arg(path)
             .output();
-        let output = try!(cmd);
-        let stdout = try!(from_utf8(&output.stdout));
+        let output = cmd?;
+        let stdout = from_utf8(&output.stdout)?;
         debug!("Video metadata: {}", stdout);
-        let metadata = try!(serde_json::from_str(stdout));
+        let metadata = serde_json::from_str(stdout)?;
 
-        Ok(Video { path: path.to_owned(), metadata: metadata })
+        Ok(Video {
+            path: path.to_owned(),
+            metadata: metadata,
+        })
     }
 
     /// Get just the file name of this video file.
@@ -278,8 +296,7 @@ impl Video {
     /// Choose the best audio for the specified language.
     pub fn audio_for(&self, lang: Lang) -> Option<usize> {
         self.streams().iter().position(|s| {
-            s.codec_type == CodecType::Audio &&
-                s.language() == Some(lang)
+            s.codec_type == CodecType::Audio && s.language() == Some(lang)
         })
     }
 
@@ -298,15 +315,17 @@ impl Video {
         let time_base = extraction.spec.earliest_time();
         let mut cmd = self.extract_command(time_base);
         extraction.add_args(&mut cmd, time_base);
-        try!(cmd.output());
+        cmd.output()?;
         Ok(())
     }
 
     /// Perform a batch extraction.  We assume that the extractions are
     /// sorted in temporal order.
-    fn extract_batch(&self, extractions: &[&Extraction]) ->  Result<()> {
+    fn extract_batch(&self, extractions: &[&Extraction]) -> Result<()> {
         // Bail early if we have nothing to extract
-        if extractions.is_empty() { return Ok(()); }
+        if extractions.is_empty() {
+            return Ok(());
+        }
         let time_base = extractions[0].spec.earliest_time();
 
         // Build and run our batch extraction command.
@@ -315,7 +334,7 @@ impl Video {
             assert!(e.spec.can_be_batched());
             e.add_args(&mut cmd, time_base);
         }
-        try!(cmd.output());
+        cmd.output()?;
         Ok(())
     }
 
@@ -323,17 +342,17 @@ impl Video {
     /// batch interface to avoid making too many passes through the file.
     /// We assume that the extractions are sorted in temporal order.
     pub fn extract(&self, extractions: &[Extraction]) -> Result<()> {
-        let mut batch: Vec<&Extraction> = vec!();
+        let mut batch: Vec<&Extraction> = vec![];
         for e in extractions {
             if e.spec.can_be_batched() {
                 batch.push(e);
             } else {
-                try!(self.extract_one(e));
+                self.extract_one(e)?;
             }
         }
 
         for chunk in batch.chunks(20) {
-            try!(self.extract_batch(chunk));
+            self.extract_batch(chunk)?;
         }
         Ok(())
     }

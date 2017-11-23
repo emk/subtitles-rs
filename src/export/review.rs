@@ -33,9 +33,9 @@ pub fn export_review(exporter: &mut Exporter) -> Result<()> {
     // Start preparing information we'll pass to our HTML template.
     let mut bindings = ExportInfo {
         filename: exporter.title().to_owned(),
-        subtitles: vec!(),
+        subtitles: vec![],
         foreign_lang: foreign_lang,
-        native_lang: exporter.native().and_then(|n| n.language)
+        native_lang: exporter.native().and_then(|n| n.language),
     };
 
     // Align our input files and iterate.
@@ -46,7 +46,8 @@ pub fn export_review(exporter: &mut Exporter) -> Result<()> {
         let period = Period::from_union_opt(
             foreign.as_ref().map(|s| s.period),
             native.as_ref().map(|s| s.period),
-        ).expect("subtitle pair must not be empty").grow(0.5, 0.5);
+        ).expect("subtitle pair must not be empty")
+            .grow(0.5, 0.5);
 
         let image_path = exporter.schedule_image_export(period.midpoint());
         let audio_path = exporter.schedule_audio_export(foreign_lang, period);
@@ -61,18 +62,18 @@ pub fn export_review(exporter: &mut Exporter) -> Result<()> {
     }
 
     // Write out our support files.
-    try!(exporter.export_data_file("style.css", include_bytes!("style.css")));
-    try!(exporter.export_data_file("play.svg", include_bytes!("play.svg")));
+    exporter.export_data_file("style.css", include_bytes!("style.css"))?;
+    exporter.export_data_file("play.svg", include_bytes!("play.svg"))?;
 
     // Render and write out our HTML.
-    let template = try!(from_utf8(include_bytes!("review.html.hbs")));
+    let template = from_utf8(include_bytes!("review.html.hbs"))?;
     let mut handlebars = Handlebars::new();
-    try!(handlebars.register_template_string("review", template.to_owned()));
-    let html = try!(handlebars.render("review", &bindings));
-    try!(exporter.export_data_file("index.html", html.as_bytes()));
+    handlebars.register_template_string("review", template.to_owned())?;
+    let html = handlebars.render("review", &bindings)?;
+    exporter.export_data_file("index.html", html.as_bytes())?;
 
     // Extract our media files.
-    try!(exporter.finish_exports());
+    exporter.finish_exports()?;
 
     Ok(())
 }

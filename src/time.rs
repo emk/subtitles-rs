@@ -68,10 +68,16 @@ impl Period {
     /// Create a new time period.
     pub fn new(begin: f32, end: f32) -> Result<Period> {
         if begin < end && begin >= 0.0 && end >= 0.0 {
-            Ok(Period { begin: begin, end: end })
+            Ok(Period {
+                begin: begin,
+                end: end,
+            })
         } else {
-            Err(err_str(format!("Beginning of range is before end: {}-{}",
-                                begin, end)))
+            Err(err_str(format!(
+                "Beginning of range is before end: {}-{}",
+                begin,
+                end
+            )))
         }
     }
 
@@ -91,9 +97,7 @@ impl Period {
     /// assert_eq!(Some(Period::new(1.0, 3.0).unwrap()),
     ///            Period::from_union_opt(Some(p1), Some(p2)));
     /// ```
-    pub fn from_union_opt(p1: Option<Period>, p2: Option<Period>) ->
-        Option<Period>
-    {
+    pub fn from_union_opt(p1: Option<Period>, p2: Option<Period>) -> Option<Period> {
         match (p1, p2) {
             (None, None) => None,
             (Some(p), None) => Some(p),
@@ -119,7 +123,7 @@ impl Period {
 
     /// The midpoint of this time period.
     pub fn midpoint(&self) -> f32 {
-        self.begin + self.duration()/2.0
+        self.begin + self.duration() / 2.0
     }
 
     /// Grow this time period by the specified amount, making any necessary
@@ -160,9 +164,12 @@ impl Period {
 
     /// Make sure this subtitle begins after `limit`.
     pub fn begin_after(&mut self, limit: f32) -> Result<()> {
-        if limit > self.end - 2.0*MIN_SPACING {
-            try!(Err(err_str(format!("Cannot begin time period {:?} after {}",
-                                     self, limit))));
+        if limit > self.end - 2.0 * MIN_SPACING {
+            Err(err_str(format!(
+                "Cannot begin time period {:?} after {}",
+                self,
+                limit
+            )))?;
         }
 
         self.begin = self.begin.max(limit + MIN_SPACING);
@@ -172,9 +179,12 @@ impl Period {
     /// Truncate this subtitle before `limit`, which must be at least
     /// `2*MIN_SPACING` greater than the begin time.
     pub fn end_before(&mut self, limit: f32) -> Result<()> {
-        if limit < self.begin + 2.0*MIN_SPACING {
-            try!(Err(err_str(format!("Cannot truncate time period {:?} at {}",
-                                     self, limit))));
+        if limit < self.begin + 2.0 * MIN_SPACING {
+            Err(err_str(format!(
+                "Cannot truncate time period {:?} at {}",
+                self,
+                limit
+            )))?;
         }
 
         self.end = self.end.min(limit - MIN_SPACING);
@@ -226,7 +236,7 @@ impl Period {
 impl Serialize for Period {
     fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
     where
-        S: Serializer
+        S: Serializer,
     {
         let mut tuple = serializer.serialize_tuple(2)?;
         tuple.serialize_element(&self.begin)?;

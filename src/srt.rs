@@ -30,16 +30,19 @@ pub struct Subtitle {
     pub period: Period,
 
     /// The lines of text in this subtitle.
-    pub lines: Vec<String>
+    pub lines: Vec<String>,
 }
 
 impl Subtitle {
     /// Return a string representation of this subtitle.
     pub fn to_string(&self) -> String {
-        format!("{}\n{} --> {}\n{}\n", self.index,
-                format_time(self.period.begin()),
-                format_time(self.period.end()),
-                self.lines.join("\n"))
+        format!(
+            "{}\n{} --> {}\n{}\n",
+            self.index,
+            format_time(self.period.begin()),
+            format_time(self.period.end()),
+            self.lines.join("\n")
+        )
     }
 
     /// Return a plain-text version of this subtitle.
@@ -52,34 +55,33 @@ impl Subtitle {
 #[derive(Debug, PartialEq)]
 pub struct SubtitleFile {
     /// The subtitles in this file.
-    pub subtitles: Vec<Subtitle>
+    pub subtitles: Vec<Subtitle>,
 }
 
 impl SubtitleFile {
     /// Parse raw subtitle text into an appropriate structure.
     pub fn from_str(data: &str) -> Result<SubtitleFile> {
-        Ok(try!(grammar::subtitle_file(data)))
+        Ok(grammar::subtitle_file(data)?)
     }
 
     /// Parse the subtitle file found at the specified path.
     pub fn from_path(path: &Path) -> Result<SubtitleFile> {
-        let mut file = try!(File::open(path));
+        let mut file = File::open(path)?;
         let mut bytes = Vec::new();
-        try!(file.read_to_end(&mut bytes));
-        let data = try!(smart_decode(&bytes));
+        file.read_to_end(&mut bytes)?;
+        let data = smart_decode(&bytes)?;
         SubtitleFile::from_str(&data)
     }
 
     /// Parse and normalize the subtitle file found at the specified path.
     pub fn cleaned_from_path(path: &Path) -> Result<SubtitleFile> {
-        let raw = try!(SubtitleFile::from_path(path));
-        Ok(try!(clean_subtitle_file(&raw)))
+        let raw = SubtitleFile::from_path(path)?;
+        Ok(clean_subtitle_file(&raw)?)
     }
 
     /// Convert subtitles to a string.
     pub fn to_string(&self) -> String {
-        let subs: Vec<String> =
-            self.subtitles.iter().map(|s| s.to_string()).collect();
+        let subs: Vec<String> = self.subtitles.iter().map(|s| s.to_string()).collect();
         // The BOM (byte-order mark) is generally discouraged on Linux, but
         // it's sometimes needed to get good results under Windows.  We
         // include it here because Wikipedia says that SRT files files
@@ -95,9 +97,7 @@ impl SubtitleFile {
 
     /// Detect the language used in these subtitles.
     pub fn detect_language(&self) -> Option<Lang> {
-        let subs: Vec<_> = self.subtitles.iter()
-            .map(|s| s.plain_text())
-            .collect();
+        let subs: Vec<_> = self.subtitles.iter().map(|s| s.plain_text()).collect();
         let text = subs.join("\n");
         Lang::for_text(&text)
     }
@@ -106,7 +106,7 @@ impl SubtitleFile {
 #[cfg(test)]
 mod test {
     use std::path::Path;
-    use srt::{SubtitleFile,Subtitle};
+    use srt::{Subtitle, SubtitleFile};
     use lang::Lang;
     use time::Period;
 
@@ -120,25 +120,31 @@ mod test {
         assert_eq!(16, sub.index);
         assert_eq!(62.328, sub.period.begin());
         assert_eq!(64.664, sub.period.end());
-        assert_eq!(vec!("¡Si! ¡Aang ha vuelto!".to_string()), sub.lines);
+        assert_eq!(vec!["¡Si! ¡Aang ha vuelto!".to_string()], sub.lines);
 
         let sub2 = &srt.subtitles[2];
-        assert_eq!(vec!("Tu diste la señal a la armada".to_string(),
-                        "del fuego con la bengala,".to_string()),
-                   sub2.lines);
+        assert_eq!(
+            vec![
+                "Tu diste la señal a la armada".to_string(),
+                "del fuego con la bengala,".to_string(),
+            ],
+            sub2.lines
+        );
     }
 
     #[test]
     fn subtitle_to_string() {
-        let sub = Subtitle{index: 4,
-                           period: Period::new(61.5, 63.75).unwrap(),
-                           lines: vec!("Line 1".to_string(),
-                                       "<i>Line 2</i>".to_string())};
+        let sub = Subtitle {
+            index: 4,
+            period: Period::new(61.5, 63.75).unwrap(),
+            lines: vec!["Line 1".to_string(), "<i>Line 2</i>".to_string()],
+        };
         let expected = r"4
 00:01:01,500 --> 00:01:03,750
 Line 1
 <i>Line 2</i>
-".to_string();
+"
+            .to_string();
         assert_eq!(expected, sub.to_string());
     }
 
@@ -160,12 +166,10 @@ Line 2.1
     fn detect_language() {
         let path_es = Path::new("fixtures/sample.es.srt");
         let srt_es = SubtitleFile::from_path(&path_es).unwrap();
-        assert_eq!(Some(Lang::iso639("es").unwrap()),
-                   srt_es.detect_language());
+        assert_eq!(Some(Lang::iso639("es").unwrap()), srt_es.detect_language());
 
         let path_en = Path::new("fixtures/sample.en.srt");
         let srt_en = SubtitleFile::from_path(&path_en).unwrap();
-        assert_eq!(Some(Lang::iso639("en").unwrap()),
-                   srt_en.detect_language());
+        assert_eq!(Some(Lang::iso639("en").unwrap()), srt_en.detect_language());
     }
 }

@@ -95,9 +95,13 @@ impl Lang {
         let canon = CANONICAL_CODE.get(code).cloned().unwrap_or(code);
         let c = canon.as_bytes();
         match (canon.is_ascii(), c.len()) {
-            (true, 2) => { Ok(Lang { code: [c[0], c[1], b' '] }) }
-            (true, 3) => { Ok(Lang { code: [c[0], c[1], c[2]] }) }
-            _ => { Err(err_str(format!("Unsupported language code: {}", code))) }
+            (true, 2) => Ok(Lang {
+                code: [c[0], c[1], b' '],
+            }),
+            (true, 3) => Ok(Lang {
+                code: [c[0], c[1], c[2]],
+            }),
+            _ => Err(err_str(format!("Unsupported language code: {}", code))),
         }
     }
 
@@ -122,8 +126,7 @@ impl Lang {
     /// we're pretty sure.
     pub fn for_text(text: &str) -> Option<Lang> {
         match cld2::detect_language(&text, cld2::Format::Text) {
-            (Some(cld2::Lang(code)), cld2::Reliable) =>
-                Lang::iso639(code).ok(),
+            (Some(cld2::Lang(code)), cld2::Reliable) => Lang::iso639(code).ok(),
             _ => None,
         }
     }
@@ -144,7 +147,7 @@ impl fmt::Display for Lang {
 impl Serialize for Lang {
     fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
     where
-        S: Serializer
+        S: Serializer,
     {
         self.as_str().serialize(serializer)
     }

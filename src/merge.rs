@@ -12,7 +12,7 @@ pub fn merge_subtitles(subs: &[Subtitle]) -> Option<Subtitle> {
     let space = Regex::new(r"\s+").unwrap();
 
     // Break text into words.
-    let mut words = vec!();
+    let mut words = vec![];
     for sub in subs.iter() {
         for line in sub.lines.iter() {
             for word in space.split(&line) {
@@ -22,7 +22,7 @@ pub fn merge_subtitles(subs: &[Subtitle]) -> Option<Subtitle> {
     }
 
     // Assemble words back into nicely-wrapped lines.
-    let mut lines = vec!();
+    let mut lines = vec![];
     let mut line = "".to_string();
     for word in words.iter() {
         if line.len() == 0 {
@@ -44,10 +44,14 @@ pub fn merge_subtitles(subs: &[Subtitle]) -> Option<Subtitle> {
         lines.push(line);
     }
 
-    if lines.is_empty() { return None; }
-    Some(Subtitle{index: subs[0].index,
-                  period: subs[0].period.union(subs[subs.len()-1].period),
-                  lines: lines})
+    if lines.is_empty() {
+        return None;
+    }
+    Some(Subtitle {
+        index: subs[0].index,
+        period: subs[0].period.union(subs[subs.len() - 1].period),
+        lines: lines,
+    })
 }
 
 #[cfg(test)]
@@ -64,7 +68,7 @@ mod test {
     fn merge_zero() {
         assert_eq!(None, merge_subtitles(&[]));
     }
-    
+
     #[test]
     fn merge_one() {
         let example = "18
@@ -116,4 +120,3 @@ you?
         assert_eq!(expected, &merge_for_test(example));
     }
 }
-
