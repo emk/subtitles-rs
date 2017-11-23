@@ -67,7 +67,7 @@ impl RunCommand {
     }
 
     /// The name of the command that failed.
-    pub fn command(&self) -> &String {
+    pub fn command(&self) -> &str {
         &self.command
     }
 }

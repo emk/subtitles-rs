@@ -82,7 +82,7 @@ type Alignment = Vec<(Vec<usize>, Vec<usize>)>;
 
 // Returns true if `items[i].is_some()` and the value is found in `group`.
 // Returns false if `i` is out of bounds.
-fn group_contains(group: &Vec<usize>, items: &Vec<Option<usize>>, i: usize) -> bool {
+fn group_contains(group: &[usize], items: &[Option<usize>], i: usize) -> bool {
     if !(i < items.len()) {
         return false;
     }
