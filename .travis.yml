@@ -3,8 +3,6 @@ dist: trusty
 matrix:
   include:
   - os: linux
-    rust: 1.15.1
-  - os: linux
     rust: stable
   - os: linux
     rust: beta
@@ -23,6 +21,7 @@ before_install:
     sudo apt-get -qq update
     sudo apt-get install -y ffmpeg
   elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+    brew update
     brew install ffmpeg
   else
     echo "Don't know how to install ffmpeg"
