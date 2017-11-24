@@ -7,7 +7,7 @@
 
 #![warn(missing_docs)]
 
-extern crate cld2;
+extern crate chardet;
 extern crate csv;
 #[cfg(test)]
 #[macro_use]
@@ -28,7 +28,7 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-extern crate uchardet;
+extern crate whatlang;
 
 pub mod errors;
 pub mod contexts;

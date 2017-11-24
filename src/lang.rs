@@ -1,6 +1,5 @@
 //! Naming and identifying languages.  We use
 
-use cld2;
 use serde::{Serialize, Serializer};
 use std::ascii::AsciiExt;
 use std::collections::HashMap;
@@ -8,6 +7,7 @@ use std::fmt;
 use std::iter::FromIterator;
 use std::str::from_utf8;
 use std::result;
+use whatlang;
 
 use errors::*;
 
@@ -124,11 +124,20 @@ impl Lang {
 
     /// Try to determine the language of `text`.  We return `None` unless
     /// we're pretty sure.
+    ///
+    /// ```
+    /// use substudy::lang::Lang;
+    /// let text = "Pour que le caractère d’un être humain dévoile des qualités";
+    /// assert_eq!(Lang::for_text(text).unwrap(), Lang::iso639("fr").unwrap());
+    /// ```
     pub fn for_text(text: &str) -> Option<Lang> {
-        match cld2::detect_language(&text, cld2::Format::Text) {
-            (Some(cld2::Lang(code)), cld2::Reliable) => Lang::iso639(code).ok(),
-            _ => None,
+        if let Some(info) = whatlang::detect(text) {
+            debug!("detected language: {:?}", info);
+            if info.is_reliable() {
+                return Lang::iso639(info.lang().code()).ok();
+            }
         }
+        None
     }
 }
 

@@ -37,10 +37,59 @@ substudy export review episode_01_01.mkv \
 [docs]: http://www.randomhacks.net/substudy/
 [apidocs]: http://docs.randomhacks.net/substudy/substudy/index.html
 
-## Installing `substudy`
+## Installing `ffmpeg`
 
-The easiest way to install `substudy` is using the `cargo install` command.
-To use this, you'll need Rust 1.15.1 or newer.  If you already
+To use `substudy`, you'll need to have the `ffmpeg` command-line tools
+installed on your system. You can find official packages for most platforms
+at the [FFmpeg site][ffmpeg]. But here are some instructions for specific
+platforms:
+
+```sh
+# Ubuntu 16.04 and later.
+sudo apt update
+sudo apt install ffmpeg
+
+# MacOS X with `brew` installed.
+brew install ffmpeg
+```
+
+If you're running Windows, or if you're a Mac user who's never heard of
+`brew`, then you'll probably want to download your packages from
+the [FFmpeg site][ffmpeg]. Note that these configurations haven't been
+tested much, so if you run into problems, please report an [issue][issues]
+so that we can fix it.
+
+[ffmpeg]: https://www.ffmpeg.org/download.html
+[issues]: https://github.com/emk/substudy/issues
+
+## Installing `substudy` using binary releases
+
+The easiest way to install `substudy` is to use an
+official [binary release][releases] for your platform. Download the
+appropriate `*.zip` file, open it, and install the binary somewhere your
+operating system can find it. Here are some instructions for common
+platforms:
+
+```sh
+# Linux x86_64 and MacOS X.
+unzip substudy-*.zip
+sudo cp substudy /usr/local/bin
+```
+
+The Linux binaries are statically linked, so they should work on any
+reaonably modern x86_64 distribution. For other architectures, you can try
+to install using `cargo` as described below.
+
+For Windows, you'll have to figure it out yourself for now. But if you do,
+please file an [issue][issues] and tell us how you did it, so that we can
+update the instructions!
+
+[releases]: https://github.com/emk/substudy/releases
+
+## Installing `substudy` using `cargo`
+
+You can also install `substudy` is using the `cargo install` command.  To
+use this, you'll need a recent version of Rust.  If you already
 have [`rustup`][rustup] installed, you can run:
 
 ```sh
@@ -55,37 +104,13 @@ the [`rustup` page][rustup], or you can just run the following:
 curl https://sh.rustup.rs -sSf | sh
 ```
 
-You will also need to have a working copies of `cmake` and the
-[latest version of `ffmpeg`][ffmpeg] (2.8.1 or newer), which you might be
-able to install as follows:
-
-```sh
-# MacOS X with `brew` installed.
-brew install cmake ffmpeg
-
-# Ubuntu 16.04.
-sudo apt-get install cmake ffmpeg
-
-# Ubuntu 14.04.
-sudo apt-add-repository ppa:mc3man/trusty-media
-sudo apt-get update
-sudo apt-get install cmake ffmpeg
-sudo apt-add-repository -r ppa:mc3man/trusty-media
-sudo apt-get update
-```
-
-Once all that is set up, you can then install `substudy` by running:
+Once that is set up, you can then install `substudy` by running:
 
 ```sh
 cargo install substudy
 ```
 
-It should also be possible to get `substudy` working on Windows, but it's
-more complicated.  See our [AppVeyor file](./appveyor.yml) for some
-console-based scripts that you can use as a starting point.
-
 [rustup]: https://www.rustup.rs/
-[ffmpeg]: https://ffmpeg.org/download.html
 
 ## Building `substudy`
 
@@ -100,7 +125,7 @@ cargo build
 
 If this fails, please feel free to submit an issue.
 
-## Using substudy as a library
+## Using `substudy` as a library
 
 You can find [API documentation on the Rust CI site][apidocs].  Note that
 all APIs are experimental and subject to change.  If you want to use
