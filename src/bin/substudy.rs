@@ -1,111 +1,181 @@
 //! Command-line iterface to substudy.
 
-extern crate docopt;
 extern crate env_logger;
-extern crate serde;
+extern crate structopt;
 #[macro_use]
-extern crate serde_derive;
-
+extern crate structopt_derive;
 extern crate substudy;
 
-use docopt::Docopt;
 use std::io;
 use std::io::prelude::*;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process;
-
+use structopt::StructOpt;
 use substudy::errors::Result;
 use substudy::srt::SubtitleFile;
 use substudy::align::combine_files;
 use substudy::video;
 use substudy::export;
 
-const USAGE: &'static str = "
-Subtitle processing tools for students of foreign languages
+#[derive(Debug, StructOpt)]
+/// Subtitle processing tools for students of foreign languages. (For now, all
+/// subtitles must be in *.srt format. Many common encodings will be
+/// automatically detected, but try converting to UTF-8 if you have problems.)
+#[structopt(name = "substudy")]
+enum Args {
+    /// Clean a subtitle file, removing things that don't look like dialog.
+    #[structopt(name = "clean")]
+    Clean {
+        /// Path to the subtitle file to clean.
+        #[structopt(parse(from_os_str))]
+        subs: PathBuf,
+    },
 
-Usage: substudy clean <subs>
-       substudy combine <foreign-subs> <native-subs>
-       substudy export csv <video> <foreign-subs> [<native-subs>]
-       substudy export review <video> <foreign-subs> [<native-subs>]
-       substudy export tracks <video> <foreign-subs>
-       substudy list tracks <video>
-       substudy --help
-       substudy --version
+    /// Combine two subtitle files into a single bilingual subtitle file.
+    #[structopt(name = "combine")]
+    Combine {
+        /// Path to the foreign language subtitle file to be combined.
+        #[structopt(parse(from_os_str))]
+        foreign_subs: PathBuf,
 
-For now, all subtitles must be in *.srt format. Many common encodings
-will be automatically detected, but try converting to UTF-8 if you
-have problems.
-";
+        /// Path to the native language subtitle file to be combined.
+        #[structopt(parse(from_os_str))]
+        native_subs: PathBuf,
+    },
 
-#[derive(Debug, Deserialize)]
-struct Args {
-    cmd_clean: bool,
-    cmd_combine: bool,
-    cmd_export: bool,
-    cmd_csv: bool,
-    cmd_review: bool,
-    cmd_tracks: bool,
-    arg_subs: String,
-    arg_foreign_subs: String,
-    arg_native_subs: Option<String>,
-    arg_video: String,
-    flag_version: bool,
+    /// Export subtitles in one of several formats (Anki cards, music tracks,
+    /// etc).
+    #[structopt(name = "export")]
+    Export {
+        #[structopt(subcommand)]
+        format: ExportFormat,
+    },
+
+    /// List information about a file.
+    #[structopt(name = "list")]
+    List {
+        #[structopt(subcommand)]
+        to_list: ToList,
+    },
 }
 
-fn export_type(args: &Args) -> &str {
-    match *args {
-        Args { cmd_csv: true, .. } => "csv",
-        Args {
-            cmd_review: true, ..
-        } => "review",
-        Args {
-            cmd_tracks: true, ..
-        } => "tracks",
-        _ => panic!("Cannot determine export type: {:?}", args),
+#[derive(Debug, StructOpt)]
+enum ExportFormat {
+    /// Export as CSV file and media for use with Anki.
+    #[structopt(name = "csv")]
+    Csv {
+        /// Path to the video.
+        #[structopt(parse(from_os_str))]
+        video: PathBuf,
+
+        /// Path to the file containing foreign language subtitles.
+        #[structopt(parse(from_os_str))]
+        foreign_subs: PathBuf,
+
+        /// Path to the file containing native language subtitles.
+        #[structopt(parse(from_os_str))]
+        native_subs: Option<PathBuf>,
+    },
+
+    /// Export as an HTML page allowing you to review the subtitles.
+    #[structopt(name = "review")]
+    Review {
+        /// Path to the video.
+        #[structopt(parse(from_os_str))]
+        video: PathBuf,
+
+        /// Path to the file containing foreign language subtitles.
+        #[structopt(parse(from_os_str))]
+        foreign_subs: PathBuf,
+
+        /// Path to the file containing native language subtitles.
+        #[structopt(parse(from_os_str))]
+        native_subs: Option<PathBuf>,
+    },
+
+    /// Export as MP3 tracks for listening on the go.
+    #[structopt(name = "tracks")]
+    Tracks {
+        /// Path to the video.
+        #[structopt(parse(from_os_str))]
+        video: PathBuf,
+
+        /// Path to the file containing foreign language subtitles.
+        #[structopt(parse(from_os_str))]
+        foreign_subs: PathBuf,
+    },
+}
+
+impl ExportFormat {
+    /// Get the name of the export format to use.
+    fn name(&self) -> &str {
+        match *self {
+            ExportFormat::Csv { .. } => "csv",
+            ExportFormat::Review { .. } => "review",
+            ExportFormat::Tracks { .. } => "tracks",
+        }
     }
+
+    /// Get the path to the video.
+    fn video(&self) -> &Path {
+        match *self {
+            ExportFormat::Csv { ref video, .. } => &video,
+            ExportFormat::Review { ref video, .. } => &video,
+            ExportFormat::Tracks { ref video, .. } => &video,
+        }
+    }
+
+    /// Get the path to the foreign-language subtitles, if present.
+    fn foreign_subs(&self) -> &Path {
+        match *self {
+            ExportFormat::Csv { ref foreign_subs, .. } => &foreign_subs,
+            ExportFormat::Review { ref foreign_subs, .. } => &foreign_subs,
+            ExportFormat::Tracks { ref foreign_subs, .. } => &foreign_subs,
+        }
+    }
+
+    /// Get the path to the native-language subtitles, if present.
+    fn native_subs(&self) -> Option<&Path> {
+        match *self {
+            ExportFormat::Csv { ref native_subs, .. } => native_subs.as_ref().map(|p| p.as_path()),
+            ExportFormat::Review { ref native_subs, .. } => native_subs.as_ref().map(|p| p.as_path()),
+            ExportFormat::Tracks { .. } => None,
+        }
+    }
+}
+
+#[derive(Debug, StructOpt)]
+enum ToList {
+    /// List the various audio and video tracks in a video file.
+    #[structopt(name = "tracks")]
+    Tracks {
+        /// Path to the video.
+        #[structopt(parse(from_os_str))]
+        video: PathBuf,
+    },
 }
 
 // Choose and run the appropriate command.
 fn run(args: &Args) -> Result<()> {
     match *args {
-        Args {
-            flag_version: true, ..
-        } => cmd_version(),
-        Args {
-            cmd_clean: true,
-            arg_subs: ref path,
-            ..
-        } => cmd_clean(&Path::new(path)),
-        Args {
-            cmd_combine: true,
-            arg_foreign_subs: ref path1,
-            arg_native_subs: Some(ref path2),
-            ..
-        } => cmd_combine(&Path::new(path1), &Path::new(path2)),
-        Args {
-            cmd_export: true,
-            arg_video: ref video_path,
-            arg_foreign_subs: ref foreign_path,
-            arg_native_subs: ref native_path,
-            ..
-        } => cmd_export(
-            export_type(args),
-            &Path::new(video_path),
-            &Path::new(foreign_path),
-            native_path.as_ref().map(|p| Path::new(p)),
-        ),
-        Args {
-            cmd_tracks: true,
-            arg_video: ref path,
-            ..
-        } => cmd_tracks(&Path::new(path)),
-        _ => panic!("Unexpected argument combination: {:?}", args),
+        Args::Clean { ref subs } => {
+            cmd_clean(subs)
+        }
+        Args::Combine { ref foreign_subs, ref native_subs } => {
+            cmd_combine(foreign_subs, native_subs)
+        }
+        Args::Export { ref format } => {
+            cmd_export(
+                format.name(),
+                format.video(),
+                format.foreign_subs(),
+                format.native_subs()
+            )
+        }
+        Args::List { to_list: ToList::Tracks { ref video } } => {
+            cmd_tracks(video)
+        }
     }
-}
-
-fn cmd_version() -> Result<()> {
-    println!("substudy {}", env!("CARGO_PKG_VERSION"));
-    Ok(())
 }
 
 fn cmd_clean(path: &Path) -> Result<()> {
@@ -161,9 +231,7 @@ fn main() {
     env_logger::init().expect("could not initialize logging");
 
     // Parse our command-line arguments using docopt (very shiny).
-    let args: Args = Docopt::new(USAGE)
-        .and_then(|d| d.deserialize())
-        .unwrap_or_else(|e| e.exit());
+    let args: Args = Args::from_args();
 
     // Decide which command to run, and run it, and print any errors.
     if let Err(err) = run(&args) {
