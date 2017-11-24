@@ -1,7 +1,9 @@
 //! Tools for working with video files.
 
+use cast;
 use failure::ResultExt;
 use num::rational::Ratio;
+use pbr::ProgressBar;
 use regex::Regex;
 use serde::{Deserialize, Deserializer};
 use serde::de;
@@ -341,17 +343,21 @@ impl Video {
     /// batch interface to avoid making too many passes through the file.
     /// We assume that the extractions are sorted in temporal order.
     pub fn extract(&self, extractions: &[Extraction]) -> Result<()> {
+        let mut pb = ProgressBar::new(cast::u64(extractions.len()));
+        pb.format("[== ]");
         let mut batch: Vec<&Extraction> = vec![];
         for e in extractions {
             if e.spec.can_be_batched() {
                 batch.push(e);
             } else {
                 self.extract_one(e)?;
+                pb.inc();
             }
         }
 
         for chunk in batch.chunks(20) {
             self.extract_batch(chunk)?;
+            pb.add(cast::u64(chunk.len()));
         }
         Ok(())
     }

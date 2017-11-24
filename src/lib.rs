@@ -7,6 +7,7 @@
 
 #![warn(missing_docs)]
 
+extern crate cast;
 extern crate chardet;
 extern crate csv;
 #[cfg(test)]
@@ -23,6 +24,7 @@ extern crate lazy_static;
 #[macro_use]
 extern crate log;
 extern crate num;
+extern crate pbr;
 extern crate regex;
 extern crate serde;
 #[macro_use]
