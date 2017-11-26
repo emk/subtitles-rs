@@ -51,3 +51,6 @@ difference = "1.0"
 name = "substudy"
 test = false
 doc = false
+
+[workspace]
+members = ["backend"]

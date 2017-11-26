@@ -1,9 +1,9 @@
 use std::path::Path;
-
-use substudy;
+use substudy::errors::Result;
 use substudy::align::align_available_files;
 use substudy::srt;
 use substudy::time::Period;
+use url::Url;
 
 #[derive(Debug, Serialize)]
 pub struct Subtitle {
@@ -35,8 +35,8 @@ pub struct Video {
 }
 
 impl Video {
-    pub fn new(url: &str, foreign_path: &Path, native_path: Option<&Path>) ->
-        substudy::err::Result<Video>
+    pub fn new(url: &Url, foreign_path: &Path, native_path: Option<&Path>) ->
+        Result<Video>
     {
         let foreign = try!(srt::SubtitleFile::cleaned_from_path(foreign_path));
         let native = match native_path {
@@ -47,7 +47,7 @@ impl Video {
         let subtitles = align_available_files(&foreign, native.as_ref());
 
         Ok(Video {
-            url: url.to_owned(),
+            url: url.as_str().to_owned(),
             subtitles: subtitles.iter()
                 .map(|&(ref f, ref n)| Subtitle::new(f.as_ref(), n.as_ref()))
                 .collect()
