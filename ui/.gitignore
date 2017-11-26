@@ -1,4 +1,8 @@
 .DS_Store
 dist/
 node_modules/
+lib/
 thumbs.db
+*.bs.js
+.bsb.lock
+.merlin

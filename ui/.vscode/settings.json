@@ -1,0 +1,7 @@
+{
+    "reason.diagnostics.tools": [
+        "merlin",
+        "bsb"
+    ],
+    "reason.formatOnSave": true
+}

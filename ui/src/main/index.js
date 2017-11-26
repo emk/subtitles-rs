@@ -10,7 +10,12 @@ let mainWindow
 
 function createMainWindow() {
   // Construct new BrowserWindow
-  const window = new BrowserWindow()
+  const window = new BrowserWindow({
+    webPreferences: {
+      // Allowing loading file:// URLs, etc., for now.
+      webSecurity: false
+    }
+  })
 
   // Set url for `win`
     // points to `webpack-dev-server` in development

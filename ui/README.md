@@ -1,40 +1,41 @@
-# electron-webpack-quick-start
-> A bare minimum project structure to get started developing with [`electron-webpack`](https://github.com/electron-userland/electron-webpack).
+# Experimental `substudy` UI using Electron
 
-Thanks to the power of `electron-webpack` this template comes packed with...
+This is a cross-platform GUI based on [Electron][] and [electron-webpack][]. For the actual code, we use [ReasonML][] and [Reason-React][].
 
-* Use of [`webpack-dev-server`](https://github.com/webpack/webpack-dev-server) for development
-* HMR for both `renderer` and `main` processes
-* Use of [`babel-preset-env`](https://github.com/babel/babel-preset-env) that is automatically configured based on your `electron` version
-* Use of [`electron-builder`](https://github.com/electron-userland/electron-builder) to package and build a distributable electron application
-
-Make sure to check out [`electron-webpack`'s documentation](https://webpack.electron.build/) for more details.
-
-## Getting Started
-Simply clone down this reposity, install dependencies, and get started on your application.
-
-The use of the [yarn](https://yarnpkg.com/) package manager is **strongly** recommended, as opposed to using `npm`.
-
-```bash
-# create a directory of your choice, and copy template using curl
-mkdir new-electron-webpack-project && cd new-electron-webpack-project
-curl -fsSL https://github.com/electron-userland/electron-webpack-quick-start/archive/master.tar.gz | tar -xz --strip-components 1
-
-# or copy template using git clone
-git clone https://github.com/electron-userland/electron-webpack-quick-start.git
-cd electron-webpack-quick-start
-rm -rf .git
-
-# install dependencies
-yarn
-```
+[Electron]: https://electronjs.org/
+[electron-webpack]: https://github.com/electron-userland/electron-webpack
+[ReasonML]: https://reasonml.github.io/
+[Reason-React]: https://reasonml.github.io/reason-react/
 
 ### Development Scripts
 
-```bash
-# run application in development mode
-yarn dev
+To set up the environment, you'll need to install [Node][] 8.x and [Yarn][] normally. From there, you can run:
 
+```sh
+# Install the BuckleScript compiler used by ReasonML.
+npm install -g bs-platform
+```
+
+Then you can install the dependencies for this project:
+
+```sh
+yarn
+npm link bs-platform
+```
+
+Once that is done, you can open two terminals and run one of the following commands in each:
+
+```sh
+# Run in terminal #1 to compile ReasonML to JavaScript.
+bsb -w
+
+# Run in terminal #2 to package JavaScript using Webpack.
+yarn dev
+```
+
+To produce release builds, you could also try the following commands:
+
+```bash
 # compile source code and create webpack output
 yarn compile
 
@@ -44,3 +45,6 @@ yarn dist
 # `yarn compile` & create unpacked build with electron-builder
 yarn dist:dir
 ```
+
+[Node]: https://nodejs.org/en/
+[Yarn]: https://yarnpkg.com/

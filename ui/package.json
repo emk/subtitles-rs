@@ -4,17 +4,19 @@
   "license": "MIT",
   "scripts": {
     "dev": "electron-webpack dev",
-    "compile": "electron-webpack",
+    "compile": "bsb -make-world && electron-webpack",
     "dist": "yarn compile && electron-builder",
     "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
   },
   "dependencies": {
+    "reason-react": "^0.3.0",
     "source-map-support": "^0.5.0"
   },
   "devDependencies": {
     "electron": "1.7.9",
     "electron-builder": "^19.42.1",
-    "electron-webpack": "1.10.1",
+    "electron-webpack": "1.11.0",
+    "reason-webpack-plugin": "^1.0.0",
     "webpack": "^3.8.1"
   }
 }
