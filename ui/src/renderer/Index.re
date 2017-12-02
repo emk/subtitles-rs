@@ -5,7 +5,7 @@ let renderPlaceholder = () => {
     renderRoot(<p>{ReasonReact.stringToElement(text)}</p>);
 };
 
-let renderVideoJson = (json) => {
+let renderVideoJson = (json: Js.Json.t) => {
     let video = Models.Decode.video(json);
     renderRoot(<Player video=video />);
 };

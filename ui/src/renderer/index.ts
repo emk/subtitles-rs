@@ -7,6 +7,8 @@ import { renderPlaceholder, renderVideoJson } from './Index.bs'
 // Receive "Open file..." events from the main process.
 ipcRenderer.on('open-file', (_event: any, data: any) => {
     console.log("Open file:", data)
+    // Remove subtitles with no foreign text for simplicity.
+    data.subtitles = data.subtitles.filter((s: any) => s.foreign != null)
     renderVideoJson(data)
 })
 

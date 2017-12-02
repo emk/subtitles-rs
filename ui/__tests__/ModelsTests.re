@@ -21,7 +21,7 @@ describe("#Decode.video",
                 subtitles: [|
                     {
                         period: (1.0, 5.0),
-                        foreign: Some("Agua"),
+                        foreign: "Agua",
                         native: Some("Water")
                     }
                 |]

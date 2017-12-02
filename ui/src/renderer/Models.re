@@ -2,7 +2,7 @@ type period = (float, float);
 
 type subtitle = {
     period: period,
-    foreign: option(string),
+    foreign: string,
     native: option(string),
 };
 
@@ -17,7 +17,7 @@ module Decode = {
 
     let subtitle = (json) => Json.Decode.{
         period: json |> field("period", period),
-        foreign: json |> optional(field("foreign", string)),
+        foreign: json |> field("foreign", string),
         native: json |> optional(field("native", string)),
     };
 

@@ -1,4 +1,4 @@
-let component = ReasonReact.statelessComponent("Hello");
+let component = ReasonReact.statelessComponent("Video");
 
 let make = (~src, _children) => {
     ...component,
