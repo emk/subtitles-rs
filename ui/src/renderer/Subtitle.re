@@ -1,3 +1,10 @@
+/*
+  Most of our CSS is implemented as CSS-in-JS, just to try it out. However,
+  we also use a small amount of regular CSS for <svg class="playButton">.
+  This is mostly so that we can use ":hover", which doesn't play nicely with
+  CSS-in-JS.
+*/
+
 let style = ReactDOMRe.Style.make(
     ~position = "relative",
     ~marginBottom = "5px",
@@ -11,7 +18,6 @@ let svgStyle = ReactDOMRe.Style.make(
     ~width = "32px",
     ~height = "32px",
     ~position = "absolute",
-    ~fill = "lightgrey",
     ()
 );
 
@@ -45,7 +51,10 @@ let make = (
 ) => {
     ...component,
     render: (_self) => {
+        /* Generate a unique key for this subtitle to make React faster. */
         let key = string_of_float(fst(subtitle.period));
+
+        /* Build the native language subtitle, if we have it. */
         let native = switch subtitle.native {
         | Some(text) =>
             <p style=nativeSubtitleStyle>
@@ -53,9 +62,11 @@ let make = (
             </p>
         | None => ReasonReact.nullElement
         };
-        <div key=key style=style>
+
+        /* Build our main HTML. */
+        <div className="subtitle" key=key style=style>
             <input _type="checkbox" style=inputStyle />
-            <svg viewBox="0 0 32 32" style=svgStyle>
+            <svg className="playButton" viewBox="0 0 32 32" style=svgStyle>
                 <use href="play.svg#play" />
             </svg>
             <p style=subtitleStyle>

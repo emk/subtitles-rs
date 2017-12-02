@@ -1,3 +1,9 @@
 body {
+    /* Fix default margins to not leave a border around app. */
     margin: 0 0 0 0;
 }
+
+/* Some global styles needed by Subtitle.re. */
+.subtitle .playButton { fill: lightgrey; }
+.subtitle .playButton:hover { fill: grey; }
+.subtitle.playing .playButton { fill: blue; }
