@@ -7,5 +7,5 @@ let renderPlaceholder = () => {
 
 let renderVideoJson = (json) => {
     let video = Models.Decode.video(json);
-    renderRoot(<Video src=video.url />);
+    renderRoot(<Player video=video />);
 };
