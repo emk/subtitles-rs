@@ -125,6 +125,7 @@ app.on('activate', () => {
 
 // Create main BrowserWindow when electron is ready
 app.on('ready', () => {
+  app.setName("Substudy")
   setMenu()
   mainWindow = createMainWindow()
 })
