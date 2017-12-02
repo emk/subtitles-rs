@@ -1,3 +1,4 @@
+import './style.css'
 import { ipcRenderer } from 'electron'
 
 // We include `Index.bs`, which really loads the generated `Index.bs.js` file
