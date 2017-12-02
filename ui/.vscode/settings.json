@@ -3,5 +3,13 @@
         "merlin",
         "bsb"
     ],
-    "reason.formatOnSave": true
+    "reason.formatOnSave": true,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/*.bs.js": true
+    }
 }

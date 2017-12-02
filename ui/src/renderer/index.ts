@@ -1,5 +1,13 @@
-// This file is just a placeholder, because ReasonML is dropping Webpack
-// support, and because it wants us to compile code using `bsb`. But
-// `electron-webpack` only supports a limited set of top-level filenames.
-// So this file exists just to load the top-level output of `bsb`.
-import "./Index.bs"
+import { ipcRenderer } from 'electron'
+
+// We include `Index.bs`, which really loads the generated `Index.bs.js` file
+// and manually-written `Index.bs.d.ts` file.
+import { renderPlaceholder, renderVideoJson } from './Index.bs'
+
+// Receive "Open file..." events from the main process.
+ipcRenderer.on('open-file', (_event: any, data: any) => {
+    console.log("Open file:", data)
+    renderVideoJson(data)
+})
+
+renderPlaceholder()

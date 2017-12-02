@@ -1,10 +1,11 @@
-/* Import the magic value "__static" from Electron. */
-[@bs.val] external __static : string = "__static";
+let renderRoot = (elem) => ReactDOMRe.renderToElementWithId(elem, "app");
 
-print_endline("Starting up");
+let renderPlaceholder = () => {
+    let text = "Use File > Open... to open a file.";
+    renderRoot(<p>{ReasonReact.stringToElement(text)}</p>);
+};
 
-/* Temporary: Build a URL pointing to a local file. */
-let url = "file://" ++ __static ++ "/matando_cabos.mp4";
-print_endline("Using URL " ++ url);
-
-ReactDOMRe.renderToElementWithId(<Video src=url />, "app");
+let renderVideoJson = (json) => {
+    let video = Models.Decode.video(json);
+    renderRoot(<Video src=video.url />);
+};
