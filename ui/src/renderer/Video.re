@@ -30,9 +30,9 @@ let component = ReasonReact.reducerComponent("Video");
 
 let make = (
     ~src,
-    ~onSizeKnown = None,
-    ~onPlayingUpdate = None,
-    ~onTimeUpdate = None,
+    ~onSizeKnown = ?,
+    ~onPlayingUpdate = ?,
+    ~onTimeUpdate = ?,
     _children
 ) => {
     ...component,

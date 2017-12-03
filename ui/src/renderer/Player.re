@@ -40,10 +40,10 @@ let make = (~video: Models.video, _children) => {
         /* Build our HTML. */
         let subtitles = video.subtitles
             |> Array.map((subtitle: Models.subtitle) => {
-                <Subtitle subtitle onPlayRange=Some(onPlayRange) />
+                <Subtitle subtitle onPlayRange />
             });
         <div className="player">
-            <Video ref={self.handle(setVideoRef)} onSizeKnown=Some(onSizeKnown) src=video.url />
+            <Video ref={self.handle(setVideoRef)} onSizeKnown src=video.url />
             <div className="subtitles">
               (ReasonReact.arrayToElement(subtitles))
             </div>

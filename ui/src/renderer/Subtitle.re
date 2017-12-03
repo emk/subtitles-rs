@@ -47,7 +47,7 @@ let component = ReasonReact.statelessComponent("Player");
 let make = (
     ~subtitle: Models.subtitle,
     ~playing = false,
-    ~onPlayRange = None,
+    ~onPlayRange = ?,
     _children
 ) => {
     ...component,
