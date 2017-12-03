@@ -1,5 +1,8 @@
 type period = (float, float);
 
+let periodContains = (time: float, (startTime, endTime): period) =>
+    startTime <= time && time < endTime;
+
 type subtitle = {
     period: period,
     foreign: string,

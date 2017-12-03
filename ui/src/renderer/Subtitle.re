@@ -72,8 +72,14 @@ let make = (
         | None => ReasonReact.nullElement
         };
 
+        let className = if (playing) {
+            "subtitle playing"
+        } else {
+            "subtitle"
+        };
+
         /* Build our main HTML. */
-        <div className="subtitle" key=key style=style>
+        <div key className style>
             <input _type="checkbox" style=inputStyle />
             <svg className="playButton" viewBox="0 0 32 32" style=svgStyle onClick>
                 <use href="play.svg#play" />

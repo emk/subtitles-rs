@@ -1,8 +1,10 @@
 type state = {
     videoRef: ref(option(ReasonReact.reactRef)),
+    currentTime: float,
 };
 
-type action = unit;
+type action =
+| TimeUpdate(float);
 
 let component = ReasonReact.reducerComponent("Player");
 
@@ -10,11 +12,14 @@ let make = (~video: Models.video, _children) => {
     ...component,
 
     initialState: () => {
-        videoRef: ref(None)
+        videoRef: ref(None),
+        currentTime: 0.,
     },
 
-    reducer: (_action: action, _state: state) => {
-        NoUpdate
+    reducer: (action, state) => {
+        switch (action) {
+        | TimeUpdate(currentTime) => Update({ ...state, currentTime })
+        }
     },
 
     render: (self) => {
@@ -23,6 +28,7 @@ let make = (~video: Models.video, _children) => {
             self.ReasonReact.state.videoRef := Js.Nullable.to_opt(videoRef);
         };
 
+        /* Called when a subtitle is clicked. */
         let onPlayRange = ((startTime, endTime)) => {
             let command = Video.PlayRange(startTime, endTime);
             switch (self.state.videoRef^) {
@@ -37,13 +43,23 @@ let make = (~video: Models.video, _children) => {
             ()
         };
 
+        /* Called when the video seeks to a new time. */
+        let onTimeUpdate = (currentTime) => {
+            TimeUpdate(currentTime)
+        };
+
         /* Build our HTML. */
         let subtitles = video.subtitles
             |> Array.map((subtitle: Models.subtitle) => {
-                <Subtitle subtitle onPlayRange />
+                let playing = Models.periodContains(self.state.currentTime, subtitle.period);
+                <Subtitle subtitle playing onPlayRange />
             });
         <div className="player">
-            <Video ref={self.handle(setVideoRef)} onSizeKnown src=video.url />
+            <Video
+                ref={self.handle(setVideoRef)}
+                onSizeKnown
+                onTimeUpdate={self.reduce(onTimeUpdate)}
+                src=video.url />
             <div className="subtitles">
               (ReasonReact.arrayToElement(subtitles))
             </div>
