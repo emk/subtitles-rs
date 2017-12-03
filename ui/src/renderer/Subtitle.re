@@ -47,10 +47,19 @@ let component = ReasonReact.statelessComponent("Player");
 let make = (
     ~subtitle: Models.subtitle,
     ~playing = false,
+    ~onPlayRange = None,
     _children
 ) => {
     ...component,
     render: (_self) => {
+        /* Called when the "play" button is clicked. */
+        let onClick = (_event) => {
+            switch (onPlayRange) {
+            | Some(f) => f(subtitle.period)
+            | None => ()
+            }
+        };
+
         /* Generate a unique key for this subtitle to make React faster. */
         let key = string_of_float(fst(subtitle.period));
 
@@ -66,7 +75,7 @@ let make = (
         /* Build our main HTML. */
         <div className="subtitle" key=key style=style>
             <input _type="checkbox" style=inputStyle />
-            <svg className="playButton" viewBox="0 0 32 32" style=svgStyle>
+            <svg className="playButton" viewBox="0 0 32 32" style=svgStyle onClick>
                 <use href="play.svg#play" />
             </svg>
             <p style=subtitleStyle>
