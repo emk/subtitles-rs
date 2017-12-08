@@ -7,11 +7,10 @@ extern crate structopt_derive;
 extern crate substudy;
 
 use std::io;
-use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::process;
 use structopt::StructOpt;
-use substudy::errors::Result;
+use substudy::errors::{Result, FailExt};
 use substudy::srt::SubtitleFile;
 use substudy::align::combine_files;
 use substudy::video;
@@ -235,19 +234,8 @@ fn main() {
 
     // Decide which command to run, and run it, and print any errors.
     if let Err(err) = run(&args) {
-        let mut opt_cause = Some(err.cause());
-        let mut first = true;
-        while let Some(cause) = opt_cause {
-            if first {
-                first = false;
-            } else {
-                write!(io::stderr(), ": ").expect("unable to write error to stderr");
-            }
-            write!(io::stderr(), "{}", cause)
-                .expect("unable to write error to stderr");
-            opt_cause = cause.cause();
-        }
-        write!(io::stderr(), "\n").expect("unable to write error to stderr");
+        err.write_full_message(&mut io::stderr())
+            .expect("unable to write error to stderr");
         process::exit(1);
     }
 }

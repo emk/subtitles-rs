@@ -1,6 +1,7 @@
 extern crate env_logger;
 #[macro_use]
 extern crate failure;
+extern crate log;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -16,7 +17,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::process::exit;
 use structopt::StructOpt;
-use substudy::errors::Result;
+use substudy::errors::{FailExt, Result};
 use url::Url;
 
 mod models;
@@ -60,8 +61,9 @@ fn main() {
 
     // Parse our command-line arguments using docopt.
     let opt = Opt::from_args();
-    if let Err(ref err) = run(&opt) {
-        println!("error: {}", err);
+    if let Err(err) = run(&opt) {
+        err.write_full_message(&mut io::stderr())
+            .expect("unable to write error to stderr");
         exit(1);
     }
 }

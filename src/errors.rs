@@ -2,6 +2,7 @@
 
 use failure;
 use std::fmt;
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::result;
 
@@ -69,5 +70,28 @@ impl RunCommand {
     /// The name of the command that failed.
     pub fn command(&self) -> &str {
         &self.command
+    }
+}
+
+/// Extensions to standard `Failure` trait.
+pub trait FailExt {
+    /// Write a full error message to specified outut, including the entire
+    /// chain of causes, and a backtrace if available.
+    fn write_full_message(&self, out: &mut Write) -> io::Result<()>;
+}
+
+impl FailExt for failure::Error {
+    fn write_full_message(&self, out: &mut Write) -> io::Result<()> {
+        let mut first = true;
+        for cause in self.causes() {
+            if first {
+                first = false;
+                writeln!(out, "Error: {}", cause)?;
+            } else {
+                writeln!(out, "  caused by: {}", cause)?;
+            }
+        }
+        write!(out, "{}",  self.backtrace())?;
+        Ok(())
     }
 }
