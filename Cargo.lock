@@ -526,7 +526,7 @@ dependencies = [
 
 [[package]]
 name = "substudy"
-version = "0.4.4"
+version = "0.4.5"
 dependencies = [
  "cast 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "chardet 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -565,7 +565,7 @@ dependencies = [
  "serde_json 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "structopt 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "structopt-derive 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "substudy 0.4.4",
+ "substudy 0.4.5",
  "url 1.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
