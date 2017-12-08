@@ -170,6 +170,18 @@ Line 2.1
     }
 
     #[test]
+    fn zero_duration_subtitle() {
+        let data = "\u{FEFF}16
+00:00:01,000 --> 00:00:01,000
+Text
+";
+        let srt = SubtitleFile::from_str(data).unwrap();
+        assert_eq!(srt.subtitles.len(), 1);
+        assert_eq!(srt.subtitles[0].period.begin(), 1.0);
+        assert_eq!(srt.subtitles[0].period.end(), 1.001);
+    }
+
+    #[test]
     fn detect_language() {
         let path_es = Path::new("fixtures/sample.es.srt");
         let srt_es = SubtitleFile::from_path(&path_es).unwrap();
