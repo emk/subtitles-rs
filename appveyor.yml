@@ -23,9 +23,9 @@ build: false
 # This also builds and tests the binary version of substudy using `cli_test_dir`.
 test_script:
   - cargo test --all --verbose
-
-# See https://github.com/japaric/rust-everywhere/blob/master/appveyor.yml
-before_deploy:
+  # This is all technically artifact creation, and we only need it for tags
+  # beginning with `substudy_`, but that's impossible to specify using
+  # AppVeyor. So just build this as an artifact on every push.
   - cargo build --all --release
   - mkdir staging
   - copy target\release\substudy.exe staging
@@ -33,14 +33,10 @@ before_deploy:
   - 7z a ../substudy-%APPVEYOR_REPO_TAG_NAME%-windows.zip *
   - appveyor PushArtifact ../substudy-%APPVEYOR_REPO_TAG_NAME%-windows.zip
 
-deploy:
-  # AppVeyor and GitHub insist on clobbering these notes, so let's at least
-  # use something non-descript that tells us what we need to fix.
-  description: '(release notes go here)'
-  provider: GitHub
-  auth_token:
-    secure: '8KtxQyAl8Q0BbyNsAUNJxnPry/Dz/4p3W58Xozz3dfvt4rs+DkPRybCRp7A3mszq'
-  artifact: /.*\.zip/
-  on:
-    # Only deploy if we have a tag.
-    appveyor_repo_tag: true
+# Specify artifacts that we might want to release manually.  This is then
+# released by creating a new substudy deployment via environment
+# https://ci.appveyor.com/environment/33451
+artifacts:
+  - path: 'substudy-*.zip'
+    name: 'substudy for Windows'
+    type: zip

@@ -29,6 +29,12 @@ before_install:
   fi
 script:
 - cargo test --all
+- |
+  # Unset TRAVIS_TAG for everything but substudy itself, because that's the
+  # only crate we want to actually deploy.
+  if ! [[ "$TRAVIS_TAG" =~ ^substudy_.* ]]; then
+    unset TRAVIS_TAG
+  fi
 before_deploy: "./build-release substudy ${TRAVIS_TAG}-${TRAVIS_OS_NAME}"
 deploy:
   provider: releases
