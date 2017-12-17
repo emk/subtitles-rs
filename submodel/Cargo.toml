@@ -1,0 +1,13 @@
+[package]
+name = "submodel"
+version = "0.1.0"
+authors = ["Eric Kidd <git@randomhacks.net>"]
+
+[dependencies]
+csv = "0.15"
+error-chain = "0.10"
+flate2 = "0.2"
+regex = "0.2"
+tar = "0.4"
+unicode-casefold = "0.2"
+unicode-segmentation = "1.1"

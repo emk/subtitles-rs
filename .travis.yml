@@ -2,24 +2,18 @@ language: rust
 sudo: required
 services:
 - docker
+rust: stable
+os:
+  - linux
+  - osx
 matrix:
   allow_failures:
   - rust: nightly
   include:
   - os: linux
-    rust: stable
-  - os: linux
     rust: beta
   - os: linux
     rust: nightly
-  - os: osx
-    osx_image: xcode7.3
-    rust: stable
-  - os: osx
-    osx_image: xcode8
-    # HACK: Use Rust beta because this will coincidentally turn off
-    # uploading the binaries when we build them.
-    rust: beta
 before_install:
 - |
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then

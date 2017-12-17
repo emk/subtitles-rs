@@ -1,7 +1,2 @@
-target
-/junk/
-/*_review
-/*_csv
-/*_tracks
-/*.mkv
-/*.srt
+/target
+/Cargo.lock

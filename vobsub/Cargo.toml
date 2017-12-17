@@ -1,0 +1,30 @@
+[package]
+name = "vobsub"
+version = "0.2.3"
+authors = ["Eric Kidd <git@randomhacks.net>"]
+
+description = "Decode DVD VobSub-format subtitles (*.sub/*.idx files)"
+license = "CC0-1.0"
+readme = "README.md"
+repository = "https://github.com/emk/subtitles-rs"
+documentation = "https://docs.rs/vobsub/"
+
+# This is probably ignored anyway, but let's make it explicit.  We don't
+# want to include this in our released gem because (1) it's unnecessary,
+# and (2) we want to be able to include non-CC0 snippets in fuzz/corpus and
+# not release them with this crate.
+exclude = ["fuzz"]
+
+[dev-dependencies]
+env_logger = "0.4.0"
+glob = "0.2.11"
+
+[dependencies]
+cast = "0.2.0"
+error-chain = "0.10.0"
+image = { version = "0.15.0", default-features = false }
+lazy_static = "0.2.2"
+log = "0.3.6"
+nom = "2.1.0, <2.2.0"
+regex = "0.2.1"
+safemem = "0.2.0"

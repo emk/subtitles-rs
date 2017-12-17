@@ -1,0 +1,21 @@
+[package]
+name = "subtitles2srt"
+version = "0.1.0"
+authors = ["Eric Kidd <git@randomhacks.net>"]
+
+[[test]]
+name = "tests"
+
+[dev-dependencies]
+cli_test_dir = { version = "0.1", path = "../cli_test_dir" }
+
+[dependencies]
+docopt = "0.8"
+env_logger = "0.4"
+error-chain = "0.10"
+image = { version = "0.15.0", default-features = false, features = ["png_codec"] }
+log = "0.3"
+serde = "1.0"
+serde_derive = "1.0"
+subtitle_ocr = { version = "0.1", path = "../subtitle_ocr" }
+vobsub = { version = "0.2", path = "../vobsub" }
