@@ -15,7 +15,6 @@ install:
   - SET PATH=C:\ffmpeg\bin;%PATH%
   - rustc -V
   - cargo -V
-  - cmake --version
   - ffmpeg -version
 
 # Disable the standard Windows build system.
@@ -23,11 +22,11 @@ build: false
 
 # This also builds and tests the binary version of substudy using `cli_test_dir`.
 test_script:
-  - cargo test --verbose
+  - cargo test --all --verbose
 
 # See https://github.com/japaric/rust-everywhere/blob/master/appveyor.yml
 before_deploy:
-  - cargo build --release
+  - cargo build --all --release
   - mkdir staging
   - copy target\release\substudy.exe staging
   - cd staging

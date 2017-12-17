@@ -1,0 +1,53 @@
+[package]
+
+name = "substudy"
+version = "0.4.5"
+authors = ["Eric Kidd <git@randomhacks.net>"]
+license = "CC0-1.0"
+
+description = """Language-learning tools for working with parallel, bilingual
+subtitles and media files."""
+
+homepage = "http://www.randomhacks.net/substudy/"
+documentation = "http://docs.rs/substudy"
+repository = "https://github.com/emk/substudy"
+readme = "README.md"
+keywords = ["text"]
+
+exclude = ["fixtures/empty.mp4"]
+
+build = "build.rs"
+
+[build-dependencies]
+peg = "0.5"
+
+[dependencies]
+cast = "0.2"
+chardet = "0.2"
+clap = { version = "2.27", features = ["wrap_help"] }
+csv = "1.0.0-beta.5"
+encoding = "0.2"
+env_logger = "0.4"
+failure = "0.1"
+failure_derive = "0.1"
+handlebars = "0.29"
+lazy_static = "1.0"
+log = "0.3"
+num = "0.1"
+pbr = "1.0"
+regex = "0.2"
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+structopt = "0.1.0"
+structopt-derive = "0.1.0"
+whatlang = "0.5"
+
+[dev-dependencies]
+cli_test_dir = "0.1"
+difference = "1.0"
+
+[[bin]]
+name = "substudy"
+test = false
+doc = false
