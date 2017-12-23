@@ -6,7 +6,7 @@ authors = ["Eric Kidd <git@randomhacks.net>"]
 [dependencies]
 csv = "0.15"
 error-chain = "0.10"
-flate2 = "0.2"
+flate2 = "1.0"
 regex = "0.2"
 tar = "0.4"
 unicode-casefold = "0.2"

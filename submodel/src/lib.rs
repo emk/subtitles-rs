@@ -113,7 +113,7 @@ impl ModelBuilder {
     ///
     /// All models will be truncted if they exceed a certain limit.
     pub fn write_model<W: Write>(&self, out: W) -> Result<()> {
-        let gzip = flate2::write::GzEncoder::new(out, flate2::Compression::Best);
+        let gzip = flate2::write::GzEncoder::new(out, flate2::Compression::best());
         let mut tar = tar::Builder::new(gzip);
         self.append_model_part(&mut tar, "graphemes.csv", &self.grapheme_counts)?;
         self.append_model_part(&mut tar, "pairs.csv", &self.pair_counts)?;

@@ -13,7 +13,7 @@ cli_test_dir = { version = "0.1", path = "../cli_test_dir" }
 docopt = "0.8"
 env_logger = "0.4"
 error-chain = "0.10"
-image = { version = "0.15.0", default-features = false, features = ["png_codec"] }
+image = { version = "0.18.0", default-features = false, features = ["png_codec"] }
 log = "0.3"
 serde = "1.0"
 serde_derive = "1.0"

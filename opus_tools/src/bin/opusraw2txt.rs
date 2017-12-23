@@ -90,7 +90,7 @@ fn process_tar_gz<W: io::Write>(path: &Path, output: &mut W, quiet: bool)
     // data.
     let f = fs::File::open(path)?;
     let buffered = io::BufReader::new(f);
-    let unzipped = GzDecoder::new(buffered)?;
+    let unzipped = GzDecoder::new(buffered);
     let mut tar = tar::Archive::new(unzipped);
     for file in tar.entries()? {
         let file = file?;
@@ -112,7 +112,7 @@ fn process_tar_gz<W: io::Write>(path: &Path, output: &mut W, quiet: bool)
         let result = if utf8_file_name.ends_with(".xml.gz") {
             debug!("Decompressing and parsing {}", path.display());
             file_count += 1;
-            let unzipped = GzDecoder::new(io::BufReader::new(file))?;
+            let unzipped = GzDecoder::new(io::BufReader::new(file));
             extract_sentences(io::BufReader::new(unzipped), output)
         } else if utf8_file_name.ends_with(".xml") {
             debug!("Parsing {}", path.display());

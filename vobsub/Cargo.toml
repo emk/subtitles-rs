@@ -22,8 +22,8 @@ glob = "0.2.11"
 [dependencies]
 cast = "0.2.0"
 error-chain = "0.10.0"
-image = { version = "0.15.0", default-features = false }
-lazy_static = "0.2.2"
+image = { version = "0.18.0", default-features = false }
+lazy_static = "1.0"
 log = "0.3.6"
 nom = "2.1.0, <2.2.0"
 regex = "0.2.1"
