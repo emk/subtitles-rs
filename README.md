@@ -2,11 +2,12 @@
 
 [![Build Status](https://travis-ci.org/emk/subtitles-rs.svg?branch=master)](https://travis-ci.org/emk/subtitles-rs) [![Build status](https://ci.appveyor.com/api/projects/status/3hn8cwckcdhpcasm/branch/master?svg=true)](https://ci.appveyor.com/project/emk/subtitles-rs/branch/master)
 
-**Are you looking for `substudy`? Try [here][substudy].**
+**Are you looking for `substudy`? Try [here][substudy].** (`substudy` has been
+merged into the `subtitles-rs` project.)
 
-This repository contains a number of related crates for manipulating
-subtitles.  See the `README.md` files in this individual subdirectories for
-more details.
+This repository contains a number of related tools and libraries for
+manipulating subtitles.  See the `README.md` files in this individual
+subdirectories for more details.
 
 - [substudy][]: Learn foreign languages using audio and subtitles extracted
   from video files.
