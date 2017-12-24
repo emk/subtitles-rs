@@ -1,7 +1,7 @@
 //! Parse a file in `*.idx` format.
 
 use cast;
-use failure::ResultExt;
+use common_failures::prelude::*;
 use image::Rgb;
 use regex::Regex;
 use std::fs;
@@ -9,7 +9,7 @@ use std::io;
 use std::io::prelude::*;
 use std::path::Path;
 
-use errors::*;
+use errors::{IResultExt, VobsubError};
 use sub;
 
 /// Parse a single hexadecimal digit.

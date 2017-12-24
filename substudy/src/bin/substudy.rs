@@ -8,9 +8,9 @@ extern crate structopt;
 extern crate structopt_derive;
 extern crate substudy;
 
+use common_failures::prelude::*;
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
-use substudy::errors::Result;
 use substudy::srt::SubtitleFile;
 use substudy::align::combine_files;
 use substudy::video;

@@ -1,10 +1,10 @@
 //! Run-length encoded image format for subtitles.
 
 use cast;
+use common_failures::prelude::*;
 use nom::IResult;
 use safemem::write_bytes;
 
-use errors::*;
 use util::BytesFormatter;
 
 /// The dimensions of an image.

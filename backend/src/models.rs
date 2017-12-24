@@ -1,5 +1,5 @@
+use common_failures::prelude::*;
 use std::path::Path;
-use substudy::errors::Result;
 use substudy::align::align_available_files;
 use substudy::srt;
 use substudy::time::Period;

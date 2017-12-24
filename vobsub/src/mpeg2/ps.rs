@@ -2,10 +2,10 @@
 //!
 //! This is the container format used at the top-level of a `*.sub` file.
 
+use common_failures::prelude::*;
 use nom::IResult;
 use std::fmt;
 
-use errors::*;
 use super::clock::{Clock, clock_and_ext};
 use super::pes;
 

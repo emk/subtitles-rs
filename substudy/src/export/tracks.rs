@@ -1,11 +1,10 @@
 //! Output a video as a series of short audio tracks, short enough to make
 //! it easy to skip backwards a conversation with most MP3 players.
 
-use failure::ResultExt;
+use common_failures::prelude::*;
 use std::default::Default;
 use std::io::Write;
 
-use errors::*;
 use export::Exporter;
 use time::{seconds_to_hhmmss, Period};
 use video::Id3Metadata;

@@ -14,11 +14,11 @@ extern crate structopt_derive;
 extern crate substudy;
 extern crate url;
 
+use common_failures::prelude::*;
 use std::env;
 use std::io;
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
-use substudy::errors::Result;
 use url::Url;
 
 mod models;

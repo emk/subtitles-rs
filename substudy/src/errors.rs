@@ -1,20 +1,17 @@
 //! Error-handling for this library.
 
-pub use common_failures::{Error, Result};
-pub use common_failures::io::*;
-
 /// An error occurred running an external command.
 #[derive(Debug, Fail)]
 #[fail(display = "error running external command {:?}", command)]
-pub struct RunCommand {
+pub struct RunCommandError {
     command: String,
 }
 
-impl RunCommand {
+impl RunCommandError {
     /// Create a new error for the specified command. This is private because
     /// we probably want to add the command arguments at some point.
-    pub(crate) fn new<S: Into<String>>(command: S) -> RunCommand {
-        RunCommand {
+    pub(crate) fn new<S: Into<String>>(command: S) -> RunCommandError {
+        RunCommandError {
             command: command.into(),
         }
     }

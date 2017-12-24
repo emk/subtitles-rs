@@ -1,6 +1,7 @@
 //! Segmentation of images into continguous shapes.
 
 use cast;
+use common_failures::prelude::*;
 use ext::RangeExt;
 use image::Rgba;
 use palette;
@@ -11,7 +12,6 @@ use std::collections::VecDeque;
 
 #[cfg(test)]
 use binarization::binarize;
-use errors::*;
 use geom::Rect;
 use pixmap::{Pixel, Pixmap};
 #[cfg(test)]

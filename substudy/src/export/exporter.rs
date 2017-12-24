@@ -1,6 +1,7 @@
 //! Code shared between multiple exporters.
 
-use failure::ResultExt;
+use common_failures::prelude::*;
+use common_failures::io::{Operation, Target};
 use std::convert::AsRef;
 use std::default::Default;
 use std::io::Write;
@@ -10,7 +11,6 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use align::align_available_files;
-use errors::*;
 use lang::Lang;
 use srt::{Subtitle, SubtitleFile};
 use time::{Period, ToTimestamp};
@@ -92,7 +92,10 @@ impl Exporter {
                 &dir.to_string_lossy()
             ));
         }
-        fs::create_dir_all(&dir).with_context(|_| CreateDir::new(&dir))?;
+        fs::create_dir_all(&dir).io_context(
+            Operation::Create,
+            Target::Directory(dir.to_owned()),
+        )?;
 
         Ok(Exporter {
             video: video,
@@ -200,9 +203,8 @@ impl Exporter {
         P: AsRef<Path>,
     {
         let path = self.dir.join(rel_path.as_ref());
-        let mkerr = || WriteFile::new(&path);
-        let mut f = fs::File::create(&path).with_context(|_| mkerr())?;
-        f.write_all(data).with_context(|_| mkerr())?;
+        let mut f = fs::File::create(&path).io_write_context(&path)?;
+        f.write_all(data).io_write_context(&path)?;
         Ok(())
     }
 

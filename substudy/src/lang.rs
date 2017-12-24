@@ -1,5 +1,6 @@
 //! Naming and identifying languages.  We use
 
+use common_failures::prelude::*;
 use serde::{Serialize, Serializer};
 use std::ascii::AsciiExt;
 use std::collections::HashMap;
@@ -8,8 +9,6 @@ use std::iter::FromIterator;
 use std::str::from_utf8;
 use std::result;
 use whatlang;
-
-use errors::*;
 
 // Use the third-party `lazy_static!` macro to declare variables that will
 // initialized the first time we use them.

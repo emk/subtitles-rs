@@ -1,10 +1,10 @@
 //! Convert images to black and white.
 
 use cast;
+use common_failures::prelude::*;
 use image::Rgba;
 use std::collections::HashMap;
 
-use errors::*;
 use pixmap::{Pixel, Pixmap};
 #[cfg(test)]
 use test_util::{idx_fixture_pixmaps, rgba_hex};

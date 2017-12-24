@@ -2,11 +2,11 @@
 //! doesn't support.
 
 use cast;
+use common_failures::prelude::*;
 use image::{ImageBuffer, Rgba, RgbaImage};
 use std::fmt;
 use std::slice;
 
-use errors::*;
 #[cfg(test)]
 use test_util::rgba_hex;
 

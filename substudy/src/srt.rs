@@ -1,11 +1,10 @@
 //! SRT-format subtitle support.
 
-use failure::ResultExt;
+use common_failures::prelude::*;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-use errors::*;
 use decode::smart_decode;
 use clean::{clean_subtitle_file, strip_formatting};
 use grammar;
@@ -72,12 +71,11 @@ impl SubtitleFile {
 
     /// Parse the subtitle file found at the specified path.
     pub fn from_path(path: &Path) -> Result<SubtitleFile> {
-        let mkerr = || ReadFile::new(path);
-        let mut file = File::open(path).with_context(|_| mkerr())?;
+        let mut file = File::open(path).io_read_context(path)?;
         let mut bytes = Vec::new();
-        file.read_to_end(&mut bytes).with_context(|_| mkerr())?;
-        let data = smart_decode(&bytes).with_context(|_| mkerr())?;
-        Ok(SubtitleFile::from_str(&data).with_context(|_| mkerr())?)
+        file.read_to_end(&mut bytes).io_read_context(path)?;
+        let data = smart_decode(&bytes).io_read_context(path)?;
+        Ok(SubtitleFile::from_str(&data).io_read_context(path)?)
     }
 
     /// Parse and normalize the subtitle file found at the specified path.

@@ -69,7 +69,6 @@ mod logimg;
 
 mod binarization;
 mod ctx;
-mod errors;
 mod ext;
 mod geom;
 mod pixmap;
@@ -78,4 +77,4 @@ mod segmentation;
 mod test_util;
 
 pub use self::ctx::OcrContext;
-pub use self::errors::{Error, Result};
+pub use common_failures::{Error, Result};

@@ -1,7 +1,7 @@
 //! Tools for working with video files.
 
 use cast;
-use failure::ResultExt;
+use common_failures::prelude::*;
 use num::rational::Ratio;
 use pbr::ProgressBar;
 use regex::Regex;
@@ -15,7 +15,7 @@ use std::process::Command;
 use std::result;
 use std::str::{FromStr, from_utf8};
 
-use errors::*;
+use errors::RunCommandError;
 use lang::Lang;
 use time::Period;
 
@@ -258,7 +258,7 @@ impl Video {
         }
 
         // Run our probe command.
-        let mkerr = || RunCommand::new("ffprobe");
+        let mkerr = || RunCommandError::new("ffprobe");
         let cmd = Command::new("ffprobe")
             .arg("-v")
             .arg("quiet")
@@ -316,7 +316,7 @@ impl Video {
         let time_base = extraction.spec.earliest_time();
         let mut cmd = self.extract_command(time_base);
         extraction.add_args(&mut cmd, time_base);
-        cmd.output().with_context(|_| RunCommand::new("ffmpg"))?;
+        cmd.output().with_context(|_| RunCommandError::new("ffmpg"))?;
         Ok(())
     }
 
@@ -335,7 +335,7 @@ impl Video {
             assert!(e.spec.can_be_batched());
             e.add_args(&mut cmd, time_base);
         }
-        cmd.output().with_context(|_| RunCommand::new("ffmpg"))?;
+        cmd.output().with_context(|_| RunCommandError::new("ffmpg"))?;
         Ok(())
     }
 

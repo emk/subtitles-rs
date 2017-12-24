@@ -1,11 +1,10 @@
 //! Exporting to CSV (compatible with Anki import).
 
+use common_failures::prelude::*;
 use csv;
-use failure::ResultExt;
 use regex::Regex;
 
 use contexts::ItemsInContextExt;
-use errors::*;
 use export::Exporter;
 use srt::Subtitle;
 use time::seconds_to_hhmmss_sss;

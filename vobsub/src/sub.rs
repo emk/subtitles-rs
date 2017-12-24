@@ -5,10 +5,10 @@
 //! [subs]: http://sam.zoy.org/writings/dvd/subtitles/
 
 use cast;
+use common_failures::prelude::*;
 use nom::{be_u16, IResult};
 use std::fmt;
 
-use errors::*;
 use idx;
 use image::{ImageBuffer, Rgba, RgbaImage};
 use img::{decompress, Size};

@@ -13,8 +13,8 @@ extern crate serde;
 extern crate serde_derive;
 extern crate tar;
 
-use common_failures::{FailureErrorExt, Result};
-use failure::{ResultExt, SyncFailure};
+use common_failures::prelude::*;
+use failure::SyncFailure;
 use flate2::bufread::GzDecoder;
 use quick_xml::reader::Reader as XmlReader;
 use quick_xml::events::Event as XmlEvent;

@@ -1,6 +1,6 @@
 //! Custom error types.
 
-pub use common_failures::{Error, Result};
+use common_failures::prelude::*;
 use nom::IResult;
 use std::default::Default;
 use std::fmt;

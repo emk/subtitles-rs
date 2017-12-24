@@ -1,9 +1,9 @@
 //! The main OCR driver.
 
+use common_failures::prelude::*;
 use image::RgbaImage;
 use std::path::Path;
 
-use errors::*;
 use binarization::binarize;
 use pixmap::Pixmap;
 use segmentation::{group_into_glyphs, group_into_lines, segment};

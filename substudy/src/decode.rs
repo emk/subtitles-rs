@@ -1,10 +1,9 @@
 //! Decode text in a wide variety of character encodings.
 
 use chardet;
+use common_failures::prelude::*;
 use encoding::label::encoding_from_whatwg_label;
 use encoding::types::DecoderTrap;
-
-use errors::*;
 
 /// Guess the encoding of a byte buffer and decode it to a string.
 pub fn smart_decode(bytes: &[u8]) -> Result<String> {
