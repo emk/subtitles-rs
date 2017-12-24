@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
 [dependencies]
+common_failures = { version = "0.1", path = "../common_failures" }
 env_logger = "0.4"
 failure = "0.1"
 log = "0.3"

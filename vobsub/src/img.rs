@@ -69,24 +69,24 @@ fn scan_line(input: &[u8], output: &mut [u8]) -> Result<usize> {
                     cast::usize(run.cnt)
                 };
                 if x+count > output.len() {
-                    return Err("scan line is too long".into());
+                    return Err(format_err!("scan line is too long"));
                 }
                 write_bytes(&mut output[x..x+count], run.val);
                 x += count;
             }
             IResult::Error(err) => {
-                return Err(format!("error parsing subtitle scan line: {:?}",
-                                   err).into());
+                return Err(format_err!("error parsing subtitle scan line: {:?}",
+                                       err));
             }
             IResult::Incomplete(needed) => {
-                return Err(format!("not enough bytes parsing subtitle scan \
-                                    line: {:?}",
-                                   needed).into());
+                return Err(format_err!("not enough bytes parsing subtitle scan \
+                                       line: {:?}",
+                                       needed));
             }
         }
     }
     if x > width {
-        return Err("decoded scan line is too long".into());
+        return Err(format_err!("decoded scan line is too long"));
     }
     // Round up to the next full byte.
     if pos.1 > 0 {

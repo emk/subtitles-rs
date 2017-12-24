@@ -16,6 +16,7 @@ subdirectories for more details.
   PNGs with JSON metadata.
 - [opus_tools][]: Utilities for parsing subtitle data from the OPUS project,
   for use as input to various language models.
+- [common_failures][]: Useful `Fail` implementations and error-handling tools.
 - [cli_test_dir][]: A simple integration testing harness for CLI tools.
 
 The following subtitle-related projects can be found in other repositories:
@@ -28,6 +29,7 @@ The following subtitle-related projects can be found in other repositories:
 [vobsub]: ./vobsub/README.md
 [vobsub2png]: ./vobsub2png/README.md
 [opus_tools]: ./opus_tools/README.md
+[common_failures]: ./common_failures/README.md
 [cli_test_dir]: ./cli_test_dir/README.md
 [substudy]: ./substudy/README.md
 [aligner]: https://github.com/kaegi/aligner

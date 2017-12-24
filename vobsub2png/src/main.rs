@@ -1,7 +1,9 @@
+#[macro_use]
+extern crate common_failures;
 extern crate docopt;
 extern crate env_logger;
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 extern crate image;
 extern crate serde;
 #[macro_use]
@@ -12,7 +14,7 @@ extern crate vobsub;
 use docopt::Docopt;
 use std::fs;
 use std::path::Path;
-use vobsub::{Error, Index, Result, Subtitle};
+use vobsub::{Index, Result, Subtitle};
 
 const USAGE: &'static str = "
 Usage: vobsub2png [options] <idx-file>
@@ -58,8 +60,8 @@ fn run() -> Result<()> {
         None => {
             let stem = path.file_stem()
                 .and_then(|s| s.to_str())
-                .ok_or_else(|| -> Error {
-                    format!("no filename in {}", path.display()).into()
+                .ok_or_else(|| {
+                    format_err!("no filename in {}", path.display())
                 })?;
             Path::new(&format!("{}_subtitles", stem)).to_owned()
         }
@@ -88,7 +90,7 @@ fn run() -> Result<()> {
     let json_path = out_dir.join("index.json");
     let mut json_file: fs::File = fs::File::create(&json_path)?;
     serde_json::to_writer(&mut json_file, &info)
-        .map_err(|e| format!("error writing index.json: {}", e))?;
+        .map_err(|e| format_err!("error writing index.json: {}", e))?;
 
     Ok(())
 }

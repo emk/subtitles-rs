@@ -113,7 +113,7 @@ impl<'a> Iterator for PesPackets<'a> {
                     IResult::Incomplete(needed) => {
                         self.remaining = &[];
                         warn!("Incomplete packet, need: {:?}", needed);
-                        return Some(Err("Incomplete PES packet".into()));
+                        return Some(Err(format_err!("Incomplete PES packet")));
                     }
                     // We got something that looked like a packet but
                     // wasn't parseable.  Log it and keep trying.

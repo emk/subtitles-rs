@@ -25,6 +25,7 @@ peg = "0.5"
 cast = "0.2"
 chardet = "0.2"
 clap = { version = "2.27", features = ["wrap_help"] }
+common_failures = { version = "0.1", path = "../common_failures" }
 csv = "1.0.0-beta.5"
 encoding = "0.2"
 env_logger = "0.4"
@@ -44,7 +45,7 @@ structopt-derive = "0.1.0"
 whatlang = "0.5"
 
 [dev-dependencies]
-cli_test_dir = "0.1"
+cli_test_dir = { version = "0.1", path = "../cli_test_dir" }
 difference = "1.0"
 
 [[bin]]

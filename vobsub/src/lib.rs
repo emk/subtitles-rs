@@ -76,8 +76,9 @@
 #![recursion_limit = "1024"]
 
 extern crate cast;
+extern crate common_failures;
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 #[cfg(test)]
 extern crate env_logger;
 extern crate image;
@@ -98,7 +99,7 @@ mod probe;
 mod sub;
 mod util;
 
-pub use self::errors::{Error, ErrorKind, Result};
+pub use errors::{Error, Result};
 pub use self::idx::{Index, Palette};
 pub use self::probe::{is_idx_file, is_sub_file};
 pub use self::sub::{Coordinates, Subtitle, Subtitles, subtitles};

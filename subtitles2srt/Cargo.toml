@@ -10,9 +10,10 @@ name = "tests"
 cli_test_dir = { version = "0.1", path = "../cli_test_dir" }
 
 [dependencies]
+common_failures = { version = "0.1", path = "../common_failures" }
 docopt = "0.8"
 env_logger = "0.4"
-error-chain = "0.10"
+failure = "0.1.1"
 image = { version = "0.18.0", default-features = false, features = ["png_codec"] }
 log = "0.3"
 serde = "1.0"

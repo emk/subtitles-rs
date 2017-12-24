@@ -338,7 +338,7 @@ impl<'a> fmt::Debug for Subtitle {
 /// because it has an inconvenient error type.
 fn parse_be_u16_as_usize(buff: &[u8]) -> Result<(&[u8], usize)> {
     if buff.len() < 2 {
-        Err("unexpected end of buffer while parsing 16-bit size".into())
+        Err(format_err!("unexpected end of buffer while parsing 16-bit size"))
     } else {
         Ok((&buff[2..], usize::from(buff[0]) << 8 | usize::from(buff[1])))
     }
@@ -351,7 +351,7 @@ fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
 
     // Figure out where our control data starts.
     if raw_data.len() < 2 {
-        return Err("unexpected end of subtitle data".into());
+        return Err(format_err!("unexpected end of subtitle data"));
     }
     let (_, initial_control_offset) = parse_be_u16_as_usize(&raw_data[2..])?;
 
@@ -369,10 +369,10 @@ fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
     loop {
         trace!("looking for control sequence at: 0x{:x}", control_offset);
         if control_offset >= raw_data.len() {
-            return Err(format!("control offset is 0x{:x}, but packet is only 0x{:x} \
-                                bytes",
-                               control_offset,
-                               raw_data.len()).into());
+            return Err(format_err!("control offset is 0x{:x}, but packet is only 0x{:x} \
+                                   bytes",
+                                   control_offset,
+                                   raw_data.len()));
         }
 
         let control_data = &raw_data[control_offset..];
@@ -407,7 +407,7 @@ fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
                             // have non-negative width and height and we'll
                             // crash if they don't.
                             if c.x2 <= c.x1 || c.y2 <= c.y1 {
-                                return Err("invalid bounding box".into());
+                                return Err(format_err!("invalid bounding box"));
                             }
                             coordinates = coordinates.or(Some(c.clone()));
                         }
@@ -428,35 +428,35 @@ fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
                     // This points back at us, so we're the last packet.
                     break;
                 } else if next_control_offset < control_offset {
-                    return Err("control offset went backwards".into());
+                    return Err(format_err!("control offset went backwards"));
                 } else {
                     control_offset = next_control_offset;
                 }
             }
             IResult::Incomplete(_) => {
-                return Err("incomplete control packet".into());
+                return Err(format_err!("incomplete control packet"));
             }
             IResult::Error(err) => {
-                return Err(format!("error parsing subtitle: {:?}", err).into());
+                return Err(format_err!("error parsing subtitle: {:?}", err));
             }
         }
     }
 
     // Make sure we found all the control commands that we expect.
-    let start_time = start_time.ok_or_else(|| -> Error {
-        "no start time for subtitle".into()
+    let start_time = start_time.ok_or_else(|| {
+        format_err!("no start time for subtitle")
     })?;
-    let coordinates = coordinates.ok_or_else(|| -> Error {
-        "no coordinates for subtitle".into()
+    let coordinates = coordinates.ok_or_else(|| {
+        format_err!("no coordinates for subtitle")
     })?;
     let palette = palette.ok_or_else(|| -> Error {
-        "no palette for subtitle".into()
+        format_err!("no palette for subtitle")
     })?;
     let alpha = alpha.ok_or_else(|| -> Error {
-        "no alpha for subtitle".into()
+        format_err!("no alpha for subtitle")
     })?;
     let rle_offsets = rle_offsets.ok_or_else(|| -> Error {
-        "no RLE offsets for subtitle".into()
+        format_err!("no RLE offsets for subtitle")
     })?;
 
     // Decompress our image.
@@ -476,7 +476,7 @@ fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
     let start_1 = cast::usize(rle_offsets[1]);
     let end = cast::usize(initial_control_offset+2);
     if start_0 > start_1 || start_1 > end {
-        return Err("invalid scan line offsets".into());
+        return Err(format_err!("invalid scan line offsets"));
     }
     let image = decompress(coordinates.size(),
                            [&raw_data[start_0..end],
@@ -526,7 +526,7 @@ impl<'a> Iterator for SubtitlesInternal<'a> {
         // Fetch useful information from our first packet.
         let pts_dts = match first.pes_packet.header_data.pts_dts {
             Some(v) => v,
-            None => return Some(Err("found subtitle without timing into".into())),
+            None => return Some(Err(format_err!("found subtitle without timing into"))),
         };
         let base_time = pts_dts.pts.to_seconds();
         let substream_id = first.pes_packet.substream_id;
@@ -534,7 +534,7 @@ impl<'a> Iterator for SubtitlesInternal<'a> {
         // Figure out how many total bytes we'll need to collect from one
         // or more PES packets, and collect the first chunk into a buffer.
         if first.pes_packet.data.len() < 2 {
-            return Some(Err("packet is too short".into()));
+            return Some(Err(format_err!("packet is too short")));
         }
         let wanted = usize::from(first.pes_packet.data[0]) << 8
             | usize::from(first.pes_packet.data[1]);

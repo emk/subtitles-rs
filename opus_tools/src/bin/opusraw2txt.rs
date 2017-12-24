@@ -1,7 +1,9 @@
+#[macro_use]
+extern crate common_failures;
 extern crate docopt;
 extern crate env_logger;
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 extern crate flate2;
 #[macro_use]
 extern crate log;
@@ -11,6 +13,8 @@ extern crate serde;
 extern crate serde_derive;
 extern crate tar;
 
+use common_failures::{FailureErrorExt, Result};
+use failure::{ResultExt, SyncFailure};
 use flate2::bufread::GzDecoder;
 use quick_xml::reader::Reader as XmlReader;
 use quick_xml::events::Event as XmlEvent;
@@ -18,20 +22,6 @@ use std::fs;
 use std::io;
 use std::io::prelude::*;
 use std::path::Path;
-
-/// Use `error-chain` to handle errors in a standardized fashion.
-mod errors {
-    use super::*;
-
-    error_chain! {
-        foreign_links {
-            Io(io::Error);
-            Xml(quick_xml::errors::Error);
-        }
-    }
-}
-
-use errors::*;
 
 const USAGE: &'static str = "
 Usage: opusraw2txt [options] <raw-tar-gz>
@@ -73,10 +63,10 @@ fn run() -> Result<()> {
     let stdout = io::stdout();
     let mut output = io::BufWriter::new(stdout.lock());
 
-    process_tar_gz(Path::new(&args.arg_raw_tar_gz), &mut output, args.flag_quiet)
-        .chain_err(|| -> Error {
-            format!("couldn't process {}", &args.arg_raw_tar_gz).into()
-        })
+    Ok(process_tar_gz(Path::new(&args.arg_raw_tar_gz), &mut output, args.flag_quiet)
+        .with_context(|_| {
+            format_err!("couldn't process {}", &args.arg_raw_tar_gz)
+        })?)
 }
 
 /// Handle an individual input file.
@@ -128,7 +118,7 @@ fn process_tar_gz<W: io::Write>(path: &Path, output: &mut W, quiet: bool)
                 write!(io::stderr(),
                        "couldn't process {} (skipping):\n{}",
                        path.display(),
-                       error_chain::ChainedError::display(&err))
+                       err.display_causes_and_backtrace())
                     .expect("Error writing to stderr");
             }
         }
@@ -158,7 +148,7 @@ fn extract_sentences<R, W>(rdr: R, wtr: &mut W) -> Result<usize>
     let mut buf = vec![];
     let mut xml = XmlReader::from_reader(rdr);
     loop {
-        let event = xml.read_event(&mut buf)?;
+        let event = xml.read_event(&mut buf).map_err(SyncFailure::new)?;
         match event {
             XmlEvent::Start(ref e) if e.name() == b"s" => {
                 first_text = true;
@@ -178,7 +168,8 @@ fn extract_sentences<R, W>(rdr: R, wtr: &mut W) -> Result<usize>
             }
             XmlEvent::Text(ref e) => {
                 if depth > 0 {
-                    let raw = e.unescape_and_decode(&xml)?;
+                    let raw = e.unescape_and_decode(&xml)
+                        .map_err(SyncFailure::new)?;
                     let trimmed = raw.trim();
 
                     // We ignore pure-whitespace blocks.

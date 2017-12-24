@@ -9,6 +9,7 @@
 
 extern crate cast;
 extern crate chardet;
+extern crate common_failures;
 extern crate csv;
 #[cfg(test)]
 #[macro_use]

@@ -10,9 +10,10 @@ repository = "https://github.com/emk/subtitles-rs"
 documentation = "https://github.com/emk/subtitles-rs/blob/master/opus_tools/README.md"
 
 [dependencies]
+common_failures = { version = "0.1", path = "../common_failures" }
 docopt = "0.8"
 env_logger = "0.4"
-error-chain = "0.10"
+failure = "0.1.1"
 flate2 = "1.0"
 log = "0.3"
 quick-xml = "0.10.1"

@@ -45,10 +45,11 @@
 #![recursion_limit = "1024"]
 
 extern crate cast;
+extern crate common_failures;
 #[cfg(test)]
 extern crate env_logger;
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 #[cfg(test)]
 extern crate glob;
 extern crate image;
@@ -77,4 +78,4 @@ mod segmentation;
 mod test_util;
 
 pub use self::ctx::OcrContext;
-pub use self::errors::{Error, ErrorKind, Result};
+pub use self::errors::{Error, Result};

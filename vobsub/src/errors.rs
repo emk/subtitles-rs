@@ -1,50 +1,35 @@
-//! Custom `Error` and `Result` types, declared using `error-chain`.
+//! Custom error types.
 
-// There's no way for us to document `ErrorrKind::Io`, unfortunately.
-#![allow(missing_docs)]
-
+pub use common_failures::{Error, Result};
 use nom::IResult;
 use std::default::Default;
 use std::fmt;
-use std::io;
-use std::path::PathBuf;
 
-error_chain! {
-    foreign_links {
-        Io(io::Error);
-    }
+/// A type representing errors that are specific to `vobsub`. Note that we may
+/// normally return `Error`, not `VobsubError`, which allows to return other
+/// kinds of errors from third-party libraries.
+#[derive(Debug, Fail)]
+pub enum VobsubError {
 
-    errors {
-        /// Our input data ended sooner than we expected.
-        IncompleteInput {
-            description("Input ended unexpectedly")
-            display("Input ended unexpectedly")
-        }
+    /// Our input data ended sooner than we expected.
+    #[fail(display = "Input ended unexpectedly")]
+    IncompleteInput,
 
-        /// We were unable to find a required key in an `*.idx` file.
-        MissingKey(key: &'static str) {
-            description("Could not find required key")
-            display("Could not find required key '{}'", key)
-        }
+    /// We were unable to find a required key in an `*.idx` file.
+    #[fail(display = "Could not find required key '{}'", key)]
+    MissingKey {
+        key: &'static str,
+    },
 
-        /// We could not parse a value.
-        Parse(message: String) {
-            description("Parse error")
-            display("Could not parse: {}", &message)
-        }
+    /// We could not parse a value.
+    #[fail(display = "Could not parse: {}", message)]
+    Parse {
+        message: String,
+    },
 
-        /// We could not parse a file for some reason.
-        ReadFile(path: PathBuf) {
-            description("Could not read file")
-            display("Could not read {}", path.display())
-        }
-
-        /// We have leftover input that we didn't expect.
-        UnexpectedInput {
-            description("Unexpected extra input")
-            display("Unexpected extra input")
-        }
-    }
+    /// We have leftover input that we didn't expect.
+    #[fail(display = "Unexpected extra input")]
+    UnexpectedInput,
 }
 
 pub trait IResultExt<I, O, E> {
@@ -66,12 +51,14 @@ impl<I: Default+Eq, O, E: fmt::Debug> IResultExt<I, O, E> for IResult<I, O, E> {
                 if rest == I::default() {
                     Ok(val)
                 } else {
-                    Err(ErrorKind::UnexpectedInput.into())
+                    Err(VobsubError::UnexpectedInput.into())
                 }
             }
-            IResult::Incomplete(_) => Err(ErrorKind::IncompleteInput.into()),
+            IResult::Incomplete(_) => Err(VobsubError::IncompleteInput.into()),
             IResult::Error(err) => {
-                Err(ErrorKind::Parse(format!("{:?}", err)).into())
+                Err(VobsubError::Parse {
+                    message: format!("{:?}", err),
+                }.into())
             }
         }
     }

@@ -1,3 +1,5 @@
+#[macro_use]
+extern crate common_failures;
 extern crate env_logger;
 #[macro_use]
 extern crate failure;
@@ -15,9 +17,8 @@ extern crate url;
 use std::env;
 use std::io;
 use std::path::{Path, PathBuf};
-use std::process::exit;
 use structopt::StructOpt;
-use substudy::errors::{FailExt, Result};
+use substudy::errors::Result;
 use url::Url;
 
 mod models;
@@ -38,7 +39,12 @@ struct Opt {
     native_subs: Option<PathBuf>,
 }
 
-fn run(opt: &Opt) -> Result<()> {
+fn run() -> Result<()> {
+    env_logger::init().unwrap();
+
+    // Parse our command-line arguments using docopt.
+    let opt = Opt::from_args();
+
     let mut video_path: PathBuf = env::current_dir()?;
     video_path.push(&opt.video);
     let video_url: Url = Url::from_file_path(&video_path).map_err(|_| {
@@ -56,14 +62,4 @@ fn run(opt: &Opt) -> Result<()> {
     Ok(())
 }
 
-fn main() {
-    env_logger::init().unwrap();
-
-    // Parse our command-line arguments using docopt.
-    let opt = Opt::from_args();
-    if let Err(err) = run(&opt) {
-        err.write_full_message(&mut io::stderr())
-            .expect("unable to write error to stderr");
-        exit(1);
-    }
-}
+quick_main!(run);

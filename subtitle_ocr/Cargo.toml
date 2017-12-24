@@ -10,8 +10,9 @@ quickcheck = "0.5"
 vobsub = { path = "../vobsub", version = "0.2" }
 
 [dependencies]
+common_failures = { path = "../common_failures", version = "0.1" }
 cast = "0.2.0"
-error-chain = "0.10.0"
+failure = "0.1.1"
 image = { version = "0.18.0", default-features = false, features = ["png_codec"] }
 lazy_static = "1.0"
 log = "0.3.6"

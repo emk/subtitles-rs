@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate error_chain;
+extern crate common_failures;
 extern crate submodel;
 
 use std::env;
@@ -25,7 +25,9 @@ gzipped tar archive containing a language model on stdout.
 ")?;
         process::exit(1);
     }
-    let iso_lang_code = &args[0];
+
+    // I'm not sure what we wanted to use this for.
+    let _iso_lang_code = &args[0];
 
     // Set up standard input and output.  We lock and buffer them because
     // that's how we get good pipeline performance in Rust.

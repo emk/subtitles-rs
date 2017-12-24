@@ -1,5 +1,7 @@
 //! Try to guess the types of files on disk.
 
+use common_failures;
+use failure::ResultExt;
 use std::fs;
 use std::io::Read;
 use std::path::Path;
@@ -9,10 +11,10 @@ use errors::*;
 /// Internal helper function which looks for "magic" bytes at the start of
 /// a file.
 fn has_magic(path: &Path, magic: &[u8]) -> Result<bool> {
-    let mkerr = || ErrorKind::ReadFile(path.to_owned());
-    let mut f = fs::File::open(path).chain_err(&mkerr)?;
+    let mkerr = || common_failures::io::ReadFile::new(path);
+    let mut f = fs::File::open(path).with_context(|_| mkerr())?;
     let mut bytes = vec![0; magic.len()];
-    f.read_exact(&mut bytes).chain_err(&mkerr)?;
+    f.read_exact(&mut bytes).with_context(|_| mkerr())?;
     Ok(magic == &bytes[..])
 }
 

@@ -1,22 +1,21 @@
 extern crate csv;
-#[macro_use]
-extern crate error_chain;
+extern crate failure;
 extern crate flate2;
 extern crate tar;
 extern crate unicode_casefold;
 extern crate unicode_segmentation;
 
+pub use failure::Error;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::io;
 use std::io::prelude::*;
+use std::result;
 use unicode_casefold::{Locale, UnicodeCaseFold, Variant};
 use unicode_segmentation::UnicodeSegmentation;
 
-mod errors;
-
-pub use self::errors::{Result, Error, ErrorKind};
+pub type Result<T> = result::Result<T, Error>;
 
 const MODEL_SIZE_LIMIT: usize = 10000;
 

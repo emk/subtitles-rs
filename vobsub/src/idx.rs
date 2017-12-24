@@ -1,6 +1,7 @@
 //! Parse a file in `*.idx` format.
 
 use cast;
+use failure::ResultExt;
 use image::Rgb;
 use regex::Regex;
 use std::fs;
@@ -45,8 +46,7 @@ pub type Palette = [Rgb<u8>; 16];
 named!(palette<Palette>,
     map_res!(separated_list!(tag!(b", "), call!(rgb)), |vec: Vec<Rgb<u8>>| {
         if vec.len() != 16 {
-            let err: Error = "Palettes must have 16 entries".into();
-            return Err(err);
+            return Err(format_err!("Palettes must have 16 entries"));
         }
         // Coerce vector to known-size slice.  Based on
         // http://stackoverflow.com/q/25428920/12089.
@@ -108,17 +108,17 @@ impl Index {
         let mut sub_path = path.to_owned();
         sub_path.set_extension("sub");
 
-        let mkerr = || -> Error {
-            format!("Could not parse {}", path.display()).into()
+        let mkerr = || {
+            format_err!("Could not parse {}", path.display())
         };
 
         let mut palette_val: Option<Palette> = None;
 
-        let f = fs::File::open(path).chain_err(&mkerr)?;
+        let f = fs::File::open(path).with_context(|_| mkerr())?;
         let input = io::BufReader::new(f);
 
         for line in input.lines() {
-            let line = line.chain_err(&mkerr)?;
+            let line = line.with_context(|_| mkerr())?;
             if let Some(cap) = KEY_VALUE.captures(&line) {
                 let key = cap.get(1).unwrap().as_str();
                 let val = cap.get(2).unwrap().as_str();
@@ -138,8 +138,8 @@ impl Index {
 
         Ok(Index {
             palette: palette_val
-                .ok_or_else(|| Error::from(ErrorKind::MissingKey("palette")))
-                .chain_err(&mkerr)?,
+                .ok_or_else(|| Error::from(VobsubError::MissingKey { key: "palette" }))
+                .with_context(|_| mkerr())?,
             sub_data: sub_data,
         })
     }

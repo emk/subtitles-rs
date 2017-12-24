@@ -22,9 +22,9 @@ impl OcrContext {
     /// clearer.
     pub fn new(source_path: &Path) -> Result<OcrContext> {
         let file_stem = source_path.file_stem()
-            .ok_or_else(|| -> Error {
-                format!("expected a filename, not {}",
-                        source_path.display()).into()
+            .ok_or_else(|| {
+                format_err!("expected a filename, not {}",
+                            source_path.display())
             })?
             .to_string_lossy()
             .into_owned();

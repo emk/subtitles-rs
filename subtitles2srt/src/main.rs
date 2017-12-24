@@ -1,7 +1,8 @@
+#[macro_use]
+extern crate common_failures;
 extern crate docopt;
 extern crate env_logger;
-#[macro_use]
-extern crate error_chain;
+extern crate failure;
 extern crate image;
 #[macro_use]
 extern crate log;
@@ -11,23 +12,12 @@ extern crate serde_derive;
 extern crate subtitle_ocr;
 extern crate vobsub;
 
+pub use self::common_failures::Result;
 use docopt::Docopt;
 use std::path::Path;
 use subtitle_ocr::OcrContext;
 use vobsub::Index;
 
-mod errors {
-    use subtitle_ocr;
-    use vobsub;
-    error_chain! {
-        links {
-            Vobsub(vobsub::Error, vobsub::ErrorKind);
-            SubtitleOcr(subtitle_ocr::Error, subtitle_ocr::ErrorKind);
-        }
-    }
-}
-
-pub use self::errors::Result;
 
 const USAGE: &'static str = "
 Usage: subtitles2srt <idx-file>

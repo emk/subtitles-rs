@@ -1,16 +1,16 @@
 //! Command-line iterface to substudy.
 
+#[macro_use]
+extern crate common_failures;
 extern crate env_logger;
 extern crate structopt;
 #[macro_use]
 extern crate structopt_derive;
 extern crate substudy;
 
-use std::io;
 use std::path::{Path, PathBuf};
-use std::process;
 use structopt::StructOpt;
-use substudy::errors::{Result, FailExt};
+use substudy::errors::Result;
 use substudy::srt::SubtitleFile;
 use substudy::align::combine_files;
 use substudy::video;
@@ -155,8 +155,13 @@ enum ToList {
 }
 
 // Choose and run the appropriate command.
-fn run(args: &Args) -> Result<()> {
-    match *args {
+fn run() -> Result<()> {
+    env_logger::init().expect("could not initialize logging");
+
+    // Parse our command-line arguments using docopt (very shiny).
+    let args: Args = Args::from_args();
+
+    match args {
         Args::Clean { ref subs } => {
             cmd_clean(subs)
         }
@@ -226,16 +231,4 @@ fn cmd_export(
     Ok(())
 }
 
-fn main() {
-    env_logger::init().expect("could not initialize logging");
-
-    // Parse our command-line arguments using docopt (very shiny).
-    let args: Args = Args::from_args();
-
-    // Decide which command to run, and run it, and print any errors.
-    if let Err(err) = run(&args) {
-        err.write_full_message(&mut io::stderr())
-            .expect("unable to write error to stderr");
-        process::exit(1);
-    }
-}
+quick_main!(run);

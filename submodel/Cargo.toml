@@ -4,8 +4,9 @@ version = "0.1.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
 [dependencies]
+common_failures = { path = "../common_failures" }
 csv = "0.15"
-error-chain = "0.10"
+failure = "0.1"
 flate2 = "1.0"
 regex = "0.2"
 tar = "0.4"
