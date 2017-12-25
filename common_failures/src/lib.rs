@@ -40,8 +40,8 @@
 //!
 //! ## Formatting errors for display to the user
 //!
-//! We also provide a support for formatting errors as strings, including
-//! the entire chain of "causes" of the error:
+//! We also provide a support for formatting errors as strings, including the
+//! entire chain of "causes" of the error:
 //!
 //! ```no_run
 //! # extern crate common_failures;
@@ -55,6 +55,10 @@
 //! ```
 //!
 //! ## The `quick_main!` macro
+//!
+//! This is a replacement for `quick_main!` from the `error-chain` crate. It
+//! generates a `main` function that calls a second function returning
+//! `Result<()>`, and prints out any errors.
 //!
 //! ```
 //! # fn main() {} // Dummy `main` to disable doctest wrapper.
