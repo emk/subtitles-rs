@@ -1,0 +1,18 @@
+{
+  "alignments": [
+    {
+      "tracks": [
+        {
+          "type": "html",
+          "lang": "fr",
+          "html": "<i>Jean &amp; Luc:</i> On y va !"
+        },
+        {
+          "type": "html",
+          "lang": "en",
+          "html": "<i>Jean &amp; Luc:</i> Let's go!"
+        }
+      ]
+    }
+  ]
+}

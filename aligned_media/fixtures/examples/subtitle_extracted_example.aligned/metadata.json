@@ -1,0 +1,36 @@
+{
+  "baseTrack": {
+    "type": "media",
+    "lang": "fr",
+    "file": "episode1.mp4"
+  },
+  "alignments": [
+    {
+      "span": [
+        10,
+        15.5
+      ],
+      "tracks": [
+        {
+          "type": "html",
+          "lang": "fr",
+          "html": "<i>Jean &amp; Luc:</i> On y va !"
+        },
+        {
+          "type": "html",
+          "lang": "en",
+          "html": "<i>Jean &amp; Luc:</i> Let's go!"
+        },
+        {
+          "type": "image",
+          "file": "episode1_12_75.jpg"
+        },
+        {
+          "type": "media",
+          "lang": "fr",
+          "file": "episode1_9_00_16_50.mp3"
+        }
+      ]
+    }
+  ]
+}

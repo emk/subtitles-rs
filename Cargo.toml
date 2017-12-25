@@ -4,4 +4,4 @@
 #opt-level = 3
 
 [workspace]
-members = ["cli_test_dir", "vobsub", "vobsub2png", "opus_tools", "submodel", "subtitle_ocr", "subtitles2srt", "substudy", "backend"]
+members = ["cli_test_dir", "aligned_media", "vobsub", "vobsub2png", "opus_tools", "submodel", "subtitle_ocr", "subtitles2srt", "substudy", "backend"]
