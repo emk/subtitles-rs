@@ -1,0 +1,10 @@
+[package]
+name = "aligned_media_validator"
+version = "0.1.0"
+authors = ["Eric Kidd <git@randomhacks.net>"]
+
+[dependencies]
+aligned_media = { path = "../aligned_media" }
+common_failures = { path = "../common_failures" }
+failure = "0.1.1"
+stdweb = "0.2"

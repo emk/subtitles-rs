@@ -1,0 +1,104 @@
+<html>
+    <head>
+        <title>Aligned Media Validator</title>
+        <style>
+            #validation-ok {
+                background-color: #cfc;
+                border: 1px solid #0f0;
+                padding: 5px;
+            }
+
+            #validation-err {
+                background-color: #fcc;
+                border: 1px solid #f00;
+                padding: 5px;
+            }
+
+            .fine-print {
+                font-size: 80%;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Aligned Media Validator</h1>
+
+        <p>Paste the contents of your <code>metadata.json</code> file below,
+        and press <b>Validate</b> to validate it.</p>
+
+        <textarea id="input" rows=20 cols=80>
+{
+  "baseTrack": {
+    "type": "media",
+    "lang": "fr",
+    "file": "episode1.mp4"
+  },
+  "alignments": [
+    {
+      "span": [
+        10,
+        15.5
+      ],
+      "tracks": [
+        {
+          "type": "html",
+          "lang": "fr",
+          "html": "<i>Jean &amp;amp; Luc:</i> On y va !"
+        },
+        {
+          "type": "html",
+          "lang": "en",
+          "html": "<i>Jean &amp;amp; Luc:</i> Let's go!"
+        }
+      ]
+    }
+  ]
+}
+        </textarea>
+
+        <p><input id="validate-btn" type="button" value="Validate"></p>
+
+        <p id="validation-ok" style="display: none">
+            The validation succeeded!
+        </p>
+
+        <pre id="validation-err" style="display: none">
+            (Error message goes here.)
+        </pre>
+
+        <p class="fine-print">
+            See <a
+            href="https://github.com/language-learners/aligned-media-spec">the
+            aligned media specification</a> for documentation and examples.
+            Source code for the validator is available at <a
+            href="https://github.com/emk/subtitles-rs/tree/master/aligned_media_validator">aligned_media_validator</a>.
+            This site uses <a href="http://webassembly.org/">WebAssembly</a> to
+            run compiled Rust code in the browser.
+        </p>
+
+        <script src="js/app.js"></script>
+        <script>
+var validateBtn = document.querySelector('#validate-btn')
+var input = document.querySelector('#input')
+var validationOk = document.querySelector('#validation-ok')
+var validationErr = document.querySelector('#validation-err')
+
+function validate() {
+    var json = input.value
+    Rust.aligned_media_validator.then(function (api) {
+        var result = api.validate_metadata(json)
+        console.log("validate_metadata result:", result)
+        if (result === null) {
+            validationErr.style.display = "none"
+            validationOk.style.display = "block"
+        } else {
+            validationOk.style.display = "none"
+            validationErr.innerText = result
+            validationErr.style.display = "block"
+        }
+    });
+}
+
+validateBtn.addEventListener('click', validate)
+        </script>
+    </body>
+</html>
