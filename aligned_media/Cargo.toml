@@ -3,6 +3,12 @@ name = "aligned_media"
 version = "0.1.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
+description = "Rust implementation of the \"aligned media\" format for language-learning software."
+license = "CC0-1.0"
+readme = "README.md"
+repository = "https://github.com/emk/subtitles-rs"
+documentation = "https://docs.rs/aligned_media/"
+
 [dependencies]
 failure = "0.1.1"
 isolang = { version = "0.2", features = ["serde_serialize"] }
