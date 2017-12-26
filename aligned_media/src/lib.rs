@@ -15,6 +15,7 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
+use failure::ResultExt;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::Error as DeError;
 use std::collections::HashMap;
@@ -25,10 +26,7 @@ use std::result;
 pub enum Error {
     /// We could not parse the input data.
     #[fail(display = "could not parse metadata")]
-    CouldNotParseMetadata {
-        #[fail(cause)]
-        err: serde_json::Error,
-    },
+    CouldNotParseMetadata,
 
     /// We encountered an invalid path.
     #[fail(display = "path {:?} is not allowed", path)]
@@ -89,14 +87,12 @@ pub struct Metadata {
 impl Metadata {
     /// Parse `metadata.json` represented as raw bytes. This will be interpreted
     /// as UTF-8, because the format is strict.
-    pub fn from_bytes(data: &[u8]) -> Result<Metadata> {
-        serde_json::from_slice(data).map_err(|err| {
-            Error::CouldNotParseMetadata { err }
-        })
+    pub fn from_bytes(data: &[u8]) -> result::Result<Metadata, failure::Error> {
+        Ok(serde_json::from_slice(data).context(Error::CouldNotParseMetadata)?)
     }
 
     /// Parse `metadata.json` represented as a UTF-8 Rust string.
-    pub fn from_str(data: &str) -> Result<Metadata> {
+    pub fn from_str(data: &str) -> result::Result<Metadata, failure::Error> {
         Self::from_bytes(data.as_bytes())
     }
 }
@@ -105,8 +101,8 @@ impl Metadata {
 fn parse_metadata() {
     let examples = &[
         include_str!("../fixtures/examples/book_example.aligned/metadata.json"),
-        //include_str!("../fixtures/examples/subtitle_example.aligned/metadata.json"),
-        //include_str!("../fixtures/examples/subtitle_extracted_example.aligned/metadata.json"),
+        include_str!("../fixtures/examples/subtitle_example.aligned/metadata.json"),
+        include_str!("../fixtures/examples/subtitle_extracted_example.aligned/metadata.json"),
     ];
     for example in examples {
         Metadata::from_str(example)
