@@ -21,12 +21,38 @@ use serde::de::Error as DeError;
 use std::collections::HashMap;
 use std::result;
 
+pub mod html;
+
 /// Errors which can be returned by this crate.
 #[derive(Debug, Fail)]
 pub enum Error {
+    /// We could not parse the specified HTML.
+    #[fail(display = "could not parse HTML {:?}", html)]
+    CouldNotParseHtml {
+        html: String,
+    },
+
     /// We could not parse the input data.
     #[fail(display = "could not parse metadata")]
     CouldNotParseMetadata,
+
+    /// We encountered an unsupported HTML attribute.
+    #[fail(display = "the HTML attribute {:?} is not allowed", name)]
+    HtmlAttributeForbidden {
+        name: String,
+    },
+
+    /// We encountered an unsupported HTML element.
+    #[fail(display = "the HTML element {:?} is not allowed", name)]
+    HtmlElementForbidden {
+        name: String,
+    },
+
+    /// We encountered an unsupported HTML entity.
+    #[fail(display = "the HTML entity {:?} is not allowed", name)]
+    HtmlEntityForbidden {
+        name: String,
+    },
 
     /// We encountered an invalid path.
     #[fail(display = "path {:?} is not allowed", path)]
@@ -59,7 +85,31 @@ pub type Result<T> = result::Result<T, Error>;
 /// graphic novel.
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
+#[cfg_attr(feature="no_forwards_compatibility", serde(deny_unknown_fields))]
 pub struct Metadata {
+    /// The title of a book, TV series, album, etc. This may be the same for
+    /// multiple files if `section_number` and/or `section_title` are used.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
+
+    /// The "section" number. This might be an episode number, a track number,
+    /// or a chapter number.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub section_number: Option<u32>,
+
+    /// The title of this particular section. Typically a song name or chapter
+    /// title, if somebody wants to record that.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub section_title: Option<String>,
+
+    /// Authors, etc., of this work.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub creators: Vec<String>,
+
+    /// The year in which this work was published.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub year: Option<i32>,
+
     /// The primary media track for this `MediaFile`. This is used as the "time
     /// base" for all `Alignment`s. This may be omitted if no timed media is
     /// available, as would be in the case of two texts aligned against each
@@ -114,6 +164,7 @@ fn parse_metadata() {
 /// single language, or a still image taken from a video
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
+#[cfg_attr(feature="no_forwards_compatibility", serde(deny_unknown_fields))]
 pub struct Track {
     // The kind of data stored in this track.
     #[serde(rename = "type")]
@@ -137,7 +188,7 @@ pub struct Track {
     /// Textual context, which should be valid HTML 5, optionally with embedded
     /// tags like `<b>`, `<i>` and `<br>`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub html: Option<String>,
+    pub html: Option<html::Fragment>,
 
     /// Application-specific extension data.
     #[serde(default, skip_serializing_if = "ExtensionData::is_empty")]
@@ -163,12 +214,30 @@ impl Track {
     }
 
     /// Create a new HTML track with specified language and content.
-    pub fn html<S: Into<String>>(lang: isolang::Language, html: S) -> Track {
+    pub fn html<F>(lang: isolang::Language, html: F) -> Track
+    where
+        F: Into<html::Fragment>,
+    {
         Track {
             track_type: TrackType::Html,
             lang: Some(lang),
             file: None,
             html: Some(html.into()),
+            ext: ExtensionData::default(),
+            _placeholder: (),
+        }
+    }
+
+    /// Create a new HTML track from plain text.
+    pub fn text<S>(lang: isolang::Language, text: S) -> Track
+    where
+        S: Into<String>,
+    {
+        Track {
+            track_type: TrackType::Html,
+            lang: Some(lang),
+            file: None,
+            html: Some(html::Fragment::from_text(text)),
             ext: ExtensionData::default(),
             _placeholder: (),
         }
@@ -229,12 +298,13 @@ impl Serialize for TrackType {
 /// application can do.
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
+#[cfg_attr(feature="no_forwards_compatibility", serde(deny_unknown_fields))]
 pub struct Alignment {
     /// The time span associated with this alignment, relative to
     /// `MediaFile.baseTrack`. If `MediaFile.baseTrack` was not specified, this
     /// element must be omitted.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    span: Option<TimeSpan>,
+    time_span: Option<TimeSpan>,
 
     /// One or more representations of the `Alignment`. For example, subtitle
     /// text in one or more languages, or an image, or a short audio clip.

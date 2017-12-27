@@ -9,6 +9,18 @@ readme = "README.md"
 repository = "https://github.com/emk/subtitles-rs"
 documentation = "https://docs.rs/aligned_media/"
 
+[features]
+# ONLY FOR USE BY THE VALIDATION TOOL. When this feature is enabled, we will
+# return an error whenever we encounter unknown attributes outside of an `"ext"`
+# extension block. Of course, this means that when a new version of the format
+# comes out, we don't be able to read it. So this feature really only makes
+# sense for the web-based validator, which is always kept up to date, and not
+# for actual end-user software.
+no_forwards_compatibility = []
+
+[build-dependencies]
+peg = "0.5"
+
 [dependencies]
 failure = "0.1.1"
 isolang = { version = "0.2", features = ["serde_serialize"] }

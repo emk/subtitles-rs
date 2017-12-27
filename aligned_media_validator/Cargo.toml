@@ -4,7 +4,9 @@ version = "0.1.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
 [dependencies]
-aligned_media = { path = "../aligned_media" }
+# Enable no_forwards_compatibility. This provides stricter validation at the
+# cost of rejecting newer versions of the format.
+aligned_media = { path = "../aligned_media", features = ["no_forwards_compatibility"] }
 common_failures = { path = "../common_failures" }
 failure = "0.1.1"
 stdweb = "0.2"
