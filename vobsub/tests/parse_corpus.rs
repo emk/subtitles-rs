@@ -79,6 +79,8 @@ fn process_file(path: &Path, expect_err: bool) {
 fn process_file_by_chunks(path: &Path) {
     use std::mem::swap;
 
+    use vobsub::SubtitlePacketParser;
+
     debug!("Processing {}", path.display());
     let mut f = fs::File::open(path).unwrap();
 
@@ -108,7 +110,7 @@ fn process_file_by_chunks(path: &Path) {
         }
         upper = remaining + read_len;
 
-        let mut sub_iter = subs.iter(&buffer[0..upper]);
+        let mut sub_iter = subs.iter::<SubtitlePacketParser>(&buffer[0..upper]);
         for sub in sub_iter.next() {
             match sub {
                 Ok(_) => count += 1,
