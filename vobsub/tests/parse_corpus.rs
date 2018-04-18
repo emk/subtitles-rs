@@ -115,8 +115,6 @@ fn process_file_by_chunks(path: &Path) {
                 Err(err) => panic!("Unexpected error while parsing: {:?}", err),
             }
         }
-
-        debug!("{}, {:?}", subs.expecting_chunk(), subs.needed());
     }
 
     debug!("Found {} subtitles", count);

@@ -15,8 +15,9 @@ use errors::VobsubError;
 use idx;
 use image::{ImageBuffer, Rgba, RgbaImage};
 use img::{decompress, Size};
+use mpeg2::pes::PES_PACKET_HEADER_MIN_LEN;
 use mpeg2::ps;
-use mpeg2::ps::{NeededOpt, PesPacketError};
+use mpeg2::ps::{NeededOpt, PES_PACKET_NEEDLE_LEN, PesPacketError};
 use util::BytesFormatter;
 
 /// The default time between two adjacent subtitles if no end time is
@@ -500,6 +501,8 @@ fn subtitle(raw_data: &[u8], base_time: f64) -> Result<Subtitle> {
     Ok(result)
 }
 
+const DATA_LENGTH_LEN: usize = 2;
+
 struct PartialSubtitle {
     packets_data: Vec<u8>,
     base_time: f64,
@@ -516,8 +519,10 @@ impl PartialSubtitle {
 
         // Figure out how many total bytes we'll need to collect from one
         // or more PES packets, and collect the first chunk into a buffer.
-        if packet.pes_packet.data.len() < 2 {
-            return Err(Error::from(VobsubError::IncompleteInput { needed: Some(2).into() } ));
+        if packet.pes_packet.data.len() < DATA_LENGTH_LEN {
+            return Err(Error::from(VobsubError::IncompleteInput{
+                needed: DATA_LENGTH_LEN.into(),
+            }));
         }
 
         Ok(PartialSubtitle {
@@ -589,6 +594,7 @@ impl SubtitlesContext {
                 Ok(partial_subtitle) => {
                     self.offset = new_offset;
                     if partial_subtitle.more_data_wanted() {
+                        self.update_needed(&partial_subtitle);
                         self.partial_subtitle = Some(partial_subtitle);
                         Ok(None)
                     } else {
@@ -606,14 +612,29 @@ impl SubtitlesContext {
             }
         } else {
             // Additional packet.
-            let more_data_wanted = self.partial_subtitle.as_mut().unwrap().have_packet(packet);
+            let mut partial_subtitle = self.partial_subtitle.take().unwrap();
+            let more_data_wanted = partial_subtitle.have_packet(packet);
             self.offset = new_offset;
             if more_data_wanted {
+                self.update_needed(&partial_subtitle);
+                self.partial_subtitle = Some(partial_subtitle);
                 Ok(None)
             } else {
-                Ok(self.partial_subtitle.take())
+                Ok(Some(partial_subtitle))
             }
         }
+    }
+
+    fn update_needed(&mut self, partial_subtitle: &PartialSubtitle) {
+        // Guestimate the needed length making sure we get
+        // a minimum length to grab a meaningfull header.
+        // Note: this doesn't include PS header size, but
+        // that should be sufficient to iteratively progress
+        // in a stream.
+        self.needed = (
+            PES_PACKET_NEEDLE_LEN + PES_PACKET_HEADER_MIN_LEN + DATA_LENGTH_LEN
+            + partial_subtitle.wanted - partial_subtitle.packets_data.len()
+        ).into();
     }
 
     fn pepare_for_new_chunk(&mut self) {
@@ -622,11 +643,11 @@ impl SubtitlesContext {
     }
 
     fn pepare_for_new_packet(&mut self) {
-        self.needed = NeededOpt::default();
+        self.needed = None.into();
     }
 
     fn set_unrecoverable_error(&mut self) {
-        self.needed = NeededOpt::default();
+        self.needed = None.into();
         self.partial_subtitle.take();
     }
 
@@ -691,9 +712,12 @@ impl<'a> Iterator for SubtitlesInternal<'a> {
                                 }
                             } else {
                                 // Incomplete packets are expected in chunked mode.
-                                if let PesPacketError::Incomplete { needed, .. } = pes_pack_err {
-                                    self.context.borrow_mut().needed = needed.into();
-                                }
+                                self.context.borrow_mut().needed = match pes_pack_err {
+                                    PesPacketError::NeedleNotFound { .. } => (
+                                        PES_PACKET_NEEDLE_LEN + PES_PACKET_HEADER_MIN_LEN
+                                    ).into(),
+                                    PesPacketError::Incomplete { needed, .. } => needed,
+                                };
                                 return None;
                             }
                         }
@@ -799,9 +823,11 @@ pub fn subtitles(input: &[u8]) -> Subtitles {
     }
 }
 
-/// Subtitles iter manager which can process stream chunks.
+/// Subtitles iter manager which can process a stream by chunks.
 ///
 /// # Example
+///
+/// Process subtitles from a file containing a Program Stream.
 ///
 /// ```
 /// use vobsub::SubtitlesFromChunks;
@@ -831,13 +857,11 @@ pub fn subtitles(input: &[u8]) -> Subtitles {
 ///     }
 /// }
 /// ```
-#[allow(dead_code)]
 pub struct SubtitlesFromChunks {
     context: Rc<RefCell<SubtitlesContext>>,
     had_chunk: bool,
 }
 
-#[allow(dead_code)]
 impl SubtitlesFromChunks {
     /// Build a new `SubtitlesFromChunks`, a [`Subtitles`] iterator manager
     /// capable of handling streams by chunks.
@@ -949,30 +973,23 @@ fn parse_subtitles_by_chunks() {
     f.read_to_end(&mut buffer).unwrap();
 
     // 1. Attempt to read the first subtitle
-    // with a chunk too short to retrieve the first packet.
+    // with a chunk too short to retrieve it completely.
     let mut subs = SubtitlesFromChunks::new();
     {
-        let mut sub_iter = subs.iter(&buffer[..100]);
+        let mut sub_iter = subs.iter(&buffer[..1024]);
         assert!(sub_iter.next().is_none());
     }
     assert!(subs.expecting_chunk());
-    assert_eq!(0, subs.offset());
+    let mut offset = subs.offset();
+    assert_eq!(0, offset);
+    let needed = subs.needed().expect("expecting needed value");
 
-    // 2. Attempt to read the first subtitle
-    // with a chunk large enough to retrieve the first packet, but not the second one.
-    let mut subs = SubtitlesFromChunks::new();
+    // Add a chunk large enough for the missing length for sub1
+    // and additional bytes for part of sub2.
     {
-        let mut sub_iter = subs.iter(&buffer[..2048 + 100]);
-        assert!(sub_iter.next().is_none());
-    }
-    assert!(subs.expecting_chunk());
-    let last_offset = subs.offset();
-    assert!(last_offset > 0);
-
-    // Add a chunk.
-    {
-        let mut sub_iter = subs.iter(&buffer[last_offset..last_offset + 3072]);
-        let sub1 = sub_iter.next()
+        let mut sub_iter = subs.iter(&buffer[offset..offset + needed + 1024]);
+        let sub1 = sub_iter.next();
+        let sub1 = sub1
             .expect("missing sub 1")
             .expect("unexpected error for sub 1");
         assert!(sub1.start_time - 49.4 < 0.1);
@@ -988,17 +1005,18 @@ fn parse_subtitles_by_chunks() {
         assert!(sub_iter.next().is_none());
     }
     assert!(subs.expecting_chunk());
+    assert!(subs.needed().is_some());
 
     // Add the rest of the buffer
-    let last_offset = last_offset + subs.offset();
+    offset += subs.offset();
     {
-        let mut sub_iter = subs.iter(&buffer[last_offset..]);
+        let mut sub_iter = subs.iter(&buffer[offset..]);
         let _sub2 = sub_iter.next()
             .expect("missing sub 2")
             .expect("unexpected error for sub 2");
     }
 
-    // 3. Read the subtitles with a chunk large enough for the first packet
+    // 2. Read the subtitles with a chunk large enough for the first packet
     // and too short for the second packet's needle.
     let mut subs = SubtitlesFromChunks::new();
     {

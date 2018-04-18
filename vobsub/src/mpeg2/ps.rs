@@ -101,6 +101,12 @@ impl From<Option<usize>> for NeededOpt {
     }
 }
 
+impl From<usize> for NeededOpt {
+    fn from(needed: usize) -> Self {
+        NeededOpt(Some(needed))
+    }
+}
+
 impl From<NeededOpt> for Option<usize> {
     fn from(needed: NeededOpt) -> Self {
         needed.0
@@ -128,6 +134,9 @@ pub enum PesPacketError {
         remaining: usize,
     },
 }
+
+/// The length for the needle introducing a Program Stream packet.
+pub const PES_PACKET_NEEDLE_LEN: usize = 4;
 
 /// An iterator over all the PES packets in an MPEG-2 Program Stream.
 pub struct PesPackets<'a> {
