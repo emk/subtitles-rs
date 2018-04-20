@@ -42,8 +42,14 @@
 //!
 //! ```
 //! # use cli_test_dir::*;
+//! # #[cfg(unix)]
 //! let testdir = TestDir::new("true", "true_succeeds");
-//! testdir.cmd().expect_success();
+//! # #[cfg(windows)]
+//! # let testdir = TestDir::new("cmd", "true_succeeds");
+//! let mut cmd = testdir.cmd();
+//! # #[cfg(windows)]
+//! # cmd.args(&["/C", "exit 0"]);
+//! cmd.expect_success();
 //! ```
 //!
 //! But this test would fail:
@@ -51,8 +57,14 @@
 //! ```rust,should_panic
 //! # use cli_test_dir::*;
 //! // Fails.
+//! # #[cfg(unix)]
 //! let testdir = TestDir::new("false", "false_succeeds");
-//! testdir.cmd().expect_success();
+//! # #[cfg(windows)]
+//! let testdir = TestDir::new("cmd", "false_succeeds");
+//! let mut cmd = testdir.cmd();
+//! # #[cfg(windows)]
+//! # cmd.args(&["/C", "exit 1"]);
+//! cmd.expect_success();
 //! ```
 //!
 //! ## Testing that the program exited with an error.
@@ -61,8 +73,14 @@
 //!
 //! ```
 //! # use cli_test_dir::*;
+//! # #[cfg(unix)]
 //! let testdir = TestDir::new("false", "false_fails");
-//! testdir.cmd().expect_failure();
+//! # #[cfg(windows)]
+//! # let testdir = TestDir::new("cmd", "false_fails");
+//! let mut cmd = testdir.cmd();
+//! # #[cfg(windows)]
+//! # cmd.args(&["/C", "exit 1"]);
+//! cmd.expect_failure();
 //! ```
 //!
 //! And as you would expect, this test would fail:
@@ -70,8 +88,14 @@
 //! ```rust,should_panic
 //! # use cli_test_dir::*;
 //! // Fails.
+//! # #[cfg(unix)]
 //! let testdir = TestDir::new("true", "true_fails");
-//! testdir.cmd().expect_failure();
+//! # #[cfg(windows)]
+//! # let testdir = TestDir::new("cmd", "true_fails");
+//! let mut cmd = testdir.cmd();
+//! # #[cfg(windows)]
+//! # cmd.args(&["/C", "exit 0"]);
+//! cmd.expect_failure();
 //! ```
 //!
 //! ## File input and output
@@ -80,11 +104,16 @@
 //! top-level of our crate, and `expect_path` can be used to make sure an
 //! output file exists:
 //!
-//! ```rust,no_run
-//! # // Don't run because `cp` will have path problems on Windows.
+//! ```rust
 //! # use cli_test_dir::*;
+//! # #[cfg(unix)]
 //! let testdir = TestDir::new("cp", "cp_copies_files");
-//! testdir.cmd()
+//! # #[cfg(windows)]
+//! # let testdir = TestDir::new("cmd", "cp_copies_files");
+//! let mut cmd = testdir.cmd();
+//! # #[cfg(windows)]
+//! # cmd.args(&["/C", "copy"]);
+//! cmd
 //!   .arg(testdir.src_path("fixtures/input.txt"))
 //!   .arg("output.txt")
 //!   .expect_success();
@@ -96,9 +125,15 @@
 //!
 //! ```
 //! # use cli_test_dir::*;
+//! # #[cfg(unix)]
 //! let testdir = TestDir::new("cp", "cp_copies_files_2");
+//! # #[cfg(windows)]
+//! # let testdir = TestDir::new("cmd", "cp_copies_files_2");
+//! let mut cmd = testdir.cmd();
+//! # #[cfg(windows)]
+//! # cmd.args(&["/C", "copy"]);
 //! testdir.create_file("input.txt", "Hello, world!\n");
-//! testdir.cmd()
+//! cmd
 //!   .arg("input.txt")
 //!   .arg("output.txt")
 //!   .expect_success();
@@ -110,9 +145,15 @@
 //!
 //! ```
 //! # use cli_test_dir::*;
+//! # #[cfg(unix)]
 //! let testdir = TestDir::new("cp", "negative_tests");
+//! # #[cfg(windows)]
+//! # let testdir = TestDir::new("cmd", "negative_tests");
+//! let mut cmd = testdir.cmd();
+//! # #[cfg(windows)]
+//! # cmd.args(&["/C", "copy"]);
 //! testdir.create_file("input.txt", "Hello, world!\n");
-//! testdir.cmd()
+//! cmd
 //!   .arg("input.txt")
 //!   .arg("output.txt")
 //!   .expect_success();
@@ -126,8 +167,14 @@
 //!
 //! ```
 //! # use cli_test_dir::*;
+//! # #[cfg(unix)]
 //! let testdir = TestDir::new("cat", "cat_passes_data_through");
-//! let output = testdir.cmd()
+//! # #[cfg(windows)]
+//! # let testdir = TestDir::new("cmd", "type_passes_data_through");
+//! let mut cmd = testdir.cmd();
+//! # #[cfg(windows)]
+//! # cmd.args(&["/C", "findstr x*"]); // https://superuser.com/a/853718
+//! let output = cmd
 //!   .output_with_stdin("Hello\n")
 //!   .expect_success();
 //! assert_eq!(output.stdout_str(), "Hello\n");
@@ -152,6 +199,7 @@ use std::str;
 use std::sync::atomic::{ATOMIC_USIZE_INIT, AtomicUsize, Ordering};
 use std::thread;
 use std::time;
+use std::borrow::Cow;
 
 static TEST_ID: AtomicUsize = ATOMIC_USIZE_INIT;
 
@@ -160,6 +208,21 @@ static TEST_ID: AtomicUsize = ATOMIC_USIZE_INIT;
 pub struct TestDir {
     bin: PathBuf,
     dir: PathBuf,
+}
+
+#[cfg(unix)]
+fn exe_name(name: &str) -> Cow<str> {
+    Cow::Borrowed(name)
+}
+
+#[cfg(windows)]
+fn exe_name(name: &str) -> Cow<str> {
+    // Maybe something like...
+    if name.ends_with(".exe") {
+        Cow::Borrowed(name)
+    } else {
+        Cow::Owned(format!("{}.exe", name))
+    }
 }
 
 impl TestDir {
@@ -205,7 +268,7 @@ impl TestDir {
             panic!("Could not create test output directory: {}", e);
         }
 
-        let mut bin = bin_dir.join(&bin_name);
+        let mut bin = bin_dir.join(&*exe_name(bin_name));
         if !bin.exists() {
             writeln!(io::stderr(),
                      "WARNING: could not find {}, will search PATH",
@@ -232,8 +295,14 @@ impl TestDir {
     ///
     /// ```
     /// # use cli_test_dir::*;
+    /// # #[cfg(unix)]
     /// let testdir = TestDir::new("touch", "path_builds_paths");
-    /// testdir.cmd()
+    /// # #[cfg(windows)]
+    /// # let testdir = TestDir::new("cmd", "path_builds_paths");
+    /// let mut cmd = testdir.cmd();
+    /// # #[cfg(windows)]
+    /// # cmd.args(&["/C", "type", "nul", ">"]);
+    /// cmd
     ///   .arg("example.txt")
     ///   .expect_success();
     /// assert!(testdir.path("example.txt").exists());
