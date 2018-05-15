@@ -9,6 +9,7 @@ use Error;
 /// a backtrace if present.
 pub struct DisplayCausesAndBacktrace<'a> {
     err: &'a Error,
+    include_backtrace: bool,
 }
 
 impl<'a> fmt::Display for DisplayCausesAndBacktrace<'a> {
@@ -22,7 +23,9 @@ impl<'a> fmt::Display for DisplayCausesAndBacktrace<'a> {
                 writeln!(f, "  caused by: {}", cause)?;
             }
         }
-        write!(f, "{}",  self.err.backtrace())?;
+        if self.include_backtrace {
+            write!(f, "{}",  self.err.backtrace())?;
+        }
         Ok(())
     }
 }
@@ -33,10 +36,21 @@ pub trait DisplayCausesAndBacktraceExt {
     /// formatted with a human-readable list of all causes, plus an optional
     /// backtrace.
     fn display_causes_and_backtrace(&self) -> DisplayCausesAndBacktrace;
+
+    /// Wrap the error in `DisplayCausesAndBacktrace`, causing it to be
+    /// formatted with a human-readable list of all causes. However, the
+    /// backtrace will be omitted even if `RUST_BACKTRACE` is set. This is
+    /// intended to be used in situations where the backtrace needed to be
+    /// handled separately, as with APIs like Rollbar's.
+    fn display_causes_without_backtrace(&self) -> DisplayCausesAndBacktrace;
 }
 
 impl DisplayCausesAndBacktraceExt for failure::Error {
     fn display_causes_and_backtrace(&self) -> DisplayCausesAndBacktrace {
-        DisplayCausesAndBacktrace { err: self }
+        DisplayCausesAndBacktrace { err: self, include_backtrace: true }
+    }
+
+    fn display_causes_without_backtrace(&self) -> DisplayCausesAndBacktrace {
+        DisplayCausesAndBacktrace { err: self, include_backtrace: false }
     }
 }

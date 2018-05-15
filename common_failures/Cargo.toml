@@ -1,6 +1,6 @@
 [package]
 name = "common_failures"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
 description = "Helpers for 'failure', including io::Error wrappers with paths, quick_main!, display_causes_and_backtrace."
