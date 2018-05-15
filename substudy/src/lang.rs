@@ -2,7 +2,6 @@
 
 use common_failures::prelude::*;
 use serde::{Serialize, Serializer};
-use std::ascii::AsciiExt;
 use std::collections::HashMap;
 use std::fmt;
 use std::iter::FromIterator;
