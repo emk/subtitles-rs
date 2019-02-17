@@ -1,6 +1,6 @@
 [package]
 name = "cli_test_dir"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
 description = "Tools for testing Rust command-line utilities"

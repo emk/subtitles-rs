@@ -180,6 +180,35 @@
 //! assert_eq!(output.stdout_str(), "Hello\n");
 //! ```
 //!
+//! If you wish, you can display a command's output using `tee_output`:
+//!
+//! ```
+//! # use cli_test_dir::*;
+//! # #[cfg(unix)]
+//! let testdir = TestDir::new("cat", "tee_output_shows_output");
+//! # #[cfg(windows)]
+//! # let testdir = TestDir::new("cmd", "tee_output_shows_output");
+//! let mut cmd = testdir.cmd();
+//! # #[cfg(windows)]
+//! # cmd.args(&["/C", "findstr x*"]); // https://superuser.com/a/853718
+//! let output = cmd
+//!   .output_with_stdin("Hello\n")
+//!   // Show `stdout` and `stderr`.
+//!   .tee_output()
+//!   .expect_success();
+//! assert_eq!(output.stdout_str(), "Hello\n");
+//! ```
+//!
+//! Note that this will currently print out all of `stdout` first, _then_ all of
+//! `stderr`, instead of interleaving them normally.
+//!
+//! To see the output of `tee_output`, you will also need to invoke `cargo` as
+//! follows:
+//!
+//! ```sh
+//! cargo test -- --nocapture
+//! ```
+//!
 //! ## Contributing
 //!
 //! Your feedback and contributions are welcome!  Please see
@@ -438,6 +467,28 @@ impl CommandExt for process::Command {
         let result = child.wait_with_output();
         worker.join().expect("stdin writer failed");
         result
+    }
+}
+
+/// Display command output and return it for examination.
+pub trait TeeOutputExt {
+    /// Display the output of a test command on `stdout` and `stderr`, then return
+    /// the `Output` object for further processing.
+    fn tee_output(self) -> io::Result<process::Output>;
+}
+
+impl TeeOutputExt for &mut process::Command {
+    fn tee_output(self) -> io::Result<process::Output> {
+        self.output().tee_output()
+    }
+}
+
+impl TeeOutputExt for io::Result<process::Output> {
+    fn tee_output(self) -> io::Result<process::Output> {
+        let output = self?;
+        io::stdout().write_all(&output.stdout)?;
+        io::stderr().write_all(&output.stderr)?;
+        Ok(output)
     }
 }
 
