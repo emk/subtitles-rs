@@ -532,7 +532,7 @@ impl ExpectStatus for process::Output {
                 .expect("could not write to stdout");
             io::stderr().write_all(&self.stderr)
                 .expect("could not write to stderr");
-            panic!("expected command to succeed, got {:?}", self.status)
+            panic!("expected command to succeed, got {}", self.status)
         }
         self
     }
@@ -543,7 +543,7 @@ impl ExpectStatus for process::Output {
                 .expect("could not write to stdout");
             io::stderr().write_all(&self.stderr)
                 .expect("could not write to stderr");
-            panic!("expected command to fail, got {:?}", self.status)
+            panic!("expected command to fail, got {}", self.status)
         }
         self
     }
