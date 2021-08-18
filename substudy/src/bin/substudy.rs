@@ -1,4 +1,4 @@
-//! Command-line iterface to substudy.
+//! Command-line interface to substudy.
 
 #[macro_use]
 extern crate common_failures;
