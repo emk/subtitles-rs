@@ -3,6 +3,12 @@ name = "aligned_media_validator"
 version = "0.1.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 
+panic = "abort"
+
+[profile.release]
+# Enable this if you need debug symbols to analyze *.wasm size.
+#opt-level = 3
+
 [dependencies]
 # Enable no_forwards_compatibility. This provides stricter validation at the
 # cost of rejecting newer versions of the format.
