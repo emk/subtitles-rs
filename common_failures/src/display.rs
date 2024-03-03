@@ -15,7 +15,7 @@ pub struct DisplayCausesAndBacktrace<'a> {
 impl<'a> fmt::Display for DisplayCausesAndBacktrace<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut first = true;
-        for cause in self.err.causes() {
+        for cause in self.err.iter_chain() {
             if first {
                 first = false;
                 writeln!(f, "Error: {}", cause)?;

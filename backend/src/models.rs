@@ -38,11 +38,11 @@ impl Video {
     pub fn new(url: &Url, foreign_path: &Path, native_path: Option<&Path>) ->
         Result<Video>
     {
-        let foreign = try!(srt::SubtitleFile::cleaned_from_path(foreign_path));
+        let foreign = srt::SubtitleFile::cleaned_from_path(foreign_path)?;
         let native = match native_path {
             None => None,
             Some(ref path) =>
-                Some(try!(srt::SubtitleFile::cleaned_from_path(path)))
+                Some(srt::SubtitleFile::cleaned_from_path(path)?)
         };
         let subtitles = align_available_files(&foreign, native.as_ref());
 

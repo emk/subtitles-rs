@@ -46,7 +46,7 @@ impl OcrContext {
         let (segmented, segments) = segment(&bitmap)?;
         debug_pixmap!(&segmented, "{}_{:04}_segmented.png", &self.file_stem, id);
         let lines = group_into_lines(pixmap.height(), segments)?;
-        lines.into_iter().map(|l| group_into_glyphs(l)).collect::<Vec<_>>();
+        let _todo = lines.into_iter().map(|l| group_into_glyphs(l)).collect::<Vec<_>>();
         Ok(())
     }
 }

@@ -31,7 +31,7 @@ impl Default for PtsDtsFlags {
     }
 }
 
-/// Parse PTS & DTS flags in a PES packet header.  Consumes two bits.
+// Parse PTS & DTS flags in a PES packet header.  Consumes two bits.
 named!(pts_dts_flags<(&[u8], usize), PtsDtsFlags>,
    alt!(value!(PtsDtsFlags::None,   tag_bits!(u8, 2, 0b00)) |
         value!(PtsDtsFlags::Pts,    tag_bits!(u8, 2, 0b10)) |
@@ -57,7 +57,7 @@ pub struct PtsDts {
     pub dts: Option<Clock>,
 }
 
-/// Helper for `pts_dts`.  Parses the PTS-only case.
+// Helper for `pts_dts`.  Parses the PTS-only case.
 named!(pts_only<PtsDts>,
     bits!(
         do_parse!(
@@ -68,7 +68,7 @@ named!(pts_only<PtsDts>,
     )
 );
 
-/// Helper for `pts_dts`.  Parses the PTS and DTS case.
+// Helper for `pts_dts`.  Parses the PTS and DTS case.
 named!(pts_and_dts<PtsDts>,
     bits!(
         do_parse!(
@@ -81,7 +81,7 @@ named!(pts_and_dts<PtsDts>,
     )
 );
 
-/// Parse a `PtsDts` value in the format specified by `flags`.
+// Parse a `PtsDts` value in the format specified by `flags`.
 fn pts_dts(i: &[u8], flags: PtsDtsFlags) -> IResult<&[u8], Option<PtsDts>> {
     match flags {
         PtsDtsFlags::None => IResult::Done(i, None),
@@ -114,7 +114,7 @@ pub struct HeaderDataFlags {
     pub extension_flag: bool,
 }
 
-/// Deserialize a single Boolean flag bit.
+// Deserialize a single Boolean flag bit.
 named!(bool_flag<(&[u8], usize), bool>,
     map!(take_bits!(u8, 1), |b| b == 1)
 );
@@ -178,7 +178,7 @@ fn header_data_fields(i: &[u8], flags: HeaderDataFlags)
     )
 }
 
-/// Parse PES header data, including the predecing flags and length bytes.
+// Parse PES header data, including the predecing flags and length bytes.
 named!(header_data<HeaderData>,
     do_parse!(
         // Grab the flags from our flag byte.
@@ -224,7 +224,7 @@ pub struct Header {
     pub original: bool,
 }
 
-/// Parse the first PES header byte after the length.
+// Parse the first PES header byte after the length.
 named!(header<Header>,
     bits!(
         do_parse!(

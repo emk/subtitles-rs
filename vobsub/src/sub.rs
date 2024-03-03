@@ -24,7 +24,7 @@ const DEFAULT_SUBTITLE_SPACING: f64 = 0.001;
 /// subtitle follows immediately after.
 const DEFAULT_SUBTITLE_LENGTH: f64 = 5.0;
 
-/// Parse four 4-bit palette entries.
+// Parse four 4-bit palette entries.
 named!(palette_entries<[u8; 4]>, bits!(count_fixed!(u8, take_bits!(u8, 4), 4)));
 
 #[test]
@@ -72,11 +72,11 @@ impl Coordinates {
     }
 }
 
-/// Parse a 12-bit coordinate value.
+// Parse a 12-bit coordinate value.
 named!(coordinate<(&[u8], usize), u16>, take_bits!(u16, 12));
 
-/// Parse four 12-bit coordinate values as a rectangle (with right and
-/// bottom coordinates inclusive).
+// Parse four 12-bit coordinate values as a rectangle (with right and
+// bottom coordinates inclusive).
 named!(coordinates<Coordinates>,
     bits!(
         do_parse!(
@@ -94,7 +94,7 @@ named!(coordinates<Coordinates>,
     )
 );
 
-/// Parse a pair of 16-bit RLE offsets.
+// Parse a pair of 16-bit RLE offsets.
 named!(rle_offsets<[u16; 2]>, bits!(count_fixed!(u16, take_bits!(u16, 16), 2)));
 
 /// Individual commands which may appear in a control sequence.
@@ -123,7 +123,7 @@ enum ControlCommand<'a> {
     Unsupported(&'a [u8]),
 }
 
-/// Parse a single command in a control sequence.
+// Parse a single command in a control sequence.
 named!(control_command<ControlCommand>,
     alt!(
         value!(ControlCommand::Force, tag!(&[0x00])) |
@@ -145,10 +145,10 @@ named!(control_command<ControlCommand>,
     )
 );
 
-/// The end of a control sequence.
+// The end of a control sequence.
 named!(control_command_end, tag!(&[0xff]));
 
-/// The control packet for a subtitle.
+// The control packet for a subtitle.
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct ControlSequence<'a> {
     /// The time associated with this control sequence, specified in
@@ -163,7 +163,7 @@ struct ControlSequence<'a> {
     commands: Vec<ControlCommand<'a>>,
 }
 
-/// Parse a single control sequence.
+// Parse a single control sequence.
 named!(control_sequence<ControlSequence>,
     do_parse!(
         date: call!(be_u16) >>

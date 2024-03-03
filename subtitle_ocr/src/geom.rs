@@ -123,7 +123,7 @@ mod test {
             }
         }
 
-        fn shrink(&self) -> Box<Iterator<Item=Self>> {
+        fn shrink(&self) -> Box<dyn Iterator<Item=Self>> {
             let tuple = (self.left, self.top, self.width, self.height);
             Box::new(tuple.shrink().map(|(l, t, w, h)| Rect::ltwh(l, t, w, h)))
         }
@@ -137,12 +137,12 @@ mod test {
 
         fn rect_union_includes_all_points(r1: Rect, r2: Rect) -> bool {
             let u = r1.union(&r2);
-            ((r1.is_empty() ||
+            (r1.is_empty() ||
               u.contains(r1.left, r1.top) &&
               u.contains(r1.right()-1, r1.bottom()-1)) &&
              (r2.is_empty() ||
               u.contains(r2.left, r2.top) &&
-              u.contains(r2.right()-1, r2.bottom()-1)))
+              u.contains(r2.right()-1, r2.bottom()-1))
         }
 
         fn rect_union_with_zero_size_is_identity(r1: Rect, r2: Rect)

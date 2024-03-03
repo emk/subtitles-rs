@@ -225,12 +225,12 @@ use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::process;
 use std::str;
-use std::sync::atomic::{ATOMIC_USIZE_INIT, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::thread;
 use std::time;
 use std::borrow::Cow;
 
-static TEST_ID: AtomicUsize = ATOMIC_USIZE_INIT;
+static TEST_ID: AtomicUsize = AtomicUsize::new(0);
 
 /// This code is inspired by the `WorkDir` pattern that BurntSushi uses to
 /// test CLI tools like `ripgrep` and `xsv`.
@@ -362,13 +362,13 @@ impl TestDir {
     /// If `path` does not point to valid path, fail the current test.
     pub fn expect_path<P: AsRef<Path>>(&self, path: P) {
         let path = self.dir.join(path);
-        assert!(path.exists(), format!("{} should exist", path.display()));
+        assert!(path.exists(), "{} should exist", path.display());
     }
 
     /// If `path` does not point to valid path, fail the current test.
     pub fn expect_no_such_path<P: AsRef<Path>>(&self, path: P) {
         let path = self.dir.join(path);
-        assert!(!path.exists(), format!("{} should not exist", path.display()));
+        assert!(!path.exists(), "{} should not exist", path.display());
     }
 
     /// Verify that the file contains the specified data.
@@ -404,8 +404,8 @@ impl TestDir {
         let path = self.dir.join(path);
         let contents = self.read_file(&path);
         assert!(contents.contains(pattern),
-                format!("expected {} to match {:?}, but it contained {:?}",
-                        path.display(), pattern, contents));
+                "expected {} to match {:?}, but it contained {:?}",
+                path.display(), pattern, contents);
     }
 
     /// Verify that the contents of the file do not match the specified pattern.
@@ -418,8 +418,8 @@ impl TestDir {
         let path = self.dir.join(path);
         let contents = self.read_file(&path);
         assert!(!contents.contains(pattern),
-                format!("expected {} to not match {:?}, but it contained {:?}",
-                        path.display(), pattern, contents));
+                "expected {} to not match {:?}, but it contained {:?}",
+                path.display(), pattern, contents);
     }
 }
 

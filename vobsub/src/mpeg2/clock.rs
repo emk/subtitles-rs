@@ -41,7 +41,7 @@ impl<'a> fmt::Display for Clock {
     }
 }
 
-/// Parse a 33-bit `Clock` value with 3 marker bits, consuming 36 bits.
+// Parse a 33-bit `Clock` value with 3 marker bits, consuming 36 bits.
 named!(pub clock<(&[u8], usize), Clock>,
     do_parse!(
         // Bits 32..30.
@@ -60,8 +60,8 @@ named!(pub clock<(&[u8], usize), Clock>,
     )
 );
 
-/// Parse a 33-bit `Clock` value plus a 9-bit extension and 4 marker bits,
-/// consuming 46 bits.
+// Parse a 33-bit `Clock` value plus a 9-bit extension and 4 marker bits,
+// consuming 46 bits.
 named!(pub clock_and_ext<(&[u8], usize), Clock>,
     do_parse!(
         clock: call!(clock) >>

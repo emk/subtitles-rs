@@ -65,7 +65,7 @@ impl SubtitleFile {
         // that's present in much Windows UTF-8 data. Note that if it appears
         // multiple times, we would remove all the copies, but we've never seen
         // that in the wild.
-        Ok(grammar::subtitle_file(data.trim_left_matches("\u{FEFF}"))
+        Ok(grammar::subtitle_file(data.trim_start_matches("\u{FEFF}"))
             .with_context(|_| format_err!("could not parse subtitles"))?)
     }
 

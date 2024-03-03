@@ -12,14 +12,14 @@ use std::path::Path;
 use errors::{IResultExt, VobsubError};
 use sub;
 
-/// Parse a single hexadecimal digit.
+// Parse a single hexadecimal digit.
 named!(hex_digit<u8>,
     map!(one_of!(b"0123456789abcdefABCDEF"), |c: char| -> u8 {
         cast::u8(c.to_digit(16).unwrap()).unwrap()
     })
 );
 
-/// Parse a single byte hexadecimal byte.
+// Parse a single byte hexadecimal byte.
 named!(hex_u8<u8>,
     do_parse!(
         h1: call!(hex_digit) >>
@@ -28,7 +28,7 @@ named!(hex_u8<u8>,
     )
 );
 
-/// Parse a 3-byte hexadecimal RGB color.
+// Parse a 3-byte hexadecimal RGB color.
 named!(rgb<Rgb<u8>>,
     map!(count_fixed!(u8, call!(hex_u8), 3), |rgb| { Rgb { data: rgb } })
 );

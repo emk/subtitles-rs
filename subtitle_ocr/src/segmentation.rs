@@ -314,7 +314,7 @@ fn combine_segments_attaches_dots_and_diacritics() {
     let binarized = binarize(&png_fixture_pixmap("ligature_2")).unwrap();
     let (_segmented, segments) = segment(&binarized).unwrap();
     let lines = group_into_lines(binarized.height(), segments).unwrap();
-    lines.into_iter()
+    let _ = lines.into_iter()
         .map(|line| group_into_glyphs(line))
         .collect::<Vec<_>>();
 }

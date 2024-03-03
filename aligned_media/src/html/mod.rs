@@ -76,7 +76,7 @@ impl<'de> Deserialize<'de> for Fragment {
             //
             // TODO: Use a writer to format this, or just use `common_failures`.
             let mut msg = String::new();
-            for cause in err.causes() {
+            for cause in err.iter_chain() {
                 if !msg.is_empty() {
                     msg.push_str("\n  caused by: ");
                 }

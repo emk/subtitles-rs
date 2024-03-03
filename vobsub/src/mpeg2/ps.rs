@@ -26,7 +26,7 @@ impl fmt::Display for Header {
     }
 }
 
-/// Parse a Program Stream header.
+// Parse a Program Stream header.
 named!(pub header<Header>,
     do_parse!(
         // Sync bytes.
@@ -70,7 +70,7 @@ pub struct PesPacket<'a> {
     pub pes_packet: pes::Packet<'a>,
 }
 
-/// Parse a Program Stream packet and the following PES packet.
+// Parse a Program Stream packet and the following PES packet.
 named!(pub pes_packet<PesPacket>,
     do_parse!(
         ps_header: call!(header) >>

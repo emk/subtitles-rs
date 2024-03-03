@@ -26,7 +26,7 @@ struct Rle {
     val: u8,
 }
 
-/// Parse the count for a `Rle`.
+// Parse the count for a `Rle`.
 named!(count<(&[u8], usize), u16>,
     alt!(
         // Fill to end of line.
@@ -42,7 +42,7 @@ named!(count<(&[u8], usize), u16>,
     )
 );
 
-/// Parse an `Rle`.
+// Parse an `Rle`.
 named!(rle<(&[u8], usize), Rle>,
     do_parse!(
         cnt: call!(count) >>
