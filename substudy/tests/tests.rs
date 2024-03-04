@@ -1,8 +1,6 @@
 //! Integration tests for our command-line interface.  We actually run the
 //! binary and make sure it produces the expected output.
 
-extern crate cli_test_dir;
-
 use std::str::from_utf8;
 
 use cli_test_dir::TestDir;

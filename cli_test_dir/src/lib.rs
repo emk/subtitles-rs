@@ -1,6 +1,6 @@
-//! This crate makes it easier to write integration tests for CLI
-//! applications.  It's based on the "workdir" pattern used by BurntSushi's
-//! [xsv][] and [ripgrep][] crates, but packaged in an easy-to-reuse form.
+//! This crate makes it easier to write integration tests for CLI applications.
+//! It's based on the "workdir" pattern used by BurntSushi's [xsv][] and
+//! [ripgrep][] crates, but packaged in an easy-to-reuse form.
 //!
 //! To use this crate, add the following lines to your `Cargo.toml` file:
 //!
@@ -10,13 +10,7 @@
 //! cli_test_dir = "*"
 //! ```
 //!
-//! Then add the following to the top of `tests/tests.rs`:
-//!
-//! ```rust,no_run
-//! extern crate cli_test_dir;
-//! ```
-//!
-//! You should now be able to write tests as follows:
+//! You should now be able to write tests in `tests/tests.rs` as follows:
 //!
 //! ```
 //! use cli_test_dir::*;
@@ -100,9 +94,9 @@
 //!
 //! ## File input and output
 //!
-//! The `src_path` function can be used to build paths relative to the
-//! top-level of our crate, and `expect_path` can be used to make sure an
-//! output file exists:
+//! The `src_path` function can be used to build paths relative to the top-level
+//! of our crate, and `expect_path` can be used to make sure an output file
+//! exists:
 //!
 //! ```rust
 //! # use cli_test_dir::*;
@@ -120,8 +114,8 @@
 //! testdir.expect_path("output.txt");
 //! ```
 //!
-//! We can also create the input file manually or look for specific
-//! contents in the output file if we wish:
+//! We can also create the input file manually or look for specific contents in
+//! the output file if we wish:
 //!
 //! ```
 //! # use cli_test_dir::*;
