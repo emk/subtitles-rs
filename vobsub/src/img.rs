@@ -4,7 +4,8 @@ use cast;
 use common_failures::prelude::*;
 use nom::IResult;
 use safemem::write_bytes;
-use util::BytesFormatter;
+
+use crate::util::BytesFormatter;
 
 /// The dimensions of an image.
 #[derive(Debug)]

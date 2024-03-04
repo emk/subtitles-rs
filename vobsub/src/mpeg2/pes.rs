@@ -6,9 +6,9 @@
 use std::fmt;
 
 use nom::{be_u16, be_u8, rest, IResult};
-use util::BytesFormatter;
 
 use super::clock::{clock, Clock};
+use crate::util::BytesFormatter;
 
 /// Possible combinations of PTS and DTS data which might appear inside a
 /// PES header.

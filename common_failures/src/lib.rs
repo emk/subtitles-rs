@@ -97,11 +97,13 @@ use std::result;
 
 /// Import this module to get a useful error-handling API.
 pub mod prelude {
-    pub use display::DisplayCausesAndBacktraceExt;
     pub use failure::ResultExt;
-    pub use io::{IoContextErrorExt, IoContextExt};
-    pub use Error;
-    pub use Result;
+
+    pub use crate::{
+        display::DisplayCausesAndBacktraceExt,
+        io::{IoContextErrorExt, IoContextExt},
+        Error, Result,
+    };
 }
 
 pub mod display;

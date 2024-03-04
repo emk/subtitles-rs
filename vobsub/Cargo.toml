@@ -2,6 +2,7 @@
 name = "vobsub"
 version = "0.2.3"
 authors = ["Eric Kidd <git@randomhacks.net>"]
+edition = "2021"
 
 description = "Decode DVD VobSub-format subtitles (*.sub/*.idx files)"
 license = "CC0-1.0"

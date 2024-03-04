@@ -2,6 +2,7 @@
 name = "cli_test_dir"
 version = "0.1.7"
 authors = ["Eric Kidd <git@randomhacks.net>"]
+edition = "2021"
 
 description = "Tools for testing Rust command-line utilities"
 license = "CC0-1.0"

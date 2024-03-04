@@ -4,10 +4,13 @@ use std::{fs, io, io::prelude::*, path::Path};
 
 use cast;
 use common_failures::prelude::*;
-use errors::{IResultExt, VobsubError};
 use image::Rgb;
 use regex::Regex;
-use sub;
+
+use crate::{
+    errors::{IResultExt, VobsubError},
+    sub,
+};
 
 // Parse a single hexadecimal digit.
 named!(

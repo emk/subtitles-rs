@@ -8,12 +8,15 @@ use std::fmt;
 
 use cast;
 use common_failures::prelude::*;
-use idx;
 use image::{ImageBuffer, Rgba, RgbaImage};
-use img::{decompress, Size};
-use mpeg2::ps;
 use nom::{be_u16, IResult};
-use util::BytesFormatter;
+
+use crate::{
+    idx,
+    img::{decompress, Size},
+    mpeg2::ps,
+    util::BytesFormatter,
+};
 
 /// The default time between two adjacent subtitles if no end time is
 /// provided.  This is chosen to be a value that's usually representable in
