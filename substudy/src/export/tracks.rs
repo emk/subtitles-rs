@@ -3,12 +3,14 @@
 
 use std::{default::Default, io::Write};
 
-use common_failures::prelude::*;
+use anyhow::Context as _;
+use log::debug;
 
 use crate::{
     export::Exporter,
     time::{seconds_to_hhmmss, Period},
     video::Id3Metadata,
+    Result,
 };
 
 // Truncate a string to fit within the specified number of Unicode
@@ -125,7 +127,7 @@ pub fn export_tracks(exporter: &mut Exporter) -> Result<()> {
         let path =
             exporter.schedule_audio_export_ext(foreign_lang, conv.period, metadata);
         writeln!(playlist, "{}", &path)
-            .with_context(|_| format_err!("error serializing playlist to memory"))?;
+            .context("error serializing playlist to memory")?;
     }
     exporter.export_data_file("playlist.m3u8", &playlist)?;
 

@@ -1,8 +1,9 @@
 //! SRT-format subtitle support.
 
-use std::{fs::File, io::Read, path::Path};
+use std::{fs::File, io::Read as _, path::Path};
 
-use common_failures::prelude::*;
+use anyhow::Context as _;
+use serde::Serialize;
 
 use crate::{
     clean::{clean_subtitle_file, strip_formatting},
@@ -10,6 +11,7 @@ use crate::{
     grammar,
     lang::Lang,
     time::Period,
+    Result,
 };
 
 /// Format seconds using the standard SRT time format.
@@ -67,16 +69,20 @@ impl SubtitleFile {
         // multiple times, we would remove all the copies, but we've never seen
         // that in the wild.
         Ok(grammar::subtitle_file(data.trim_start_matches("\u{FEFF}"))
-            .with_context(|_| format_err!("could not parse subtitles"))?)
+            .context("could not parse subtitles")?)
     }
 
     /// Parse the subtitle file found at the specified path.
     pub fn from_path(path: &Path) -> Result<SubtitleFile> {
-        let mut file = File::open(path).io_read_context(path)?;
+        let mut file = File::open(path)
+            .with_context(|| format!("could not open {}", path.display()))?;
         let mut bytes = Vec::new();
-        file.read_to_end(&mut bytes).io_read_context(path)?;
-        let data = smart_decode(&bytes).io_read_context(path)?;
-        Ok(SubtitleFile::from_str(&data).io_read_context(path)?)
+        file.read_to_end(&mut bytes)
+            .with_context(|| format!("could not read {}", path.display()))?;
+        let data = smart_decode(&bytes)
+            .with_context(|| format!("could not read {}", path.display()))?;
+        Ok(SubtitleFile::from_str(&data)
+            .with_context(|| format!("could not parse {}", path.display()))?)
     }
 
     /// Parse and normalize the subtitle file found at the specified path.

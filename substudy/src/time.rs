@@ -2,8 +2,10 @@
 
 use std::result;
 
-use common_failures::prelude::*;
+use anyhow::anyhow;
 use serde::{ser::SerializeTuple, Serialize, Serializer};
+
+use crate::Result;
 
 /// The minimum spacing between two points in time to count as
 /// unambiguously different.  This is related to the typical precision used
@@ -72,7 +74,7 @@ impl Period {
                 end: end,
             })
         } else {
-            Err(format_err!(
+            Err(anyhow!(
                 "Beginning of range is before end: {}-{}",
                 begin,
                 end
@@ -164,7 +166,7 @@ impl Period {
     /// Make sure this subtitle begins after `limit`.
     pub fn begin_after(&mut self, limit: f32) -> Result<()> {
         if limit > self.end - 2.0 * MIN_SPACING {
-            Err(format_err!(
+            Err(anyhow!(
                 "Cannot begin time period {:?} after {}",
                 self,
                 limit
@@ -179,7 +181,7 @@ impl Period {
     /// `2*MIN_SPACING` greater than the begin time.
     pub fn end_before(&mut self, limit: f32) -> Result<()> {
         if limit < self.begin + 2.0 * MIN_SPACING {
-            Err(format_err!(
+            Err(anyhow!(
                 "Cannot truncate time period {:?} at {}",
                 self,
                 limit

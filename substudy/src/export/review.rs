@@ -1,10 +1,9 @@
 //! Export to web-page based "review" format.
 
-use common_failures::prelude::*;
-use failure::SyncFailure;
 use handlebars::Handlebars;
+use serde::Serialize;
 
-use crate::{export::Exporter, lang::Lang, time::Period};
+use crate::{export::Exporter, lang::Lang, time::Period, Result};
 
 /// Information about a subtitle for use by our Handlebars HTML template.
 #[derive(Debug, Serialize)]
@@ -68,9 +67,7 @@ pub fn export_review(exporter: &mut Exporter) -> Result<()> {
     let template = include_str!("review.html.hbs");
     let mut handlebars = Handlebars::new();
     handlebars.register_template_string("review", template.to_owned())?;
-    let html = handlebars
-        .render("review", &bindings)
-        .map_err(SyncFailure::new)?;
+    let html = handlebars.render("review", &bindings)?;
     exporter.export_data_file("index.html", html.as_bytes())?;
 
     // Extract our media files.

@@ -10,10 +10,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use common_failures::{
-    io::{Operation, Target},
-    prelude::*,
-};
+use anyhow::{anyhow, Context as _};
 
 use crate::{
     align::align_available_files,
@@ -21,6 +18,7 @@ use crate::{
     srt::{Subtitle, SubtitleFile},
     time::{Period, ToTimestamp},
     video::{Extraction, ExtractionSpec, Id3Metadata, Video},
+    Result,
 };
 
 /// Take a platform-specific pathname fragment and turn it into a regular
@@ -94,13 +92,13 @@ impl Exporter {
         let file_stem = os_str_to_string(video.file_stem());
         let dir = Path::new("./").join(format!("{}_{}", &file_stem, label));
         if fs::metadata(&dir).is_ok() {
-            return Err(format_err!(
+            return Err(anyhow!(
                 "Directory already exists: {}",
                 &dir.to_string_lossy()
             ));
         }
         fs::create_dir_all(&dir)
-            .io_context(Operation::Create, Target::Directory(dir.to_owned()))?;
+            .with_context(|| format!("could not create {}", dir.display()))?;
 
         Ok(Exporter {
             video: video,
@@ -208,8 +206,10 @@ impl Exporter {
         P: AsRef<Path>,
     {
         let path = self.dir.join(rel_path.as_ref());
-        let mut f = fs::File::create(&path).io_write_context(&path)?;
-        f.write_all(data).io_write_context(&path)?;
+        let mut f = fs::File::create(&path)
+            .with_context(|| format!("could not open {}", path.display()))?;
+        f.write_all(data)
+            .with_context(|| format!("could not write to {}", path.display()))?;
         Ok(())
     }
 

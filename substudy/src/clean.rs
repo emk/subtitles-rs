@@ -3,10 +3,12 @@
 
 use std::borrow::Cow;
 
-use common_failures::prelude::*;
 use regex::Regex;
 
-use crate::srt::{Subtitle, SubtitleFile};
+use crate::{
+    srt::{Subtitle, SubtitleFile},
+    Result,
+};
 
 /// Remove the formatting from a subtitle.
 pub fn strip_formatting(line: &str) -> Cow<str> {

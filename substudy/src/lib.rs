@@ -7,31 +7,7 @@
 
 #![warn(missing_docs)]
 
-extern crate cast;
-extern crate chardet;
-extern crate common_failures;
-extern crate csv;
-#[cfg(test)]
-#[macro_use]
-extern crate difference;
-extern crate encoding;
-#[macro_use]
-extern crate failure;
-#[macro_use]
-extern crate failure_derive;
-extern crate handlebars;
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate log;
-extern crate num;
-extern crate pbr;
-extern crate regex;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-extern crate whatlang;
+pub use anyhow::{Error, Result};
 
 pub mod align;
 pub mod clean;

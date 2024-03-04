@@ -1,12 +1,13 @@
 //! Exporting to CSV (compatible with Anki import).
 
-use common_failures::prelude::*;
+use anyhow::Context as _;
 use csv;
 use regex::Regex;
+use serde::Serialize;
 
 use crate::{
     contexts::ItemsInContextExt, export::Exporter, srt::Subtitle,
-    time::seconds_to_hhmmss_sss,
+    time::seconds_to_hhmmss_sss, Result,
 };
 
 /// Attempt to guess a reasonable episode number, based on the file name.
@@ -101,8 +102,7 @@ pub fn export_csv(exporter: &mut Exporter) -> Result<()> {
                     foreign_next: foreign.next.map(|s| s.plain_text()),
                     native_next: native.next.map(|s| s.plain_text()),
                 };
-                wtr.serialize(&note)
-                    .with_context(|_| format_err!("error serializing to RAM"))?;
+                wtr.serialize(&note).context("error serializing to RAM")?;
             }
         }
     }

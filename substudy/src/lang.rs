@@ -2,9 +2,13 @@
 
 use std::{collections::HashMap, fmt, iter::FromIterator, result, str::from_utf8};
 
-use common_failures::prelude::*;
+use anyhow::anyhow;
+use lazy_static::lazy_static;
+use log::debug;
 use serde::{Serialize, Serializer};
 use whatlang;
+
+use crate::Result;
 
 // Use the third-party `lazy_static!` macro to declare variables that will
 // initialized the first time we use them.
@@ -96,7 +100,7 @@ impl Lang {
             (true, 3) => Ok(Lang {
                 code: [c[0], c[1], c[2]],
             }),
-            _ => Err(format_err!("Unsupported language code: {}", code)),
+            _ => Err(anyhow!("Unsupported language code: {}", code)),
         }
     }
 

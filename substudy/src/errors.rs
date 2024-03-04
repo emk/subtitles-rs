@@ -1,8 +1,9 @@
 //! Error-handling for this library.
 
+use std::{error, fmt};
+
 /// An error occurred running an external command.
-#[derive(Debug, Fail)]
-#[fail(display = "error running external command {:?}", command)]
+#[derive(Debug)]
 pub struct RunCommandError {
     command: String,
 }
@@ -21,3 +22,11 @@ impl RunCommandError {
         &self.command
     }
 }
+
+impl fmt::Display for RunCommandError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "error running external command {:?}", self.command)
+    }
+}
+
+impl error::Error for RunCommandError {}

@@ -93,6 +93,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.80"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ad32ce52e4161730f7098c077cd2ed6229b5804ccf99e5366be1ab72a98b4e1"
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -915,17 +921,15 @@ checksum = "5ee073c9e4cd00e28217186dbe12796d692868f432bf2e97ee73bed0c56dfa01"
 name = "substudy"
 version = "0.4.5"
 dependencies = [
+ "anyhow",
  "cast",
  "chardet",
  "clap",
  "cli_test_dir",
- "common_failures",
  "csv",
  "difference",
  "encoding",
  "env_logger",
- "failure",
- "failure_derive",
  "handlebars",
  "lazy_static",
  "log",

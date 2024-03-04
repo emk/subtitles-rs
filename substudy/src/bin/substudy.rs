@@ -3,8 +3,7 @@
 use std::path::{Path, PathBuf};
 
 use clap::{Parser, Subcommand};
-use common_failures::{prelude::*, quick_main};
-use substudy::{align::combine_files, export, srt::SubtitleFile, video};
+use substudy::{align::combine_files, export, srt::SubtitleFile, video, Result};
 
 #[derive(Debug, Parser)]
 /// Subtitle processing tools for students of foreign languages. (For now, all
@@ -143,7 +142,7 @@ enum ToList {
 }
 
 // Choose and run the appropriate command.
-fn run() -> Result<()> {
+fn main() -> Result<()> {
     env_logger::init();
 
     // Parse our command-line arguments using docopt (very shiny).
@@ -216,5 +215,3 @@ fn cmd_export(
 
     Ok(())
 }
-
-quick_main!(run);

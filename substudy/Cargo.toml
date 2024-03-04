@@ -18,15 +18,13 @@ keywords = ["text"]
 exclude = ["fixtures/empty.mp4"]
 
 [dependencies]
+anyhow = "1.0.80"
 cast = "0.3.0"
 chardet = "0.2"
 clap = { version = "4.5.1", features = ["derive", "wrap_help"] }
-common_failures = { version = "0.1", path = "../common_failures" }
 csv = "1.0.0"
 encoding = "0.2"
 env_logger = "0.11.2"
-failure = "0.1"
-failure_derive = "0.1"
 handlebars = "5.1.0"
 lazy_static = "1.0"
 log = "0.4.21"

@@ -2,6 +2,8 @@
 
 use std::cmp::Ordering;
 
+use log::debug;
+
 use self::MatchQuality::{Nearby, NoMatch, Overlap};
 use crate::{
     clean::{clean_subtitle_file, strip_formatting},
@@ -283,6 +285,8 @@ pub fn combine_files(file1: &SubtitleFile, file2: &SubtitleFile) -> SubtitleFile
 #[test]
 fn test_combine_files() {
     use std::path::Path;
+
+    use difference::assert_diff;
 
     // Load sample subtitles.
     let path_es = Path::new("fixtures/sample.es.srt");

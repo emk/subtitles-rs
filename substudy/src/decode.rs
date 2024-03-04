@@ -1,8 +1,11 @@
 //! Decode text in a wide variety of character encodings.
 
+use anyhow::anyhow;
 use chardet;
-use common_failures::prelude::*;
 use encoding::{label::encoding_from_whatwg_label, types::DecoderTrap};
+use log::debug;
+
+use crate::{Error, Result};
 
 /// Guess the encoding of a byte buffer and decode it to a string.
 pub fn smart_decode(bytes: &[u8]) -> Result<String> {
@@ -12,15 +15,13 @@ pub fn smart_decode(bytes: &[u8]) -> Result<String> {
         name, confidence
     );
     if confidence < 0.5 {
-        return Err(format_err!(
-            "cannot detect language with sufficient confidence"
-        ));
+        return Err(anyhow!("cannot detect language with sufficient confidence"));
     }
     let encoding = encoding_from_whatwg_label(&name)
-        .ok_or_else(|| -> Error { format_err!("Unknown encoding: {}", &name) })?;
+        .ok_or_else(|| -> Error { anyhow!("Unknown encoding: {}", &name) })?;
     match encoding.decode(bytes, DecoderTrap::Strict) {
         Ok(result) => Ok(result),
-        Err(msg) => Err(format_err!("{}", msg)),
+        Err(msg) => Err(anyhow!("{}", msg)),
     }
 }
 

@@ -9,15 +9,16 @@ use std::{
     str::{from_utf8, FromStr},
 };
 
+use anyhow::{anyhow, Context as _};
 use cast;
-use common_failures::prelude::*;
+use log::debug;
 use num::rational::Ratio;
 use pbr::ProgressBar;
 use regex::Regex;
 use serde::{de, Deserialize, Deserializer};
 use serde_json;
 
-use crate::{errors::RunCommandError, lang::Lang, time::Period};
+use crate::{errors::RunCommandError, lang::Lang, time::Period, Result};
 
 /// Information about an MP3 track (optional).
 #[derive(Debug, Default)]
@@ -254,7 +255,7 @@ impl Video {
     pub fn new(path: &Path) -> Result<Video> {
         // Ensure we have an actual file before doing anything else.
         if !path.is_file() {
-            return Err(format_err!("No such file {:?}", path.display()));
+            return Err(anyhow!("No such file {:?}", path.display()));
         }
 
         // Run our probe command.
@@ -267,10 +268,10 @@ impl Video {
             .arg("json")
             .arg(path)
             .output();
-        let output = cmd.with_context(|_| mkerr())?;
-        let stdout = from_utf8(&output.stdout).with_context(|_| mkerr())?;
+        let output = cmd.with_context(mkerr)?;
+        let stdout = from_utf8(&output.stdout).with_context(mkerr)?;
         debug!("Video metadata: {}", stdout);
-        let metadata = serde_json::from_str(stdout).with_context(|_| mkerr())?;
+        let metadata = serde_json::from_str(stdout).with_context(mkerr)?;
 
         Ok(Video {
             path: path.to_owned(),
@@ -317,7 +318,7 @@ impl Video {
         let mut cmd = self.extract_command(time_base);
         extraction.add_args(&mut cmd, time_base);
         cmd.output()
-            .with_context(|_| RunCommandError::new("ffmpg"))?;
+            .with_context(|| RunCommandError::new("ffmpg"))?;
         Ok(())
     }
 
@@ -337,7 +338,7 @@ impl Video {
             e.add_args(&mut cmd, time_base);
         }
         cmd.output()
-            .with_context(|_| RunCommandError::new("ffmpg"))?;
+            .with_context(|| RunCommandError::new("ffmpg"))?;
         Ok(())
     }
 
