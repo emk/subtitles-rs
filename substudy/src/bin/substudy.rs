@@ -4,10 +4,10 @@ use clap::Parser;
 use clap::Subcommand;
 use common_failures::{prelude::*, quick_main};
 use std::path::{Path, PathBuf};
-use substudy::srt::SubtitleFile;
 use substudy::align::combine_files;
-use substudy::video;
 use substudy::export;
+use substudy::srt::SubtitleFile;
+use substudy::video;
 
 #[derive(Debug, Parser)]
 /// Subtitle processing tools for students of foreign languages. (For now, all
@@ -109,17 +109,27 @@ impl ExportFormat {
     /// Get the path to the foreign-language subtitles, if present.
     fn foreign_subs(&self) -> &Path {
         match *self {
-            ExportFormat::Csv { ref foreign_subs, .. } => &foreign_subs,
-            ExportFormat::Review { ref foreign_subs, .. } => &foreign_subs,
-            ExportFormat::Tracks { ref foreign_subs, .. } => &foreign_subs,
+            ExportFormat::Csv {
+                ref foreign_subs, ..
+            } => &foreign_subs,
+            ExportFormat::Review {
+                ref foreign_subs, ..
+            } => &foreign_subs,
+            ExportFormat::Tracks {
+                ref foreign_subs, ..
+            } => &foreign_subs,
         }
     }
 
     /// Get the path to the native-language subtitles, if present.
     fn native_subs(&self) -> Option<&Path> {
         match *self {
-            ExportFormat::Csv { ref native_subs, .. } => native_subs.as_ref().map(|p| p.as_path()),
-            ExportFormat::Review { ref native_subs, .. } => native_subs.as_ref().map(|p| p.as_path()),
+            ExportFormat::Csv {
+                ref native_subs, ..
+            } => native_subs.as_ref().map(|p| p.as_path()),
+            ExportFormat::Review {
+                ref native_subs, ..
+            } => native_subs.as_ref().map(|p| p.as_path()),
             ExportFormat::Tracks { .. } => None,
         }
     }
@@ -143,23 +153,20 @@ fn run() -> Result<()> {
     let args: Args = Args::parse();
 
     match args {
-        Args::Clean { ref subs } => {
-            cmd_clean(subs)
-        }
-        Args::Combine { ref foreign_subs, ref native_subs } => {
-            cmd_combine(foreign_subs, native_subs)
-        }
-        Args::Export { ref format } => {
-            cmd_export(
-                format.name(),
-                format.video(),
-                format.foreign_subs(),
-                format.native_subs()
-            )
-        }
-        Args::List { to_list: ToList::Tracks { ref video } } => {
-            cmd_tracks(video)
-        }
+        Args::Clean { ref subs } => cmd_clean(subs),
+        Args::Combine {
+            ref foreign_subs,
+            ref native_subs,
+        } => cmd_combine(foreign_subs, native_subs),
+        Args::Export { ref format } => cmd_export(
+            format.name(),
+            format.video(),
+            format.foreign_subs(),
+            format.native_subs(),
+        ),
+        Args::List {
+            to_list: ToList::Tracks { ref video },
+        } => cmd_tracks(video),
     }
 }
 
@@ -180,7 +187,8 @@ fn cmd_tracks(path: &Path) -> Result<()> {
     let v = video::Video::new(path)?;
     for stream in v.streams() {
         let lang = stream.language();
-        let lang_str = lang.map(|l| l.as_str().to_owned())
+        let lang_str = lang
+            .map(|l| l.as_str().to_owned())
             .unwrap_or("??".to_owned());
         println!("#{} {} {:?}", stream.index, &lang_str, stream.codec_type);
     }

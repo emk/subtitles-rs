@@ -5,8 +5,8 @@ use serde::{Serialize, Serializer};
 use std::collections::HashMap;
 use std::fmt;
 use std::iter::FromIterator;
-use std::str::from_utf8;
 use std::result;
+use std::str::from_utf8;
 use whatlang;
 
 // Use the third-party `lazy_static!` macro to declare variables that will

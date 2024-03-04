@@ -19,7 +19,9 @@ impl Clock {
     /// Return a new `Clock` value, setting the 9-bit extension to the
     /// specified value.
     pub fn with_ext(&self, ext: u16) -> Clock {
-        Clock { value: self.value & !0x1f | u64::from(ext) }
+        Clock {
+            value: self.value & !0x1f | u64::from(ext),
+        }
     }
 
     /// Convert a `Clock` value to seconds.
@@ -75,11 +77,18 @@ named!(pub clock_and_ext<(&[u8], usize), Clock>,
 #[test]
 fn parse_clock() {
     use nom::IResult;
-    assert_eq!(clock((&[0x44, 0x02, 0xc4, 0x82, 0x04][..], 2)),
-               IResult::Done((&[0x04][..], 6),
-                             Clock::base(0b_000_000000001011000_001000001000000)));
-    assert_eq!(clock_and_ext((&[0x44, 0x02, 0xc4, 0x82, 0x04, 0xa9][..], 2)),
-               IResult::Done((&[][..], 0),
-                             Clock::base(0b_000_000000001011000_001000001000000)
-                                 .with_ext(0b001010100)));
+    assert_eq!(
+        clock((&[0x44, 0x02, 0xc4, 0x82, 0x04][..], 2)),
+        IResult::Done(
+            (&[0x04][..], 6),
+            Clock::base(0b_000_000000001011000_001000001000000)
+        )
+    );
+    assert_eq!(
+        clock_and_ext((&[0x44, 0x02, 0xc4, 0x82, 0x04, 0xa9][..], 2)),
+        IResult::Done(
+            (&[][..], 0),
+            Clock::base(0b_000_000000001011000_001000001000000).with_ext(0b001010100)
+        )
+    );
 }

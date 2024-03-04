@@ -68,20 +68,24 @@ fn scan_line(input: &[u8], output: &mut [u8]) -> Result<usize> {
                 } else {
                     cast::usize(run.cnt)
                 };
-                if x+count > output.len() {
+                if x + count > output.len() {
                     return Err(format_err!("scan line is too long"));
                 }
-                write_bytes(&mut output[x..x+count], run.val);
+                write_bytes(&mut output[x..x + count], run.val);
                 x += count;
             }
             IResult::Error(err) => {
-                return Err(format_err!("error parsing subtitle scan line: {:?}",
-                                       err));
+                return Err(format_err!(
+                    "error parsing subtitle scan line: {:?}",
+                    err
+                ));
             }
             IResult::Incomplete(needed) => {
-                return Err(format_err!("not enough bytes parsing subtitle scan \
+                return Err(format_err!(
+                    "not enough bytes parsing subtitle scan \
                                        line: {:?}",
-                                       needed));
+                    needed
+                ));
             }
         }
     }
@@ -98,17 +102,22 @@ fn scan_line(input: &[u8], output: &mut [u8]) -> Result<usize> {
 /// Decompress a run-length encoded image, and return a vector in row-major
 /// order, starting at the upper-left and scanning right and down, with one
 /// byte for each 2-bit value.
-pub fn decompress(size: Size, data: [&[u8]; 2])
-                  -> Result<Vec<u8>> {
-    trace!("decompressing image {:?}, max: [0x{:x}, 0x{:x}]",
-           &size, data[0].len(), data[1].len());
+pub fn decompress(size: Size, data: [&[u8]; 2]) -> Result<Vec<u8>> {
+    trace!(
+        "decompressing image {:?}, max: [0x{:x}, 0x{:x}]",
+        &size,
+        data[0].len(),
+        data[1].len()
+    );
     let mut img = vec![0; size.w * size.h];
     let mut offsets = [0; 2];
     for y in 0..size.h {
         let odd = y % 2;
         trace!("line {:?}, offset 0x{:x}", y, offsets[odd]);
-        let consumed = scan_line(&data[odd][offsets[odd]..],
-                                 &mut img[y*size.w..(y+1)*size.w])?;
+        let consumed = scan_line(
+            &data[odd][offsets[odd]..],
+            &mut img[y * size.w..(y + 1) * size.w],
+        )?;
         offsets[odd] += consumed;
     }
     // TODO: Warn if we didn't consume everything.

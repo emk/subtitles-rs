@@ -33,17 +33,17 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate whatlang;
 
-pub mod errors;
+pub mod align;
+pub mod clean;
 pub mod contexts;
 pub mod decode;
-pub mod lang;
-pub mod srt;
-pub mod clean;
-pub mod merge;
-pub mod time;
-pub mod align;
-pub mod video;
+pub mod errors;
 pub mod export;
+pub mod lang;
+pub mod merge;
+pub mod srt;
+pub mod time;
+pub mod video;
 
 peg::parser! {
     grammar grammar() for str {

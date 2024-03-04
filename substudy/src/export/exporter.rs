@@ -1,13 +1,13 @@
 //! Code shared between multiple exporters.
 
-use common_failures::prelude::*;
 use common_failures::io::{Operation, Target};
+use common_failures::prelude::*;
 use std::convert::AsRef;
 use std::default::Default;
-use std::io::Write;
 use std::ffi::OsStr;
 use std::fmt::Write as fmt_Write;
 use std::fs;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use crate::align::align_available_files;
@@ -92,10 +92,8 @@ impl Exporter {
                 &dir.to_string_lossy()
             ));
         }
-        fs::create_dir_all(&dir).io_context(
-            Operation::Create,
-            Target::Directory(dir.to_owned()),
-        )?;
+        fs::create_dir_all(&dir)
+            .io_context(Operation::Create, Target::Directory(dir.to_owned()))?;
 
         Ok(Exporter {
             video: video,

@@ -8,9 +8,14 @@ use encoding::types::DecoderTrap;
 /// Guess the encoding of a byte buffer and decode it to a string.
 pub fn smart_decode(bytes: &[u8]) -> Result<String> {
     let (name, confidence, _lang) = chardet::detect(bytes);
-    debug!("detected encoding name {:?} with confidence {}", name, confidence);
+    debug!(
+        "detected encoding name {:?} with confidence {}",
+        name, confidence
+    );
     if confidence < 0.5 {
-        return Err(format_err!("cannot detect language with sufficient confidence"));
+        return Err(format_err!(
+            "cannot detect language with sufficient confidence"
+        ));
     }
     let encoding = encoding_from_whatwg_label(&name)
         .ok_or_else(|| -> Error { format_err!("Unknown encoding: {}", &name) })?;
@@ -30,24 +35,9 @@ fn test_smart_decode() {
     assert_eq!(
         "une idée française",
         &smart_decode(&[
-            0x75u8,
-            0x6e,
-            0x65,
-            0x20,
-            0x69,
-            0x64,
-            0xe9,
-            0x65,
-            0x20,
-            0x66,
-            0x72,
-            0x61,
-            0x6e,
-            0xe7,
-            0x61,
-            0x69,
-            0x73,
-            0x65
-        ]).unwrap()
+            0x75u8, 0x6e, 0x65, 0x20, 0x69, 0x64, 0xe9, 0x65, 0x20, 0x66, 0x72, 0x61,
+            0x6e, 0xe7, 0x61, 0x69, 0x73, 0x65
+        ])
+        .unwrap()
     );
 }

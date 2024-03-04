@@ -59,11 +59,13 @@ pub fn export_csv(exporter: &mut Exporter) -> Result<()> {
         // should work, but I've seen multiple people try it now, and they're
         // maybe only 20% as effective as cards with foreign-language text, at
         // least for people below CEFRL C1.)
-        let aligned: Vec<(Option<Subtitle>, Option<Subtitle>)> = exporter.align()
+        let aligned: Vec<(Option<Subtitle>, Option<Subtitle>)> = exporter
+            .align()
             .iter()
             // The double ref `&&` is thanks to `filter`'s type signature.
             .filter(|&&(ref f, _)| f.is_some())
-            .cloned().collect();
+            .cloned()
+            .collect();
 
         // Output each row in the CSV file.
         for ctx in aligned.items_in_context() {

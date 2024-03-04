@@ -6,7 +6,7 @@ use common_failures::prelude::*;
 use nom::IResult;
 use std::fmt;
 
-use super::clock::{Clock, clock_and_ext};
+use super::clock::{clock_and_ext, Clock};
 use super::pes;
 
 /// A parsed [MPEG-2 Program Stream header][MPEG-PS] (MPEG-PS).
@@ -22,7 +22,12 @@ pub struct Header {
 
 impl fmt::Display for Header {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "[PS packet @ {}, {} kbps]", self.scr, (self.bit_rate*50*8)/1024)
+        write!(
+            f,
+            "[PS packet @ {}, {} kbps]",
+            self.scr,
+            (self.bit_rate * 50 * 8) / 1024
+        )
     }
 }
 
@@ -95,7 +100,9 @@ impl<'a> Iterator for PesPackets<'a> {
         loop {
             // Search for the start of a ProgramStream packet.
             let needle = &[0x00, 0x00, 0x01, 0xba];
-            let start = self.remaining.windows(needle.len())
+            let start = self
+                .remaining
+                .windows(needle.len())
                 .position(|window| needle == window);
 
             if let Some(start) = start {

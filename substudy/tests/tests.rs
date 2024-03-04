@@ -15,12 +15,7 @@ fn show_help() {
         .output()
         .expect("could not run substudy");
     assert!(output.status.success());
-    assert!(
-        from_utf8(&output.stdout)
-            .unwrap()
-            .find("Usage")
-            .is_some()
-    );
+    assert!(from_utf8(&output.stdout).unwrap().find("Usage").is_some());
 }
 
 #[test]
@@ -32,12 +27,10 @@ fn show_version() {
         .output()
         .expect("could not run substudy");
     assert!(output.status.success());
-    assert!(
-        from_utf8(&output.stdout)
-            .unwrap()
-            .find("substudy ")
-            .is_some()
-    );
+    assert!(from_utf8(&output.stdout)
+        .unwrap()
+        .find("substudy ")
+        .is_some());
 }
 
 #[test]
@@ -127,10 +120,8 @@ fn cmd_list_tracks() {
         .output()
         .expect("could not run substudy");
     assert!(output.status.success());
-    assert!(
-        from_utf8(&output.stdout)
-            .unwrap()
-            .find("#1 es Audio")
-            .is_some()
-    );
+    assert!(from_utf8(&output.stdout)
+        .unwrap()
+        .find("#1 es Audio")
+        .is_some());
 }

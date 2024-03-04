@@ -58,11 +58,10 @@ fn run() -> Result<()> {
     let out_dir = match args.flag_out_dir {
         Some(ref o) => Path::new(o).to_owned(),
         None => {
-            let stem = path.file_stem()
+            let stem = path
+                .file_stem()
                 .and_then(|s| s.to_str())
-                .ok_or_else(|| {
-                    format_err!("no filename in {}", path.display())
-                })?;
+                .ok_or_else(|| format_err!("no filename in {}", path.display()))?;
             Path::new(&format!("{}_subtitles", stem)).to_owned()
         }
     };

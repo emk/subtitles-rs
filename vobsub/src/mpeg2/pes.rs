@@ -3,10 +3,10 @@
 //! These packets are nested inside the MPEG-2 Program Stream packets found
 //! in a `*.sub` file.
 
-use nom::{be_u8, be_u16, IResult, rest};
+use nom::{be_u16, be_u8, rest, IResult};
 use std::fmt;
 
-use super::clock::{Clock, clock};
+use super::clock::{clock, Clock};
 use util::BytesFormatter;
 
 /// Possible combinations of PTS and DTS data which might appear inside a
@@ -40,12 +40,18 @@ named!(pts_dts_flags<(&[u8], usize), PtsDtsFlags>,
 
 #[test]
 fn parse_pts_dts_flags() {
-    assert_eq!(pts_dts_flags((&[0b00][..], 6)),
-               IResult::Done((&[][..], 0), PtsDtsFlags::None));
-    assert_eq!(pts_dts_flags((&[0b10][..], 6)),
-               IResult::Done((&[][..], 0), PtsDtsFlags::Pts));
-    assert_eq!(pts_dts_flags((&[0b11][..], 6)),
-               IResult::Done((&[][..], 0), PtsDtsFlags::PtsDts));
+    assert_eq!(
+        pts_dts_flags((&[0b00][..], 6)),
+        IResult::Done((&[][..], 0), PtsDtsFlags::None)
+    );
+    assert_eq!(
+        pts_dts_flags((&[0b10][..], 6)),
+        IResult::Done((&[][..], 0), PtsDtsFlags::Pts)
+    );
+    assert_eq!(
+        pts_dts_flags((&[0b11][..], 6)),
+        IResult::Done((&[][..], 0), PtsDtsFlags::PtsDts)
+    );
 }
 
 /// Presentation and Decode Time Stamps, if available.
@@ -58,27 +64,25 @@ pub struct PtsDts {
 }
 
 // Helper for `pts_dts`.  Parses the PTS-only case.
-named!(pts_only<PtsDts>,
-    bits!(
-        do_parse!(
-            tag_bits!(u8, 4, 0b0010) >>
-            pts: call!(clock) >>
-            (PtsDts { pts: pts, dts: None })
-        )
-    )
+named!(
+    pts_only<PtsDts>,
+    bits!(do_parse!(
+        tag_bits!(u8, 4, 0b0010) >>
+        pts: call!(clock) >>
+        (PtsDts { pts: pts, dts: None })
+    ))
 );
 
 // Helper for `pts_dts`.  Parses the PTS and DTS case.
-named!(pts_and_dts<PtsDts>,
-    bits!(
-        do_parse!(
-            tag_bits!(u8, 4, 0b0011) >>
-            pts: call!(clock) >>
-            tag_bits!(u8, 4, 0b0001) >>
-            dts: call!(clock) >>
-            (PtsDts { pts: pts, dts: Some(dts) })
-        )
-    )
+named!(
+    pts_and_dts<PtsDts>,
+    bits!(do_parse!(
+        tag_bits!(u8, 4, 0b0011) >>
+        pts: call!(clock) >>
+        tag_bits!(u8, 4, 0b0001) >>
+        dts: call!(clock) >>
+        (PtsDts { pts: pts, dts: Some(dts) })
+    ))
 );
 
 // Parse a `PtsDts` value in the format specified by `flags`.
@@ -92,14 +96,20 @@ fn pts_dts(i: &[u8], flags: PtsDtsFlags) -> IResult<&[u8], Option<PtsDts>> {
 
 #[test]
 fn parse_pts_dts() {
-    assert_eq!(pts_dts(&[][..], PtsDtsFlags::None),
-               IResult::Done(&[][..], None));
-    assert_eq!(pts_dts(&[0x21, 0x00, 0xab, 0xe9, 0xc1][..], PtsDtsFlags::Pts),
-               IResult::Done(&[][..],
-                             Some(PtsDts {
-                                 pts: Clock::base(2815200),
-                                 dts: None,
-                             })));
+    assert_eq!(
+        pts_dts(&[][..], PtsDtsFlags::None),
+        IResult::Done(&[][..], None)
+    );
+    assert_eq!(
+        pts_dts(&[0x21, 0x00, 0xab, 0xe9, 0xc1][..], PtsDtsFlags::Pts),
+        IResult::Done(
+            &[][..],
+            Some(PtsDts {
+                pts: Clock::base(2815200),
+                dts: None,
+            })
+        )
+    );
 }
 
 /// Flags specifying which header data fields are present.
@@ -119,37 +129,40 @@ named!(bool_flag<(&[u8], usize), bool>,
     map!(take_bits!(u8, 1), |b| b == 1)
 );
 
-named!(header_data_flags<HeaderDataFlags>,
-   bits!(
-       do_parse!(
-           pts_dts_flags: call!(pts_dts_flags) >>
-           escr_flag: call!(bool_flag) >>
-           es_rate_flag: call!(bool_flag) >>
-           dsm_trick_mode_flag: call!(bool_flag) >>
-           additional_copy_info_flag: call!(bool_flag) >>
-           crc_flag: call!(bool_flag) >>
-           extension_flag: call!(bool_flag) >>
-           (HeaderDataFlags {
-               pts_dts_flags: pts_dts_flags,
-               escr_flag: escr_flag,
-               es_rate_flag: es_rate_flag,
-               dsm_trick_mode_flag: dsm_trick_mode_flag,
-               additional_copy_info_flag: additional_copy_info_flag,
-               crc_flag: crc_flag,
-               extension_flag: extension_flag,
-           })
-       )
-   )
+named!(
+    header_data_flags<HeaderDataFlags>,
+    bits!(do_parse!(
+        pts_dts_flags: call!(pts_dts_flags) >>
+        escr_flag: call!(bool_flag) >>
+        es_rate_flag: call!(bool_flag) >>
+        dsm_trick_mode_flag: call!(bool_flag) >>
+        additional_copy_info_flag: call!(bool_flag) >>
+        crc_flag: call!(bool_flag) >>
+        extension_flag: call!(bool_flag) >>
+        (HeaderDataFlags {
+            pts_dts_flags: pts_dts_flags,
+            escr_flag: escr_flag,
+            es_rate_flag: es_rate_flag,
+            dsm_trick_mode_flag: dsm_trick_mode_flag,
+            additional_copy_info_flag: additional_copy_info_flag,
+            crc_flag: crc_flag,
+            extension_flag: extension_flag,
+        })
+    ))
 );
 
 #[test]
 fn parse_header_data_flags() {
-    assert_eq!(header_data_flags(&[0x80][..]),
-               IResult::Done(&[][..],
-                             HeaderDataFlags {
-                                 pts_dts_flags: PtsDtsFlags::Pts,
-                                 ..HeaderDataFlags::default()
-                             }));
+    assert_eq!(
+        header_data_flags(&[0x80][..]),
+        IResult::Done(
+            &[][..],
+            HeaderDataFlags {
+                pts_dts_flags: PtsDtsFlags::Pts,
+                ..HeaderDataFlags::default()
+            }
+        )
+    );
 }
 
 /// Header data fields.
@@ -166,8 +179,7 @@ pub struct HeaderData {
 /// Parse variable length header data, ignoring any fields we don't care
 /// about.  We expect to be called by `length_value!` so any extra bytes
 /// will be discarded.
-fn header_data_fields(i: &[u8], flags: HeaderDataFlags)
-                      -> IResult<&[u8], HeaderData> {
+fn header_data_fields(i: &[u8], flags: HeaderDataFlags) -> IResult<&[u8], HeaderData> {
     do_parse!(i,
         pts_dts: apply!(pts_dts, flags.pts_dts_flags) >>
         (HeaderData {
@@ -179,7 +191,8 @@ fn header_data_fields(i: &[u8], flags: HeaderDataFlags)
 }
 
 // Parse PES header data, including the predecing flags and length bytes.
-named!(header_data<HeaderData>,
+named!(
+    header_data<HeaderData>,
     do_parse!(
         // Grab the flags from our flag byte.
         flags: call!(header_data_flags) >>
@@ -194,21 +207,27 @@ named!(header_data<HeaderData>,
 
 #[test]
 fn parse_header_data() {
-    assert_eq!(header_data(&[0x00, 0x00][..]),
-               IResult::Done(&[][..], HeaderData::default()));
-    assert_eq!(header_data(&[0x80, 0x05, 0x21, 0x00, 0xab, 0xe9, 0xc1][..]),
-               IResult::Done(&[][..],
-                             HeaderData {
-                                 flags: HeaderDataFlags {
-                                     pts_dts_flags: PtsDtsFlags::Pts,
-                                     ..HeaderDataFlags::default()
-                                 },
-                                 pts_dts: Some(PtsDts {
-                                     pts: Clock::base(2815200),
-                                     dts: None,
-                                 }),
-                                 ..HeaderData::default()
-                             }));
+    assert_eq!(
+        header_data(&[0x00, 0x00][..]),
+        IResult::Done(&[][..], HeaderData::default())
+    );
+    assert_eq!(
+        header_data(&[0x80, 0x05, 0x21, 0x00, 0xab, 0xe9, 0xc1][..]),
+        IResult::Done(
+            &[][..],
+            HeaderData {
+                flags: HeaderDataFlags {
+                    pts_dts_flags: PtsDtsFlags::Pts,
+                    ..HeaderDataFlags::default()
+                },
+                pts_dts: Some(PtsDts {
+                    pts: Clock::base(2815200),
+                    dts: None,
+                }),
+                ..HeaderData::default()
+            }
+        )
+    );
 }
 
 /// A [Packetized Elementary Stream][pes] header, not including the
@@ -225,24 +244,23 @@ pub struct Header {
 }
 
 // Parse the first PES header byte after the length.
-named!(header<Header>,
-    bits!(
-        do_parse!(
-            tag_bits!(u8, 2, 0b10) >>
-            scrambling_control: take_bits!(u8, 2) >>
-            priority: call!(bool_flag) >>
-            data_alignment_indicator: call!(bool_flag) >>
-            copyright: call!(bool_flag) >>
-            original: call!(bool_flag) >>
-            (Header {
-                scrambling_control: scrambling_control,
-                priority: priority,
-                data_alignment_indicator: data_alignment_indicator,
-                copyright: copyright,
-                original: original,
-            })
-        )
-    )
+named!(
+    header<Header>,
+    bits!(do_parse!(
+        tag_bits!(u8, 2, 0b10) >>
+        scrambling_control: take_bits!(u8, 2) >>
+        priority: call!(bool_flag) >>
+        data_alignment_indicator: call!(bool_flag) >>
+        copyright: call!(bool_flag) >>
+        original: call!(bool_flag) >>
+        (Header {
+            scrambling_control: scrambling_control,
+            priority: priority,
+            data_alignment_indicator: data_alignment_indicator,
+            copyright: copyright,
+            original: original,
+        })
+    ))
 );
 
 /// A [Packetized Elementary Stream][pes] packet.
@@ -267,7 +285,8 @@ impl<'a> fmt::Debug for Packet<'a> {
     }
 }
 
-named!(packet_helper<Packet>,
+named!(
+    packet_helper<Packet>,
     do_parse!(
         header: call!(header) >>
         header_data: call!(header_data) >>
@@ -293,13 +312,8 @@ named!(pub packet<Packet>,
 #[test]
 fn parse_packet() {
     let input = &[
-        0x00, 0x00, 0x01, 0xbd,
-        0x00, 0x10,
-        0x81,
-        0x80, 0x05, 0x21, 0x00, 0xab, 0xe9, 0xc1,
-        0x20,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0xff,
+        0x00, 0x00, 0x01, 0xbd, 0x00, 0x10, 0x81, 0x80, 0x05, 0x21, 0x00, 0xab, 0xe9,
+        0xc1, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff,
     ][..];
 
     let expected = Packet {

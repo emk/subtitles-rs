@@ -97,10 +97,10 @@ use std::result;
 
 /// Import this module to get a useful error-handling API.
 pub mod prelude {
-    pub use {Error, Result};
-    pub use io::{IoContextExt, IoContextErrorExt};
     pub use display::DisplayCausesAndBacktraceExt;
     pub use failure::ResultExt;
+    pub use io::{IoContextErrorExt, IoContextExt};
+    pub use {Error, Result};
 }
 
 pub mod display;
@@ -117,19 +117,16 @@ pub type Result<T> = result::Result<T, Error>;
 /// with a non-zero status code.
 #[macro_export]
 macro_rules! quick_main {
-    ($wrapped:ident) => (
+    ($wrapped:ident) => {
         fn main() {
             if let Err(err) = $wrapped() {
+                use std::io::Write;
                 use $crate::display::DisplayCausesAndBacktraceExt;
-                use ::std::io::Write;
                 let stderr = ::std::io::stderr();
-                write!(
-                    &mut stderr.lock(),
-                    "{}",
-                    err.display_causes_and_backtrace(),
-                ).expect("Error occurred while trying to display error");
+                write!(&mut stderr.lock(), "{}", err.display_causes_and_backtrace(),)
+                    .expect("Error occurred while trying to display error");
                 ::std::process::exit(1);
             }
         }
-    )
+    };
 }

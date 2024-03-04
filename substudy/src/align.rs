@@ -2,10 +2,10 @@
 
 use std::cmp::Ordering;
 
-use crate::time::MIN_SPACING;
-use crate::srt::{Subtitle, SubtitleFile};
-use crate::merge::merge_subtitles;
 use crate::clean::{clean_subtitle_file, strip_formatting};
+use crate::merge::merge_subtitles;
+use crate::srt::{Subtitle, SubtitleFile};
+use crate::time::MIN_SPACING;
 
 use self::MatchQuality::{Nearby, NoMatch, Overlap};
 
@@ -104,10 +104,7 @@ fn alignment(file1: &SubtitleFile, file2: &SubtitleFile) -> Alignment {
     while i1 < subs1.len() && i2 < subs2.len() {
         debug!(
             "subs1: {} matches {:?}, subs2: {} matches {:?}",
-            i1,
-            matches1[i1],
-            i2,
-            matches2[i2]
+            i1, matches1[i1], i2, matches2[i2]
         );
         if subs1[i1].period.begin() < subs2[i2].period.begin()
             && matches1[i1] != Some(i2)
@@ -211,7 +208,8 @@ pub fn align_available_files(
 
 // Clone a subtitle and wrap its lines with formatting.
 fn clone_as(sub: &Subtitle, before: &str, after: &str) -> Subtitle {
-    let lines = sub.lines
+    let lines = sub
+        .lines
         .iter()
         .map(|l| {
             // For now, strip out existing formatting.  We'll change this once

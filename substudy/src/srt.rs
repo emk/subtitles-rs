@@ -5,8 +5,8 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-use crate::decode::smart_decode;
 use crate::clean::{clean_subtitle_file, strip_formatting};
+use crate::decode::smart_decode;
 use crate::grammar;
 use crate::lang::Lang;
 use crate::time::Period;
@@ -110,10 +110,10 @@ impl SubtitleFile {
 
 #[cfg(test)]
 mod test {
-    use std::path::Path;
-    use crate::srt::{Subtitle, SubtitleFile};
     use crate::lang::Lang;
+    use crate::srt::{Subtitle, SubtitleFile};
     use crate::time::Period;
+    use std::path::Path;
 
     #[test]
     fn subtitle_file_from_path() {
@@ -149,7 +149,7 @@ mod test {
 Line 1
 <i>Line 2</i>
 "
-            .to_string();
+        .to_string();
         assert_eq!(expected, sub.to_string());
     }
 

@@ -5,15 +5,15 @@ use common_failures::prelude::*;
 use num::rational::Ratio;
 use pbr::ProgressBar;
 use regex::Regex;
-use serde::{Deserialize, Deserializer};
 use serde::de;
+use serde::{Deserialize, Deserializer};
 use serde_json;
 use std::collections::BTreeMap;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::result;
-use std::str::{FromStr, from_utf8};
+use std::str::{from_utf8, FromStr};
 
 use crate::errors::RunCommandError;
 use crate::lang::Lang;
@@ -254,7 +254,7 @@ impl Video {
     pub fn new(path: &Path) -> Result<Video> {
         // Ensure we have an actual file before doing anything else.
         if !path.is_file() {
-            return Err(format_err!("No such file {:?}", path.display()))
+            return Err(format_err!("No such file {:?}", path.display()));
         }
 
         // Run our probe command.
@@ -316,7 +316,8 @@ impl Video {
         let time_base = extraction.spec.earliest_time();
         let mut cmd = self.extract_command(time_base);
         extraction.add_args(&mut cmd, time_base);
-        cmd.output().with_context(|_| RunCommandError::new("ffmpg"))?;
+        cmd.output()
+            .with_context(|_| RunCommandError::new("ffmpg"))?;
         Ok(())
     }
 
@@ -335,7 +336,8 @@ impl Video {
             assert!(e.spec.can_be_batched());
             e.add_args(&mut cmd, time_base);
         }
-        cmd.output().with_context(|_| RunCommandError::new("ffmpg"))?;
+        cmd.output()
+            .with_context(|_| RunCommandError::new("ffmpg"))?;
         Ok(())
     }
 

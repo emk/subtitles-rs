@@ -1,8 +1,8 @@
 //! Tools for working with time.
 
 use common_failures::prelude::*;
-use serde::{Serialize, Serializer};
 use serde::ser::SerializeTuple;
+use serde::{Serialize, Serializer};
 use std::result;
 
 /// The minimum spacing between two points in time to count as

@@ -24,7 +24,7 @@ impl<'a> fmt::Display for DisplayCausesAndBacktrace<'a> {
             }
         }
         if self.include_backtrace {
-            write!(f, "{}",  self.err.backtrace())?;
+            write!(f, "{}", self.err.backtrace())?;
         }
         Ok(())
     }
@@ -47,10 +47,16 @@ pub trait DisplayCausesAndBacktraceExt {
 
 impl DisplayCausesAndBacktraceExt for failure::Error {
     fn display_causes_and_backtrace(&self) -> DisplayCausesAndBacktrace {
-        DisplayCausesAndBacktrace { err: self, include_backtrace: true }
+        DisplayCausesAndBacktrace {
+            err: self,
+            include_backtrace: true,
+        }
     }
 
     fn display_causes_without_backtrace(&self) -> DisplayCausesAndBacktrace {
-        DisplayCausesAndBacktrace { err: self, include_backtrace: false }
+        DisplayCausesAndBacktrace {
+            err: self,
+            include_backtrace: false,
+        }
     }
 }

@@ -33,7 +33,8 @@ fn clean_line(line: &str) -> String {
 
 // Clean up a subtitle, or discard it if it looks useless.
 fn clean_subtitle(sub: &Subtitle) -> Option<Subtitle> {
-    let lines: Vec<String> = sub.lines
+    let lines: Vec<String> = sub
+        .lines
         .iter()
         .map(|l| clean_line(&l))
         .filter(|l| l.len() > 0)
@@ -59,9 +60,7 @@ pub fn clean_subtitle_file(file: &SubtitleFile) -> Result<SubtitleFile> {
     // Clean individual subtitles and sort.
     let mut subs: Vec<Subtitle> =
         file.subtitles.iter().filter_map(clean_subtitle).collect();
-    subs.sort_by(|a, b| {
-        a.period.begin().partial_cmp(&b.period.begin()).unwrap()
-    });
+    subs.sort_by(|a, b| a.period.begin().partial_cmp(&b.period.begin()).unwrap());
 
     // Fix overlaps.
     if subs.len() >= 2 {
@@ -106,7 +105,8 @@ Out of order.
 00:02:42,658 --> 00:02:48,865
 Overlapping.
 ",
-    ).unwrap();
+    )
+    .unwrap();
 
     let cleaned = "\u{FEFF}1
 00:01:02,328 --> 00:01:03,162

@@ -217,6 +217,7 @@
 //! [ripgrep]: https://github.com/BurntSushi/ripgrep
 //! [xsv]: https://github.com/BurntSushi/xsv
 
+use std::borrow::Cow;
 use std::env;
 use std::fmt;
 use std::fs;
@@ -228,7 +229,6 @@ use std::str;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::thread;
 use std::time;
-use std::borrow::Cow;
 
 static TEST_ID: AtomicUsize = AtomicUsize::new(0);
 
@@ -271,12 +271,12 @@ impl TestDir {
             bin_dir.pop();
         }
         let id = TEST_ID.fetch_add(1, Ordering::SeqCst);
-        let dir = bin_dir.join("integration-tests")
+        let dir = bin_dir
+            .join("integration-tests")
             .join(test_name)
             .join(format!("{}", id));
         if dir.exists() {
-            fs::remove_dir_all(&dir)
-                .expect("Could not remove test output directory");
+            fs::remove_dir_all(&dir).expect("Could not remove test output directory");
         }
 
         // Work around https://github.com/rust-lang/rust/issues/33707.
@@ -299,17 +299,16 @@ impl TestDir {
 
         let mut bin = bin_dir.join(&*exe_name(bin_name));
         if !bin.exists() {
-            writeln!(io::stderr(),
-                     "WARNING: could not find {}, will search PATH",
-                     bin.display())
-                .expect("could not write to stderr");
+            writeln!(
+                io::stderr(),
+                "WARNING: could not find {}, will search PATH",
+                bin.display()
+            )
+            .expect("could not write to stderr");
             bin = Path::new(&bin_name).to_owned();
         }
 
-        TestDir {
-            bin: bin,
-            dir: dir,
-        }
+        TestDir { bin: bin, dir: dir }
     }
 
     /// Return a `std::process::Command` object that can be used to execute
@@ -344,13 +343,14 @@ impl TestDir {
     /// crate.  Useful for finding fixtures.
     pub fn src_path<P: AsRef<Path>>(&self, path: P) -> PathBuf {
         let cwd = env::current_dir().expect("Could not get current dir");
-        fs::canonicalize(cwd.join(path))
-            .expect("Could not canonicalize path")
+        fs::canonicalize(cwd.join(path)).expect("Could not canonicalize path")
     }
 
     /// Create a file in our test directory with the specified contents.
     pub fn create_file<P, S>(&self, path: P, contents: S)
-        where P: AsRef<Path>, S: AsRef<[u8]>
+    where
+        P: AsRef<Path>,
+        S: AsRef<[u8]>,
     {
         let path = self.dir.join(path);
         fs::create_dir_all(path.parent().expect("expected parent"))
@@ -373,7 +373,9 @@ impl TestDir {
 
     /// Verify that the file contains the specified data.
     pub fn expect_file_contents<P, S>(&self, path: P, expected: S)
-        where P: AsRef<Path>, S: AsRef<[u8]>
+    where
+        P: AsRef<Path>,
+        S: AsRef<[u8]>,
     {
         let path = self.dir.join(path);
         let expected = expected.as_ref();
@@ -385,13 +387,14 @@ impl TestDir {
     }
 
     /// (Internal.) Read a `Path` and return a `String`.
-    fn read_file(&self, path: &Path) -> String
-    {
+    fn read_file(&self, path: &Path) -> String {
         self.expect_path(&path);
         let mut f = fs::File::open(&path).expect("could not open file");
         let mut found = vec![];
         f.read_to_end(&mut found).expect("could not read file");
-        str::from_utf8(&found).expect("expected UTF-8 file").to_owned()
+        str::from_utf8(&found)
+            .expect("expected UTF-8 file")
+            .to_owned()
     }
 
     /// Verify that the contents of the file match the specified pattern.
@@ -399,13 +402,18 @@ impl TestDir {
     /// can support both strings and regular expressions, but that hasn't
     /// been stabilized yet.
     pub fn expect_contains<P>(&self, path: P, pattern: &str)
-        where P: AsRef<Path>
+    where
+        P: AsRef<Path>,
     {
         let path = self.dir.join(path);
         let contents = self.read_file(&path);
-        assert!(contents.contains(pattern),
-                "expected {} to match {:?}, but it contained {:?}",
-                path.display(), pattern, contents);
+        assert!(
+            contents.contains(pattern),
+            "expected {} to match {:?}, but it contained {:?}",
+            path.display(),
+            pattern,
+            contents
+        );
     }
 
     /// Verify that the contents of the file do not match the specified pattern.
@@ -413,27 +421,35 @@ impl TestDir {
     /// support both strings and regular expressions, but that hasn't been
     /// stabilized yet.
     pub fn expect_does_not_contain<P>(&self, path: P, pattern: &str)
-        where P: AsRef<Path>
+    where
+        P: AsRef<Path>,
     {
         let path = self.dir.join(path);
         let contents = self.read_file(&path);
-        assert!(!contents.contains(pattern),
-                "expected {} to not match {:?}, but it contained {:?}",
-                path.display(), pattern, contents);
+        assert!(
+            !contents.contains(pattern),
+            "expected {} to not match {:?}, but it contained {:?}",
+            path.display(),
+            pattern,
+            contents
+        );
     }
 }
 
 /// Internal helper function which compares to blobs of potentially binary data.
 fn expect_data_eq<D>(source: D, found: &[u8], expected: &[u8])
-    where D: fmt::Display
+where
+    D: fmt::Display,
 {
     if found != expected {
         // TODO: If the data appears to be actual binary, do a better job
         // of printing it.
-        panic!("expected {} to equal {:?}, found {:?}",
-               source,
-               String::from_utf8_lossy(expected).as_ref(),
-               String::from_utf8_lossy(found).as_ref());
+        panic!(
+            "expected {} to equal {:?}, found {:?}",
+            source,
+            String::from_utf8_lossy(expected).as_ref(),
+            String::from_utf8_lossy(found).as_ref()
+        );
     }
 }
 
@@ -441,27 +457,29 @@ fn expect_data_eq<D>(source: D, found: &[u8], expected: &[u8])
 pub trait CommandExt {
     /// Spawn this command, passing it the specified data on standard
     /// input.
-    fn output_with_stdin<S: AsRef<[u8]>>(&mut self, input: S)
-                                         -> io::Result<process::Output>;
+    fn output_with_stdin<S: AsRef<[u8]>>(
+        &mut self,
+        input: S,
+    ) -> io::Result<process::Output>;
 }
 
 impl CommandExt for process::Command {
-    fn output_with_stdin<S>(&mut self, input: S)
-                            -> io::Result<process::Output>
-        where S: AsRef<[u8]>
+    fn output_with_stdin<S>(&mut self, input: S) -> io::Result<process::Output>
+    where
+        S: AsRef<[u8]>,
     {
         let input = input.as_ref().to_owned();
-        let mut child: process::Child = self.stdin(process::Stdio::piped())
+        let mut child: process::Child = self
+            .stdin(process::Stdio::piped())
             .stdout(process::Stdio::piped())
             .stderr(process::Stdio::piped())
             .spawn()
             .expect("error running command");
-        let mut stdin = child.stdin.take()
-            .expect("std in is unexpectedly missing");
+        let mut stdin = child.stdin.take().expect("std in is unexpectedly missing");
         let worker = thread::spawn(move || {
-            stdin.write_all(&input)
-                .expect("could not write to stdin");
-            stdin.flush()
+            stdin.write_all(&input).expect("could not write to stdin");
+            stdin
+                .flush()
                 .expect("could not flush data to child's stdin");
         });
         let result = child.wait_with_output();
@@ -503,13 +521,11 @@ pub trait OutputExt {
 
 impl OutputExt for process::Output {
     fn stdout_str(&self) -> &str {
-        str::from_utf8(&self.stdout)
-            .expect("stdout was not UTF-8 text")
+        str::from_utf8(&self.stdout).expect("stdout was not UTF-8 text")
     }
 
     fn stderr_str(&self) -> &str {
-        str::from_utf8(&self.stderr)
-            .expect("stderr was not UTF-8 text")
+        str::from_utf8(&self.stderr).expect("stderr was not UTF-8 text")
     }
 }
 
@@ -528,9 +544,11 @@ pub trait ExpectStatus {
 impl ExpectStatus for process::Output {
     fn expect_success(self) -> process::Output {
         if !self.status.success() {
-            io::stdout().write_all(&self.stdout)
+            io::stdout()
+                .write_all(&self.stdout)
                 .expect("could not write to stdout");
-            io::stderr().write_all(&self.stderr)
+            io::stderr()
+                .write_all(&self.stderr)
                 .expect("could not write to stderr");
             panic!("expected command to succeed, got {}", self.status)
         }
@@ -539,15 +557,16 @@ impl ExpectStatus for process::Output {
 
     fn expect_failure(self) -> process::Output {
         if self.status.success() {
-            io::stdout().write_all(&self.stdout)
+            io::stdout()
+                .write_all(&self.stdout)
                 .expect("could not write to stdout");
-            io::stderr().write_all(&self.stderr)
+            io::stderr()
+                .write_all(&self.stderr)
                 .expect("could not write to stderr");
             panic!("expected command to fail, got {}", self.status)
         }
         self
     }
-
 }
 
 impl<ES: ExpectStatus, E: fmt::Debug> ExpectStatus for Result<ES, E> {

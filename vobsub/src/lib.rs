@@ -71,7 +71,6 @@
 //! [GitHub](https://github.com/emk/subtitles-rs) for details.
 
 #![warn(missing_docs)]
-
 // For error-chain.
 #![recursion_limit = "1024"]
 
@@ -99,7 +98,7 @@ mod probe;
 mod sub;
 mod util;
 
-pub use common_failures::{Error, Result};
 pub use self::idx::{Index, Palette};
 pub use self::probe::{is_idx_file, is_sub_file};
-pub use self::sub::{Coordinates, Subtitle, Subtitles, subtitles};
+pub use self::sub::{subtitles, Coordinates, Subtitle, Subtitles};
+pub use common_failures::{Error, Result};

@@ -16,8 +16,7 @@ fn has_magic(path: &Path, magic: &[u8]) -> Result<bool> {
 
 /// Does the specified path appear to point to an `*.idx` file?
 pub fn is_idx_file<P: AsRef<Path>>(path: P) -> Result<bool> {
-    has_magic(path.as_ref(),
-              b"# VobSub index file")
+    has_magic(path.as_ref(), b"# VobSub index file")
 }
 
 #[test]
@@ -31,8 +30,7 @@ fn probe_idx_files() {
 /// Note that this may (or may not) return false positives for certain
 /// MPEG-2 related formats.
 pub fn is_sub_file<P: AsRef<Path>>(path: P) -> Result<bool> {
-    has_magic(path.as_ref(),
-              &[0x00, 0x00, 0x01, 0xba])
+    has_magic(path.as_ref(), &[0x00, 0x00, 0x01, 0xba])
 }
 
 #[test]

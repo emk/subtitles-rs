@@ -9,9 +9,9 @@ use cli_test_dir::*;
 
 #[test]
 fn generates_png_and_json_files() {
-    let workdir =
-        TestDir::new("vobsub2png", "generates_png_and_json_files");
-    workdir.cmd()
+    let workdir = TestDir::new("vobsub2png", "generates_png_and_json_files");
+    workdir
+        .cmd()
         .arg("-o")
         .arg("out")
         .arg(workdir.src_path("../fixtures/example.idx"))
@@ -23,9 +23,9 @@ fn generates_png_and_json_files() {
 
 #[test]
 fn defaults_out_dir_based_on_input_name() {
-    let workdir =
-        TestDir::new("vobsub2png", "defaults_out_dir_based_on_input_name");
-    workdir.cmd()
+    let workdir = TestDir::new("vobsub2png", "defaults_out_dir_based_on_input_name");
+    workdir
+        .cmd()
         .arg(workdir.src_path("../fixtures/example.idx"))
         .expect_success();
     workdir.expect_path("example_subtitles/index.json");

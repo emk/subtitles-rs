@@ -52,7 +52,7 @@ pub enum Target {
     /// Standard error.
     Stderr,
     /// Another target.
-    Other(String)
+    Other(String),
 }
 
 // TODO - Replace with something based on `fluent` if
@@ -154,24 +154,18 @@ pub trait IoContextExt<T, E>: Sized {
     ///     Ok(File::open(path).io_read_context(path)?)
     /// }
     /// ```
-    fn io_read_context<Tgt>(
-        self,
-        target: Tgt
-    ) -> result::Result<T, Context<IoError>>
+    fn io_read_context<Tgt>(self, target: Tgt) -> result::Result<T, Context<IoError>>
     where
-        Tgt: Into<Target>
+        Tgt: Into<Target>,
     {
         self.io_context(Operation::Read, target)
     }
 
     /// Specify the "context" within which an I/O write operation occurred. Will
     /// be used to generate a human-readable error message if needed.
-    fn io_write_context<Tgt>(
-        self,
-        target: Tgt
-    ) -> result::Result<T, Context<IoError>>
+    fn io_write_context<Tgt>(self, target: Tgt) -> result::Result<T, Context<IoError>>
     where
-        Tgt: Into<Target>
+        Tgt: Into<Target>,
     {
         self.io_context(Operation::Write, target)
     }
@@ -187,7 +181,7 @@ where
         target: Tgt,
     ) -> result::Result<T, Context<IoError>>
     where
-        Tgt: Into<Target>
+        Tgt: Into<Target>,
     {
         self.map_err(|failure| {
             let ioerr = IoError {
@@ -244,24 +238,18 @@ pub trait IoContextErrorExt<T, E>: Sized {
     ///     Ok(File::open(path).io_read_context(path)?)
     /// }
     /// ```
-    fn io_read_context<Tgt>(
-        self,
-        target: Tgt
-    ) -> result::Result<T, Context<IoError>>
+    fn io_read_context<Tgt>(self, target: Tgt) -> result::Result<T, Context<IoError>>
     where
-        Tgt: Into<Target>
+        Tgt: Into<Target>,
     {
         self.io_context(Operation::Read, target)
     }
 
     /// Specify the "context" within which an I/O write operation occurred. Will
     /// be used to generate a human-readable error message if needed.
-    fn io_write_context<Tgt>(
-        self,
-        target: Tgt
-    ) -> result::Result<T, Context<IoError>>
+    fn io_write_context<Tgt>(self, target: Tgt) -> result::Result<T, Context<IoError>>
     where
-        Tgt: Into<Target>
+        Tgt: Into<Target>,
     {
         self.io_context(Operation::Write, target)
     }
@@ -274,7 +262,7 @@ impl<T> IoContextErrorExt<T, Error> for result::Result<T, Error> {
         target: Tgt,
     ) -> result::Result<T, Context<IoError>>
     where
-        Tgt: Into<Target>
+        Tgt: Into<Target>,
     {
         self.map_err(|err| {
             let ioerr = IoError {
@@ -285,4 +273,3 @@ impl<T> IoContextErrorExt<T, Error> for result::Result<T, Error> {
         })
     }
 }
-
