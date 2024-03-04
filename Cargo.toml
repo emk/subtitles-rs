@@ -4,7 +4,11 @@
 #opt-level = 3
 
 [workspace]
-members = ["cli_test_dir", "common_failures", "substudy", "vobsub", "vobsub2png"]
+members = ["cli_test_dir", "common_failures", "substudy"]
+
+# Removed until I can update `nom` over 5 major releases.
+#
+# "vobsub", "vobsub2png"]
 
 # Use the new resolver.
 resolver = "2"
