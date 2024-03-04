@@ -1,1 +1,10 @@
 max_width = 87
+
+# Our import styles were all over the map, since this code originally dates to
+# 2014!
+#
+# We standarized the imports using `cargo +nightly fmt` and the following
+# settings, which seem to match what rust-analyzer does with new imports.
+#
+# group_imports = "StdExternalCrate"
+# imports_granularity = "Crate"
