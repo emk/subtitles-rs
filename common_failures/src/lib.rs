@@ -100,7 +100,8 @@ pub mod prelude {
     pub use display::DisplayCausesAndBacktraceExt;
     pub use failure::ResultExt;
     pub use io::{IoContextErrorExt, IoContextExt};
-    pub use {Error, Result};
+    pub use Error;
+    pub use Result;
 }
 
 pub mod display;
@@ -121,6 +122,7 @@ macro_rules! quick_main {
         fn main() {
             if let Err(err) = $wrapped() {
                 use std::io::Write;
+
                 use $crate::display::DisplayCausesAndBacktraceExt;
                 let stderr = ::std::io::stderr();
                 write!(&mut stderr.lock(), "{}", err.display_causes_and_backtrace(),)

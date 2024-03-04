@@ -98,7 +98,10 @@ mod probe;
 mod sub;
 mod util;
 
-pub use self::idx::{Index, Palette};
-pub use self::probe::{is_idx_file, is_sub_file};
-pub use self::sub::{subtitles, Coordinates, Subtitle, Subtitles};
 pub use common_failures::{Error, Result};
+
+pub use self::{
+    idx::{Index, Palette},
+    probe::{is_idx_file, is_sub_file},
+    sub::{subtitles, Coordinates, Subtitle, Subtitles},
+};

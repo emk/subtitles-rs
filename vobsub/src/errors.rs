@@ -1,9 +1,9 @@
 //! Custom error types.
 
+use std::{default::Default, fmt};
+
 use common_failures::prelude::*;
 use nom::IResult;
-use std::default::Default;
-use std::fmt;
 
 /// A type representing errors that are specific to `vobsub`. Note that we may
 /// normally return `Error`, not `VobsubError`, which allows to return other

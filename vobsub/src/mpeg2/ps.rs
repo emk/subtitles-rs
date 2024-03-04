@@ -2,12 +2,15 @@
 //!
 //! This is the container format used at the top-level of a `*.sub` file.
 
-use common_failures::prelude::*;
-use nom::IResult;
 use std::fmt;
 
-use super::clock::{clock_and_ext, Clock};
-use super::pes;
+use common_failures::prelude::*;
+use nom::IResult;
+
+use super::{
+    clock::{clock_and_ext, Clock},
+    pes,
+};
 
 /// A parsed [MPEG-2 Program Stream header][MPEG-PS] (MPEG-PS).
 ///

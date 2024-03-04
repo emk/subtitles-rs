@@ -217,18 +217,15 @@
 //! [ripgrep]: https://github.com/BurntSushi/ripgrep
 //! [xsv]: https://github.com/BurntSushi/xsv
 
-use std::borrow::Cow;
-use std::env;
-use std::fmt;
-use std::fs;
-use std::io;
-use std::io::prelude::*;
-use std::path::{Path, PathBuf};
-use std::process;
-use std::str;
-use std::sync::atomic::{AtomicUsize, Ordering};
-use std::thread;
-use std::time;
+use std::{
+    borrow::Cow,
+    env, fmt, fs, io,
+    io::prelude::*,
+    path::{Path, PathBuf},
+    process, str,
+    sync::atomic::{AtomicUsize, Ordering},
+    thread, time,
+};
 
 static TEST_ID: AtomicUsize = AtomicUsize::new(0);
 

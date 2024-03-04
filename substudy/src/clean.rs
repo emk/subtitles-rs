@@ -1,9 +1,10 @@
 //! Tools for cleaning up subtitle files and getting them into some
 //! kind of normalized format.
 
+use std::borrow::Cow;
+
 use common_failures::prelude::*;
 use regex::Regex;
-use std::borrow::Cow;
 
 use crate::srt::{Subtitle, SubtitleFile};
 

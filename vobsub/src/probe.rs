@@ -1,9 +1,8 @@
 //! Try to guess the types of files on disk.
 
+use std::{fs, io::Read, path::Path};
+
 use common_failures::prelude::*;
-use std::fs;
-use std::io::Read;
-use std::path::Path;
 
 /// Internal helper function which looks for "magic" bytes at the start of
 /// a file.

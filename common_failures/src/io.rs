@@ -3,10 +3,13 @@
 //! However, these wrappers may also be useful with `serde` and other routines
 //! that process the data that's being read or written to files.
 
+use std::{
+    fmt,
+    path::{Path, PathBuf},
+    result,
+};
+
 use failure::{Context, Error, Fail};
-use std::fmt;
-use std::path::{Path, PathBuf};
-use std::result;
 
 /// General categories of I/O operations that might fail.
 #[derive(Clone, Debug, Eq, PartialEq)]

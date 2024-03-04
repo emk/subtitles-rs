@@ -4,15 +4,15 @@
 //!
 //! [subs]: http://sam.zoy.org/writings/dvd/subtitles/
 
-use cast;
-use common_failures::prelude::*;
-use nom::{be_u16, IResult};
 use std::fmt;
 
+use cast;
+use common_failures::prelude::*;
 use idx;
 use image::{ImageBuffer, Rgba, RgbaImage};
 use img::{decompress, Size};
 use mpeg2::ps;
+use nom::{be_u16, IResult};
 use util::BytesFormatter;
 
 /// The default time between two adjacent subtitles if no end time is
@@ -654,8 +654,7 @@ pub fn subtitles(input: &[u8]) -> Subtitles {
 #[test]
 fn parse_subtitles() {
     //use env_logger;
-    use std::fs;
-    use std::io::prelude::*;
+    use std::{fs, io::prelude::*};
 
     //let _ = env_logger::init();
 

@@ -3,11 +3,12 @@
 //! These packets are nested inside the MPEG-2 Program Stream packets found
 //! in a `*.sub` file.
 
-use nom::{be_u16, be_u8, rest, IResult};
 use std::fmt;
 
-use super::clock::{clock, Clock};
+use nom::{be_u16, be_u8, rest, IResult};
 use util::BytesFormatter;
+
+use super::clock::{clock, Clock};
 
 /// Possible combinations of PTS and DTS data which might appear inside a
 /// PES header.

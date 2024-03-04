@@ -1,9 +1,10 @@
 //! Utilities for formatting and displaying errors.
 
-use failure;
 use std::fmt;
 
-use Error;
+use failure;
+
+use crate::Error;
 
 /// A wrapper which prints a human-readable list of the causes of an error, plus
 /// a backtrace if present.

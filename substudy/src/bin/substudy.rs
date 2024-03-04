@@ -1,13 +1,10 @@
 //! Command-line iterface to substudy.
 
-use clap::Parser;
-use clap::Subcommand;
-use common_failures::{prelude::*, quick_main};
 use std::path::{Path, PathBuf};
-use substudy::align::combine_files;
-use substudy::export;
-use substudy::srt::SubtitleFile;
-use substudy::video;
+
+use clap::{Parser, Subcommand};
+use common_failures::{prelude::*, quick_main};
+use substudy::{align::combine_files, export, srt::SubtitleFile, video};
 
 #[derive(Debug, Parser)]
 /// Subtitle processing tools for students of foreign languages. (For now, all

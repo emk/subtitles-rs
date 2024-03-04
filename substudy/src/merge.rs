@@ -56,8 +56,7 @@ pub fn merge_subtitles(subs: &[Subtitle]) -> Option<Subtitle> {
 
 #[cfg(test)]
 mod test {
-    use crate::merge::merge_subtitles;
-    use crate::srt::SubtitleFile;
+    use crate::{merge::merge_subtitles, srt::SubtitleFile};
 
     fn merge_for_test(input: &str) -> String {
         let srt = SubtitleFile::from_str(input).unwrap();

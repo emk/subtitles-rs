@@ -1,15 +1,16 @@
 //! SRT-format subtitle support.
 
-use common_failures::prelude::*;
-use std::fs::File;
-use std::io::Read;
-use std::path::Path;
+use std::{fs::File, io::Read, path::Path};
 
-use crate::clean::{clean_subtitle_file, strip_formatting};
-use crate::decode::smart_decode;
-use crate::grammar;
-use crate::lang::Lang;
-use crate::time::Period;
+use common_failures::prelude::*;
+
+use crate::{
+    clean::{clean_subtitle_file, strip_formatting},
+    decode::smart_decode,
+    grammar,
+    lang::Lang,
+    time::Period,
+};
 
 /// Format seconds using the standard SRT time format.
 pub fn format_time(time: f32) -> String {
@@ -110,10 +111,13 @@ impl SubtitleFile {
 
 #[cfg(test)]
 mod test {
-    use crate::lang::Lang;
-    use crate::srt::{Subtitle, SubtitleFile};
-    use crate::time::Period;
     use std::path::Path;
+
+    use crate::{
+        lang::Lang,
+        srt::{Subtitle, SubtitleFile},
+        time::Period,
+    };
 
     #[test]
     fn subtitle_file_from_path() {

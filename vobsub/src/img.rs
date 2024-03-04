@@ -4,7 +4,6 @@ use cast;
 use common_failures::prelude::*;
 use nom::IResult;
 use safemem::write_bytes;
-
 use util::BytesFormatter;
 
 /// The dimensions of an image.

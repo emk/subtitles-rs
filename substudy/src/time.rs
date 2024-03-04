@@ -1,9 +1,9 @@
 //! Tools for working with time.
 
-use common_failures::prelude::*;
-use serde::ser::SerializeTuple;
-use serde::{Serialize, Serializer};
 use std::result;
+
+use common_failures::prelude::*;
+use serde::{ser::SerializeTuple, Serialize, Serializer};
 
 /// The minimum spacing between two points in time to count as
 /// unambiguously different.  This is related to the typical precision used

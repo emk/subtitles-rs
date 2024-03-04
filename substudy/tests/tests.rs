@@ -3,8 +3,9 @@
 
 extern crate cli_test_dir;
 
-use cli_test_dir::TestDir;
 use std::str::from_utf8;
+
+use cli_test_dir::TestDir;
 
 #[test]
 fn show_help() {

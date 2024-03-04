@@ -1,23 +1,23 @@
 //! Tools for working with video files.
 
+use std::{
+    collections::BTreeMap,
+    ffi::OsStr,
+    path::{Path, PathBuf},
+    process::Command,
+    result,
+    str::{from_utf8, FromStr},
+};
+
 use cast;
 use common_failures::prelude::*;
 use num::rational::Ratio;
 use pbr::ProgressBar;
 use regex::Regex;
-use serde::de;
-use serde::{Deserialize, Deserializer};
+use serde::{de, Deserialize, Deserializer};
 use serde_json;
-use std::collections::BTreeMap;
-use std::ffi::OsStr;
-use std::path::{Path, PathBuf};
-use std::process::Command;
-use std::result;
-use std::str::{from_utf8, FromStr};
 
-use crate::errors::RunCommandError;
-use crate::lang::Lang;
-use crate::time::Period;
+use crate::{errors::RunCommandError, lang::Lang, time::Period};
 
 /// Information about an MP3 track (optional).
 #[derive(Debug, Default)]

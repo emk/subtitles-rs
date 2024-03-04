@@ -4,9 +4,7 @@ extern crate glob;
 extern crate log;
 extern crate vobsub;
 
-use std::fs;
-use std::io::prelude::*;
-use std::path::Path;
+use std::{fs, io::prelude::*, path::Path};
 
 // To run this test, use `cargo test -- --ignored`.  This tests against a
 // larger selection of *.sub files in our private corpus, which is

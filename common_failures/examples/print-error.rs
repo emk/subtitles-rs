@@ -1,9 +1,9 @@
 #[macro_use]
 extern crate common_failures;
 
+use std::{fs::File, path::Path};
+
 use common_failures::prelude::*;
-use std::fs::File;
-use std::path::Path;
 
 quick_main!(run);
 

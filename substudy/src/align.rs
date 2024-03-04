@@ -2,12 +2,13 @@
 
 use std::cmp::Ordering;
 
-use crate::clean::{clean_subtitle_file, strip_formatting};
-use crate::merge::merge_subtitles;
-use crate::srt::{Subtitle, SubtitleFile};
-use crate::time::MIN_SPACING;
-
 use self::MatchQuality::{Nearby, NoMatch, Overlap};
+use crate::{
+    clean::{clean_subtitle_file, strip_formatting},
+    merge::merge_subtitles,
+    srt::{Subtitle, SubtitleFile},
+    time::MIN_SPACING,
+};
 
 // How well do two subtitles match each other, going solely by the time?
 #[derive(PartialEq, Clone, Copy, Debug)]

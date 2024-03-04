@@ -1,13 +1,15 @@
 //! Output a video as a series of short audio tracks, short enough to make
 //! it easy to skip backwards a conversation with most MP3 players.
 
-use common_failures::prelude::*;
-use std::default::Default;
-use std::io::Write;
+use std::{default::Default, io::Write};
 
-use crate::export::Exporter;
-use crate::time::{seconds_to_hhmmss, Period};
-use crate::video::Id3Metadata;
+use common_failures::prelude::*;
+
+use crate::{
+    export::Exporter,
+    time::{seconds_to_hhmmss, Period},
+    video::Id3Metadata,
+};
 
 // Truncate a string to fit within the specified number of Unicode
 // characters.

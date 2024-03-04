@@ -11,9 +11,9 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate vobsub;
 
+use std::{fs, path::Path};
+
 use docopt::Docopt;
-use std::fs;
-use std::path::Path;
 use vobsub::{Index, Result, Subtitle};
 
 const USAGE: &'static str = "

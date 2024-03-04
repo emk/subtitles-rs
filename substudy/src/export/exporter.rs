@@ -1,20 +1,27 @@
 //! Code shared between multiple exporters.
 
-use common_failures::io::{Operation, Target};
-use common_failures::prelude::*;
-use std::convert::AsRef;
-use std::default::Default;
-use std::ffi::OsStr;
-use std::fmt::Write as fmt_Write;
-use std::fs;
-use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::{
+    convert::AsRef,
+    default::Default,
+    ffi::OsStr,
+    fmt::Write as fmt_Write,
+    fs,
+    io::Write,
+    path::{Path, PathBuf},
+};
 
-use crate::align::align_available_files;
-use crate::lang::Lang;
-use crate::srt::{Subtitle, SubtitleFile};
-use crate::time::{Period, ToTimestamp};
-use crate::video::{Extraction, ExtractionSpec, Id3Metadata, Video};
+use common_failures::{
+    io::{Operation, Target},
+    prelude::*,
+};
+
+use crate::{
+    align::align_available_files,
+    lang::Lang,
+    srt::{Subtitle, SubtitleFile},
+    time::{Period, ToTimestamp},
+    video::{Extraction, ExtractionSpec, Id3Metadata, Video},
+};
 
 /// Take a platform-specific pathname fragment and turn it into a regular
 /// Unicode string.
