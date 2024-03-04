@@ -1,19 +1,20 @@
 [package]
 name = "common_failures"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
 edition = "2021"
 
-description = "Helpers for 'failure', including io::Error wrappers with paths, quick_main!, display_causes_and_backtrace."
+description = "DEPRECATED: Helpers for `failure`, including io::Error wrappers with paths, quick_main!, display_causes_and_backtrace. Deprecated, because `failure` is long-deprecated."
 license = "CC0-1.0"
 readme = "README.md"
 repository = "https://github.com/emk/subtitles-rs"
 documentation = "https://docs.rs/common_failures/"
 
+
 [badges]
 appveyor = { repository = "emk/subtitles-rs" }
 travis-ci = { repository = "emk/subtitles-rs" }
-maintenance = { status = "actively-developed" }
+maintenance = { status = "deprecated" }
 
 [dependencies]
 failure = "0.1.1"

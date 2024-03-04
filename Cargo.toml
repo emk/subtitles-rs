@@ -4,7 +4,7 @@
 #opt-level = 3
 
 [workspace]
-members = ["cli_test_dir", "common_failures", "substudy"]
+members = ["cli_test_dir", "substudy", "deprecated/common_failures"]
 
 # Removed until I can update `nom` over 5 major releases.
 #
