@@ -16,11 +16,6 @@ keywords = ["text"]
 
 exclude = ["fixtures/empty.mp4"]
 
-build = "build.rs"
-
-[build-dependencies]
-peg = "0.5"
-
 [dependencies]
 cast = "0.3.0"
 chardet = "0.2"
@@ -36,6 +31,7 @@ lazy_static = "1.0"
 log = "0.4.21"
 num = "0.4.1"
 pbr = "1.0"
+peg = "0.8.2"
 regex = "1.10.3"
 serde = "1.0"
 serde_derive = "1.0"
