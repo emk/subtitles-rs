@@ -11,13 +11,19 @@ subdirectories for more details.
 
 - [substudy][]: Learn foreign languages using audio and subtitles extracted
   from video files.
+- [common_failures][]: Useful `Fail` implementations and error-handling tools.
+- [cli_test_dir][]: A simple integration testing harness for CLI tools.
 - [vobsub][]: A Rust library for parsing subtitles in sub/idx format.
 - [vobsub2png][]: A command-line tool for converting sub/idx subtitles to
   PNGs with JSON metadata.
+
+### Historical interest
+
+The following assorted libraries have been moved into the `archive` sub-directory, and are no longer maintained. The `vobsub`-related libraries might be worth updating at some point, although relatively few language learners rely on DVD subtitles these days.
+
+
 - [opus_tools][]: Utilities for parsing subtitle data from the OPUS project,
   for use as input to various language models.
-- [common_failures][]: Useful `Fail` implementations and error-handling tools.
-- [cli_test_dir][]: A simple integration testing harness for CLI tools.
 
 The following subtitle-related projects can be found in other repositories:
 
@@ -26,9 +32,9 @@ The following subtitle-related projects can be found in other repositories:
   known-good timing.
 - [subparse][]: This library by kaegi parses many common subtitle formats.
 
-[vobsub]: ./vobsub/README.md
-[vobsub2png]: ./vobsub2png/README.md
-[opus_tools]: ./opus_tools/README.md
+[vobsub]: ./archive/vobsub/README.md
+[vobsub2png]: ./archive/vobsub2png/README.md
+[opus_tools]: ./archive/opus_tools/README.md
 [common_failures]: ./common_failures/README.md
 [cli_test_dir]: ./cli_test_dir/README.md
 [substudy]: ./substudy/README.md

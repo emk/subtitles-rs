@@ -4,9 +4,4 @@
 #opt-level = 3
 
 [workspace]
-members = ["cli_test_dir", "aligned_media", "vobsub", "vobsub2png", "opus_tools", "submodel", "subtitle_ocr", "subtitles2srt", "substudy", "backend"]
-# This needs to be excluded from the workspace, because of
-# https://github.com/koute/cargo-web/issues/17, and because we don't want `cargo
-# test --all` to attempt to run it, because it relies on a specific nightly Rust
-# and it uses the wasm target.
-exclude = ["aligned_media_validator"]
+members = ["cli_test_dir", "common_failures", "substudy", "vobsub"]
