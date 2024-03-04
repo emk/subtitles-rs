@@ -6,3 +6,4 @@ thumbs.db
 *.bs.js
 .bsb.lock
 .merlin
+*.json
