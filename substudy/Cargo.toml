@@ -22,31 +22,31 @@ build = "build.rs"
 peg = "0.5"
 
 [dependencies]
-cast = "0.2"
+cast = "0.3.0"
 chardet = "0.2"
 clap = { version = "2.27", features = ["wrap_help"] }
 common_failures = { version = "0.1", path = "../common_failures" }
 csv = "1.0.0-beta.5"
 encoding = "0.2"
-env_logger = "0.4"
+env_logger = "0.11.2"
 failure = "0.1"
 failure_derive = "0.1"
 handlebars = "0.29"
 lazy_static = "1.0"
-log = "0.3"
-num = "0.1"
+log = "0.4.21"
+num = "0.4.1"
 pbr = "1.0"
-regex = "0.2"
+regex = "1.10.3"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
-structopt = "0.1.0"
-structopt-derive = "0.1.0"
-whatlang = "0.5"
+structopt = "0.3.26"
+structopt-derive = "0.4.18"
+whatlang = "0.16.4"
 
 [dev-dependencies]
 cli_test_dir = { version = "0.1", path = "../cli_test_dir" }
-difference = "1.0"
+difference = "2.0.0"
 
 [[bin]]
 name = "substudy"

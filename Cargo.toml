@@ -4,4 +4,4 @@
 #opt-level = 3
 
 [workspace]
-members = ["cli_test_dir", "common_failures", "substudy", "vobsub"]
+members = ["cli_test_dir", "common_failures", "substudy", "vobsub", "vobsub2png"]

@@ -4,7 +4,6 @@
 extern crate common_failures;
 extern crate env_logger;
 extern crate structopt;
-#[macro_use]
 extern crate structopt_derive;
 extern crate substudy;
 
@@ -156,7 +155,7 @@ enum ToList {
 
 // Choose and run the appropriate command.
 fn run() -> Result<()> {
-    env_logger::init().expect("could not initialize logging");
+    env_logger::init();
 
     // Parse our command-line arguments using docopt (very shiny).
     let args: Args = Args::from_args();

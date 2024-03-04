@@ -48,7 +48,7 @@ struct SubInfo {
 }
 
 fn run() -> Result<()> {
-    env_logger::init().unwrap();
+    env_logger::init();
 
     let args: Args = Docopt::new(USAGE)
         .and_then(|d| d.deserialize())
