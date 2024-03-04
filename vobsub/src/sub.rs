@@ -313,10 +313,10 @@ impl Subtitle {
             // results as everybody else.  I found this by inspecting the
             // Handbrake subtitle decoding routines.
             let px = cast::usize(3-self.raw_image[offset]);
-            let rgb = palette[cast::usize(self.palette[px])].data;
+            let rgb = palette[cast::usize(self.palette[px])].0;
             let a = self.alpha[px];
             let aa = a << 4 | a;
-            Rgba { data: [rgb[0], rgb[1], rgb[2], aa] }
+            Rgba([rgb[0], rgb[1], rgb[2], aa])
         })
     }
 }

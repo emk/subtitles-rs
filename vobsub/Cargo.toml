@@ -23,7 +23,7 @@ glob = "0.3.1"
 cast = "0.3.0"
 common_failures = { version = "0.1", path = "../common_failures" }
 failure = "0.1.1"
-image = { version = "0.18.0", default-features = false }
+image = { version = "0.24.9", default-features = false }
 lazy_static = "1.0"
 log = "0.4.21"
 nom = "2.1.0, <2.2.0"
