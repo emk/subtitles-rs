@@ -5,11 +5,11 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-use decode::smart_decode;
-use clean::{clean_subtitle_file, strip_formatting};
-use grammar;
-use lang::Lang;
-use time::Period;
+use crate::decode::smart_decode;
+use crate::clean::{clean_subtitle_file, strip_formatting};
+use crate::grammar;
+use crate::lang::Lang;
+use crate::time::Period;
 
 /// Format seconds using the standard SRT time format.
 pub fn format_time(time: f32) -> String {
@@ -111,9 +111,9 @@ impl SubtitleFile {
 #[cfg(test)]
 mod test {
     use std::path::Path;
-    use srt::{Subtitle, SubtitleFile};
-    use lang::Lang;
-    use time::Period;
+    use crate::srt::{Subtitle, SubtitleFile};
+    use crate::lang::Lang;
+    use crate::time::Period;
 
     #[test]
     fn subtitle_file_from_path() {

@@ -18,7 +18,7 @@ fn show_help() {
     assert!(
         from_utf8(&output.stdout)
             .unwrap()
-            .find("USAGE")
+            .find("Usage")
             .is_some()
     );
 }

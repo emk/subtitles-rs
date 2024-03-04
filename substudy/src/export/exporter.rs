@@ -10,11 +10,11 @@ use std::fmt::Write as fmt_Write;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use align::align_available_files;
-use lang::Lang;
-use srt::{Subtitle, SubtitleFile};
-use time::{Period, ToTimestamp};
-use video::{Extraction, ExtractionSpec, Id3Metadata, Video};
+use crate::align::align_available_files;
+use crate::lang::Lang;
+use crate::srt::{Subtitle, SubtitleFile};
+use crate::time::{Period, ToTimestamp};
+use crate::video::{Extraction, ExtractionSpec, Id3Metadata, Video};
 
 /// Take a platform-specific pathname fragment and turn it into a regular
 /// Unicode string.

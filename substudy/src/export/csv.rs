@@ -4,10 +4,10 @@ use common_failures::prelude::*;
 use csv;
 use regex::Regex;
 
-use contexts::ItemsInContextExt;
-use export::Exporter;
-use srt::Subtitle;
-use time::seconds_to_hhmmss_sss;
+use crate::contexts::ItemsInContextExt;
+use crate::export::Exporter;
+use crate::srt::Subtitle;
+use crate::time::seconds_to_hhmmss_sss;
 
 /// Attempt to guess a reasonable episode number, based on the file name.
 /// Honestly, this might be a bit too clever--the original subs2srs CSV

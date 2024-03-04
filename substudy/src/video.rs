@@ -15,9 +15,9 @@ use std::process::Command;
 use std::result;
 use std::str::{FromStr, from_utf8};
 
-use errors::RunCommandError;
-use lang::Lang;
-use time::Period;
+use crate::errors::RunCommandError;
+use crate::lang::Lang;
+use crate::time::Period;
 
 /// Information about an MP3 track (optional).
 #[derive(Debug, Default)]

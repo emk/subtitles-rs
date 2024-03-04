@@ -5,9 +5,9 @@ use common_failures::prelude::*;
 use std::default::Default;
 use std::io::Write;
 
-use export::Exporter;
-use time::{seconds_to_hhmmss, Period};
-use video::Id3Metadata;
+use crate::export::Exporter;
+use crate::time::{seconds_to_hhmmss, Period};
+use crate::video::Id3Metadata;
 
 // Truncate a string to fit within the specified number of Unicode
 // characters.

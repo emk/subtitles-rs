@@ -1,105 +1,88 @@
 //! Command-line iterface to substudy.
 
-#[macro_use]
-extern crate common_failures;
-extern crate env_logger;
-extern crate structopt;
-extern crate structopt_derive;
-extern crate substudy;
-
-use common_failures::prelude::*;
+use clap::Parser;
+use clap::Subcommand;
+use common_failures::{prelude::*, quick_main};
 use std::path::{Path, PathBuf};
-use structopt::StructOpt;
 use substudy::srt::SubtitleFile;
 use substudy::align::combine_files;
 use substudy::video;
 use substudy::export;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 /// Subtitle processing tools for students of foreign languages. (For now, all
 /// subtitles must be in *.srt format. Many common encodings will be
 /// automatically detected, but try converting to UTF-8 if you have problems.)
-#[structopt(name = "substudy")]
+#[command(name = "substudy", version)]
 enum Args {
     /// Clean a subtitle file, removing things that don't look like dialog.
-    #[structopt(name = "clean")]
+    #[command(name = "clean")]
     Clean {
         /// Path to the subtitle file to clean.
-        #[structopt(parse(from_os_str))]
         subs: PathBuf,
     },
 
     /// Combine two subtitle files into a single bilingual subtitle file.
-    #[structopt(name = "combine")]
+    #[command(name = "combine")]
     Combine {
         /// Path to the foreign language subtitle file to be combined.
-        #[structopt(parse(from_os_str))]
         foreign_subs: PathBuf,
 
         /// Path to the native language subtitle file to be combined.
-        #[structopt(parse(from_os_str))]
         native_subs: PathBuf,
     },
 
     /// Export subtitles in one of several formats (Anki cards, music tracks,
     /// etc).
-    #[structopt(name = "export")]
+    #[command(name = "export")]
     Export {
-        #[structopt(subcommand)]
+        #[command(subcommand)]
         format: ExportFormat,
     },
 
     /// List information about a file.
-    #[structopt(name = "list")]
+    #[command(name = "list")]
     List {
-        #[structopt(subcommand)]
+        #[command(subcommand)]
         to_list: ToList,
     },
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Subcommand)]
 enum ExportFormat {
     /// Export as CSV file and media for use with Anki.
-    #[structopt(name = "csv")]
+    #[command(name = "csv")]
     Csv {
         /// Path to the video.
-        #[structopt(parse(from_os_str))]
         video: PathBuf,
 
         /// Path to the file containing foreign language subtitles.
-        #[structopt(parse(from_os_str))]
         foreign_subs: PathBuf,
 
         /// Path to the file containing native language subtitles.
-        #[structopt(parse(from_os_str))]
         native_subs: Option<PathBuf>,
     },
 
     /// Export as an HTML page allowing you to review the subtitles.
-    #[structopt(name = "review")]
+    #[command(name = "review")]
     Review {
         /// Path to the video.
-        #[structopt(parse(from_os_str))]
         video: PathBuf,
 
         /// Path to the file containing foreign language subtitles.
-        #[structopt(parse(from_os_str))]
         foreign_subs: PathBuf,
 
         /// Path to the file containing native language subtitles.
-        #[structopt(parse(from_os_str))]
         native_subs: Option<PathBuf>,
     },
 
     /// Export as MP3 tracks for listening on the go.
-    #[structopt(name = "tracks")]
+    #[command(name = "tracks")]
     Tracks {
         /// Path to the video.
-        #[structopt(parse(from_os_str))]
         video: PathBuf,
 
         /// Path to the file containing foreign language subtitles.
-        #[structopt(parse(from_os_str))]
         foreign_subs: PathBuf,
     },
 }
@@ -142,13 +125,12 @@ impl ExportFormat {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Subcommand)]
 enum ToList {
     /// List the various audio and video tracks in a video file.
-    #[structopt(name = "tracks")]
+    #[command(name = "tracks")]
     Tracks {
         /// Path to the video.
-        #[structopt(parse(from_os_str))]
         video: PathBuf,
     },
 }
@@ -158,7 +140,7 @@ fn run() -> Result<()> {
     env_logger::init();
 
     // Parse our command-line arguments using docopt (very shiny).
-    let args: Args = Args::from_args();
+    let args: Args = Args::parse();
 
     match args {
         Args::Clean { ref subs } => {

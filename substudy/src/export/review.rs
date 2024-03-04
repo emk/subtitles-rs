@@ -4,9 +4,9 @@ use common_failures::prelude::*;
 use failure::SyncFailure;
 use handlebars::Handlebars;
 
-use export::Exporter;
-use lang::Lang;
-use time::Period;
+use crate::export::Exporter;
+use crate::lang::Lang;
+use crate::time::Period;
 
 /// Information about a subtitle for use by our Handlebars HTML template.
 #[derive(Debug, Serialize)]

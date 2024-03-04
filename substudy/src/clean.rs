@@ -3,8 +3,9 @@
 
 use common_failures::prelude::*;
 use regex::Regex;
-use srt::{Subtitle, SubtitleFile};
 use std::borrow::Cow;
+
+use crate::srt::{Subtitle, SubtitleFile};
 
 /// Remove the formatting from a subtitle.
 pub fn strip_formatting(line: &str) -> Cow<str> {

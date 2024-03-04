@@ -2,7 +2,7 @@
 
 use regex::Regex;
 
-use srt::Subtitle;
+use crate::srt::Subtitle;
 
 static LINE_MAX: usize = 43;
 
@@ -56,8 +56,8 @@ pub fn merge_subtitles(subs: &[Subtitle]) -> Option<Subtitle> {
 
 #[cfg(test)]
 mod test {
-    use srt::SubtitleFile;
-    use merge::merge_subtitles;
+    use crate::srt::SubtitleFile;
+    use crate::merge::merge_subtitles;
 
     fn merge_for_test(input: &str) -> String {
         let srt = SubtitleFile::from_str(input).unwrap();

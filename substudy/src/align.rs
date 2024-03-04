@@ -1,11 +1,11 @@
 //! Align two subtitle files.
 
 use std::cmp::Ordering;
-use time::MIN_SPACING;
 
-use srt::{Subtitle, SubtitleFile};
-use merge::merge_subtitles;
-use clean::{clean_subtitle_file, strip_formatting};
+use crate::time::MIN_SPACING;
+use crate::srt::{Subtitle, SubtitleFile};
+use crate::merge::merge_subtitles;
+use crate::clean::{clean_subtitle_file, strip_formatting};
 
 use self::MatchQuality::{Nearby, NoMatch, Overlap};
 
