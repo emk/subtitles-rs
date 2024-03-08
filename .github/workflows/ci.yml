@@ -2,6 +2,7 @@ on:
     push:
       branches:
         - main
+        - master
         - ci
       tags:
         - "substudy_v*"
