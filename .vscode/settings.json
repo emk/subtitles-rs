@@ -7,5 +7,6 @@
         "**/.DS_Store": true,
         "junk": true
     },
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "rust-analyzer.showUnlinkedFileNotification": false
 }

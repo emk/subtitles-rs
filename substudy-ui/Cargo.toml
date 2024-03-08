@@ -1,0 +1,25 @@
+[package]
+name = "substudy-ui"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ammonia = { version = "3.3.0", optional = true }
+dioxus = { version = "0.5.0-alpha.0", features = ["fullstack"] }
+uuid = { version = "1.7.0", features = ["serde"] }
+
+[features]
+default = []
+server = ["dioxus/axum", "dioxus/ssr", "ammonia"]
+web = ["dioxus/web"]
+
+# [profile.release]
+# opt-level = "z"
+# debug = false
+# lto = true
+# codegen-units = 1
+# panic = "abort"
+# strip = true
+# incremental = false

@@ -1,0 +1,19 @@
+[application]
+name = "substudy"
+default_platform = "fullstack"
+
+[web.app]
+title = "Substudy"
+
+[web.watcher]
+
+# When watcher is triggered, regenerate the `index.html`
+reload_html = true
+
+# Which files or dirs will be monitored
+watch_path = ["src", "public"]
+
+[web.resource]
+style = ["/tailwind.css"]
+
+[web.resource.dev]

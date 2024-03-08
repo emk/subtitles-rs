@@ -8,7 +8,11 @@ members = ["cli_test_dir", "substudy"]
 
 # Removed until I can update `nom` over 5 major releases.
 #
-# "vobsub", "vobsub2png"]
+# "vobsub", "vobsub2png"
+
+# Dioxus workspace support is broken:
+# https://github.com/DioxusLabs/dioxus/issues/1990
+exclude = ["substudy-ui"]
 
 # Use the new resolver.
 resolver = "2"
