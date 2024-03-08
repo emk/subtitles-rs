@@ -6,11 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.5.0] - 2024-03-07
+
 ### Fixed
 
-- Updated all dependencies from their ancient 2017 versions to the latest versions.
+- Updated all dependencies from their ancient 2017 versions to their latest versions.
 - Ported code to Rust 2021 edition.
 - Switched error-handling from the deprecated `failure` to `anyhow`, and removed dependency on `common_failures`.
+- Moved binary builds to GitHub.
 
 ## [0.4.5] - 2017-12-08
 
