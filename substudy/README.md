@@ -1,8 +1,6 @@
-[![Latest version](https://img.shields.io/crates/v/substudy.svg)](https://crates.io/crates/substudy) [![License](https://img.shields.io/crates/l/substudy.svg)](https://creativecommons.org/publicdomain/zero/1.0/) [![Build Status](https://travis-ci.org/emk/subtitles-rs.svg?branch=master)](https://travis-ci.org/emk/subtitles-rs) [![Build status (AppVeyor)](https://ci.appveyor.com/api/projects/status/188eau91m9umve8u/branch/master?svg=true)](https://ci.appveyor.com/project/emk/substudy/branch/master)
+[![Latest version](https://img.shields.io/crates/v/substudy.svg)](https://crates.io/crates/substudy) [![License](https://img.shields.io/crates/l/substudy.svg)](https://creativecommons.org/publicdomain/zero/1.0/) [![example workflow](https://github.com/emk/subtitles-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/emk/subtitles-rs/actions)
 
-This is an experimental tool to help language-learners exploit parallel
-subtitles in various ways.  Among other things, it can generate bilingual
-subtitles, review pages, and decks of Anki cards:
+This is an experimental tool to help language-learners exploit parallel subtitles in various ways.  Among other things, it can generate bilingual subtitles, review pages, and decks of Anki cards:
 
 <a href="http://www.randomhacks.net/substudy/#bilingual">
 <img src="http://www.randomhacks.net/images/substudy/bilingual-subtitles.jpg"
@@ -20,7 +18,6 @@ subtitles, review pages, and decks of Anki cards:
 Here's the documentation:
 
 - [Overview and user documentation][docs]
-- [API documentation (unstable)][apidocs]
 
 Example usage:
 
@@ -35,13 +32,10 @@ substudy export review episode_01_01.mkv \
 ```
 
 [docs]: http://www.randomhacks.net/substudy/
-[apidocs]: http://docs.randomhacks.net/substudy/substudy/index.html
 
 ## Installing `ffmpeg`
 
-To use `substudy`, you'll need to have the `ffmpeg` command-line tools
-installed on your system. You can find official packages for most platforms
-at the [FFmpeg site][ffmpeg]. But here are some instructions for specific
+To use `substudy`, you'll need to have the `ffmpeg` command-line tools installed on your system. You can find official packages for most platforms at the [FFmpeg site][ffmpeg]. But here are some instructions for specific
 platforms:
 
 ```sh
@@ -53,22 +47,14 @@ sudo apt install ffmpeg
 brew install ffmpeg
 ```
 
-If you're running Windows, or if you're a Mac user who's never heard of
-`brew`, then you'll probably want to download your packages from
-the [FFmpeg site][ffmpeg]. Note that these configurations haven't been
-tested much, so if you run into problems, please report an [issue][issues]
-so that we can fix it.
+If you're running Windows, or if you're a Mac user who's never heard of `brew`, then you'll probably want to download your packages from the [FFmpeg site][ffmpeg]. Note that these configurations haven't been tested much, so if you run into problems, please report an [issue][issues] so that we can fix it.
 
 [ffmpeg]: https://www.ffmpeg.org/download.html
-[issues]: https://github.com/emk/substudy/issues
+[issues]: https://github.com/emk/subtitles-rs/issues
 
 ## Installing `substudy` using binary releases
 
-The easiest way to install `substudy` is to use an
-official [binary release][releases] for your platform. Download the
-appropriate `*.zip` file, open it, and install the binary somewhere your
-operating system can find it. Here are some instructions for common
-platforms:
+The easiest way to install `substudy` is to use an official [binary release][releases] for your platform. Download the appropriate `*.zip` file, open it, and install the binary somewhere your operating system can find it. Here are some instructions for common platforms:
 
 ```sh
 # Linux x86_64 and MacOS X.
@@ -76,28 +62,32 @@ unzip substudy-*.zip
 sudo cp substudy /usr/local/bin
 ```
 
-The Linux binaries are statically linked, so they should work on any
-reaonably modern x86_64 distribution. For other architectures, you can try
-to install using `cargo` as described below.
+The Linux binaries are statically linked, so they should work on any reaonably modern x86_64 distribution. For other architectures, you might try to install using `cargo` as described below.
 
-For Windows, you'll have to figure it out yourself for now. But if you do,
-please file an [issue][issues] and tell us how you did it, so that we can
-update the instructions!
+For Windows, you'll have to figure it out yourself for now. But if you do, please file an [issue][issues] and tell us how you did it, so that we can update the instructions!
 
-[releases]: https://github.com/emk/substudy/releases
+[releases]: https://github.com/emk/subtitles-rs/releases
+
+### Telling your OS it's OK to run `substudy`
+
+Linux trusts you to run software you download.
+
+Normally, MacOS and Windows want all programs to be signed by a developer. This would cost me money every year ($99/year for MacOS, and around $300–400/year for an EV certificate Windows). You might be able to work around this by following these instructions:
+
+- [MacOS: Open an app from an unidentified developer](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac)
+- [OK Windows 10, we get it: You really do not want us to install this unsigned application. But 7 steps borders on ridiculous](https://www.theregister.com/2020/06/05/windows_10_microsoft_defender_smartscreen/)
+
+Obviously, you should only do this if you trust me, and you should _always_ download the binaries from the official [releases page][releases]. And if you have up-to-date instructions for how to do this, please file an [issue][issues] and tell us how you did it.
 
 ## Installing `substudy` using `cargo`
 
-You can also install `substudy` is using the `cargo install` command.  To
-use this, you'll need a recent version of Rust.  If you already
-have [`rustup`][rustup] installed, you can run:
+You can also install `substudy` is using the `cargo install` command.  To use this, you'll need a recent version of Rust.  If you already have [`rustup`][rustup] installed, you can run:
 
 ```sh
 rustup update stable
 ```
 
-If you've never heard of `rustup`, you can look at the instructions on
-the [`rustup` page][rustup], or you can just run the following:
+If you've never heard of `rustup`, you can look at the instructions on the [`rustup` page][rustup], or you can just run the following:
 
 ```sh
 # Mac and Linux only.  Windows see above.
@@ -114,9 +104,7 @@ cargo install substudy
 
 ## Building `substudy`
 
-Assuming you have Rust and the other dependencies installed as described
-above, you can run:
-
+Assuming you have Rust and the other dependencies installed as described above, you can run:
 ```sh
 git clone https://github.com/emk/substudy.git
 cd substudy
@@ -124,14 +112,6 @@ cargo build
 ```
 
 If this fails, please feel free to submit an issue.
-
-## Using `substudy` as a library
-
-You can find [API documentation on the Rust CI site][apidocs].  Note that
-all APIs are experimental and subject to change.  If you want to use
-`substudy` as a library in your own tools, you're encouraged to do so, but
-it might be worth letting me know which APIs you're using so that I can
-stabilize them.
 
 ## Contributing
 
@@ -146,35 +126,22 @@ cargo test
 Things which I'd love to see `substudy` support include:
 
 - Creating various sorts of parallel media: subtitles, Anki cards, etc.
-- Automatic vobsub to `*.srt` conversion, using OCR and character
-  databases.  There are several open source Windows tools which tackle
-  this, but it should be theoretically possible to do a lot better.
+- **(2017 goal)** Automatic vobsub to `*.srt` conversion, using OCR and character databases.  There are several open source Windows tools which tackle this, but it should be theoretically possible to do a lot better.
 
-Things which I'll probably merge if they come with clean code and solid
-test suites:
+Things which I'll probably merge if they come with clean code and solid test suites:
 
 - Better character set conversion.
 - Various sorts of subtitle cleanups.
 - Formats other than `*.srt`.
 - Better algorithms for repairing timings and alignment.
 
-I'm happy to leave serious, interactive subtitle editing to
-[Subtitle Edit][], and to focus on cases related to language learning, and
-to things which are convenient to call from the command line.  I'd also be
-happy to have implementations of the most useful [subs2srs][] features in
-command-line form—it's a wonderful and useful program, but it has too many
-configuration options and it requires too much work using external
-utilities.
+I'm happy to leave serious, interactive subtitle editing to [Subtitle Edit][], and to focus on cases related to language learning, and to things which are convenient to call from the command line.  I'd also be happy to have implementations of the most useful [subs2srs][] features in command-line form—it's a wonderful and useful program, but it has too many configuration options and it requires too much work using external utilities.
 
 [Subtitle Edit]: http://www.nikse.dk/subtitleedit/
 [subs2srs]: http://subs2srs.sourceforge.net/
 
 ## License
 
-This program is released into the public domain using the
-[CC0 public domain declaration][CC0].  Our test suites contain a half-dozen
-lines of subtitles from copyrighted TV shows, which should presumably fall
-under _de minimis_, fair use or equivalent exceptions in most
-jurisdictions.
+This program is released into the public domain using the [CC0 public domain declaration][CC0].  Our test suites contain a half-dozen lines of subtitles from copyrighted TV shows, which should presumably fall under _de minimis_, fair use or equivalent exceptions in most jurisdictions.
 
 [CC0]: https://creativecommons.org/publicdomain/zero/1.0/

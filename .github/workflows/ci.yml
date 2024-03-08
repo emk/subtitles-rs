@@ -1,0 +1,160 @@
+on:
+    push:
+      branches:
+        - main
+        - ci
+      tags:
+        - "substudy_v*"
+    pull_request:
+      branches: [main]
+
+jobs:
+  # We run this job first, to create any GitHub release that we might need.
+  # Creating a release can only be done once, so we need to split it out from
+  # other jobs.
+  create_release:
+    name: Create release (if needed)
+    runs-on: ubuntu-latest
+    outputs:
+      release_version: ${{ steps.extract_release_version.outputs.release_version }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract release version
+        id: extract_release_version
+        run: |
+          release_version="$(echo '${{ github.ref }}' | sed 's,^.*/\([^/]*\)$,\1,; s,^substudy_v,,' )"
+          echo Release version: $release_version
+          echo "::set-output name=release_version::$release_version"
+      - name: Extract release body from CHANGELOG.md
+        id: extract_release_body
+        if: ${{ startsWith(github.ref, 'refs/tags/substudy_v') }}
+        # Use `clparse` to parse `CHANGELOG.md` and extract release notes.
+        run: |
+          curl -sLO https://github.com/marcaddeo/clparse/releases/download/0.8.0/clparse-0.8.0-x86_64-unknown-linux-musl.tar.gz
+          tar xzf clparse*.tar.gz
+          sudo cp clparse /usr/local/bin
+          rm -rf clparse*
+          clparse -f json substudy/CHANGELOG.md | \
+            jq ".releases[] | select(.version == \"${{ steps.extract_release_version.outputs.release_version }}\") | { title: \"\", description: \"\", releases: [.] }" | \
+            clparse - | \
+            tail -n +3 > RELEASE_BODY.md
+      - name: "Make release"
+        id: create_release
+        if: ${{ startsWith(github.ref, 'refs/tags/substudy_v') }}
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: "${{ steps.extract_release_version.outputs.release_version }}"
+          body_path: RELEASE_BODY.md
+
+  # We use a matrix to run our build on every supported platform.
+  build:
+    name: "Build"
+
+    needs:
+      - create_release
+
+    strategy:
+      matrix:
+        # target: Official name of system to compile for.
+        # host: Official name of system doing the compiling.
+        # cargo: Should we use regular cargo, or the cross wrapper for cross-compiling?
+        # os: GitHub CI OS image to use on runner.
+        include:
+          - target: x86_64-unknown-linux-musl
+            host: x86_64-unknown-linux-musl
+            cargo: cross
+            os: ubuntu-latest
+            ext: ""
+          - target: x86_64-apple-darwin
+            host: x86_64-apple-darwin
+            cargo: cargo
+            os: macos-latest
+            ext: ""
+          - target: aarch64-apple-darwin
+            host: x86_64-apple-darwin
+            cargo: cargo
+            os: macos-latest
+            ext: ""
+          - target: x86_64-pc-windows-msvc
+            host: x86_64-pc-windows-msvc
+            cargo: cargo
+            os: windows-latest
+            ext: ".exe"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: FedericoCarboni/setup-ffmpeg@v3
+        id: setup-ffmpeg
+        with:
+          ffmpeg-version: release
+          # Apparently needed for Windows?
+          github-token: ${{ github.server_url == 'https://github.com' && github.token || '' }}
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          # We track latest stable Rust instead of hardcoding it because it
+          # virtually never breaks old code.
+          toolchain: stable
+          components: rustfmt, clippy
+          target: ${{ matrix.target }}
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+      - name: Check source formatting and warnings
+        run: |
+          cargo fmt -- --check
+        # cargo clippy -- -D warnings
+      # - name: Check policy
+      #   run: |
+      #     version=0.11.0
+      #     basename=cargo-deny-$version-${{ matrix.host }}
+      #     curl -fLO https://github.com/EmbarkStudios/cargo-deny/releases/download/$version/$basename.tar.gz
+      #     tar xf $basename.tar.gz
+      #     mv $basename/cargo-deny /usr/local/bin/
+      #     rm -rf $basename $basename.tar.gz
+      #     cargo deny check
+      - name: Test
+        run: |
+          cargo test
+      - name: Install cargo cross (if needed)
+        if: ${{ matrix.cargo == 'cross' }}
+        # Note that this will not work for Rust programs using openssl or libpq.
+        shell: bash
+        run: |
+          version=v0.2.1
+          basename=cross-$version-${{ matrix.host }}
+          curl -fLO https://github.com/rust-embedded/cross/releases/download/$version/$basename.tar.gz
+          tar xf $basename.tar.gz
+          mv cross /usr/local/bin/
+          rm -rf $basename.tar.gz
+      - name: Build binaries
+        run: |
+          ${{ matrix.cargo }} build --release --target ${{ matrix.target }}
+      # If we have a code-signing identity, we could use it like this.
+      #
+      # - name: Sign binaries (if needed)
+      #   if: ${{ contains(matrix.target, 'apple') }}
+      #   run: |
+      #     codesign --force -s $YOUR_IDENTITY_HERE target/${{ matrix.target }}/release/substudy
+      - name: Build release
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: zip
+          directory: target/${{ matrix.target }}/release
+          path: substudy${{ matrix.ext }}
+          filename: ../../../substudy_${{ needs.create_release.outputs.release_version }}_${{ matrix.target }}.zip
+      - name: Upload Release Asset
+        if: ${{ startsWith(github.ref, 'refs/tags/substudy_v') }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./substudy_${{ needs.create_release.outputs.release_version }}_${{ matrix.target }}.zip
+          asset_name: substudy_${{ needs.create_release.outputs.release_version }}_${{ matrix.target }}.zip
+          asset_content_type: application/zip
