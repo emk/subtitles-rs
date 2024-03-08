@@ -1,4 +1,4 @@
-//! Command-line iterface to substudy.
+//! Command-line interface to substudy.
 
 use std::path::{Path, PathBuf};
 
