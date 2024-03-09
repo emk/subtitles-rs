@@ -3,7 +3,9 @@
 use std::path::{Path, PathBuf};
 
 use clap::{Parser, Subcommand};
-use substudy::{align::combine_files, export, srt::SubtitleFile, video, Result};
+use substudy::{
+    align::combine_files, export, import, srt::SubtitleFile, video, Result,
+};
 
 #[derive(Debug, Parser)]
 /// Subtitle processing tools for students of foreign languages. (For now, all
@@ -34,6 +36,13 @@ enum Args {
     Export {
         #[command(subcommand)]
         format: ExportFormat,
+    },
+
+    /// Import subtitles from one of several formats (Whisper JSON, etc).
+    #[command(name = "import")]
+    Import {
+        #[command(subcommand)]
+        format: ImportFormat,
     },
 
     /// List information about a file.
@@ -131,6 +140,17 @@ impl ExportFormat {
     }
 }
 
+/// Formats we can import.
+#[derive(Debug, Subcommand)]
+enum ImportFormat {
+    /// Import from a Whisper JSON file.
+    #[command(name = "whisper")]
+    Whisper {
+        /// Path to the Whisper JSON file.
+        whisper_json: PathBuf,
+    },
+}
+
 #[derive(Debug, Subcommand)]
 enum ToList {
     /// List the various audio and video tracks in a video file.
@@ -160,6 +180,7 @@ fn main() -> Result<()> {
             format.foreign_subs(),
             format.native_subs(),
         ),
+        Args::Import { format } => cmd_import(format),
         Args::List {
             to_list: ToList::Tracks { ref video },
         } => cmd_tracks(video),
@@ -214,4 +235,14 @@ fn cmd_export(
     }
 
     Ok(())
+}
+
+fn cmd_import(format: ImportFormat) -> std::prelude::v1::Result<(), anyhow::Error> {
+    match format {
+        ImportFormat::Whisper { whisper_json } => {
+            let srt = import::import_whisper_json(&whisper_json)?;
+            print!("{}", srt.to_string());
+            Ok(())
+        }
+    }
 }

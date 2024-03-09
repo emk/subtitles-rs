@@ -27,8 +27,8 @@ def json_to_srt(json_path: str, srt_path: str):
     word_infos = json_data["words"]
     for s in json_data["segments"]:
         # Skip things which might not be speech.
-        if s["no_speech_prob"] > 0.25:
-            continue
+        #if s["no_speech_prob"] > 0.95:
+        #    continue
 
         # Clean up the text.
         text = clean_text(s["text"])
@@ -43,31 +43,28 @@ def json_to_srt(json_path: str, srt_path: str):
         # Replace all punctuation with spaces.
         segment_word_text = word_characters_only(text)
         segment_words = segment_word_text.split()
-        start_time = None
-        end_time = None
         word_infos = valid_word_infos(word_infos)
+        matching_word_infos = []
         for sw in segment_words:
-            candidate = next(word_infos, None)
-            if candidate is None:
-                raise ValueError(f"Ran out of word_infos for segment '{text}'")
-            if candidate["word"].lower() != sw.lower():
+            tries = 10
+            while tries > 0:
+                candidate = next(word_infos, None)
+                if candidate is None:
+                    raise ValueError(f"Ran out of word_infos for segment '{text}'")
+                if candidate["word"].lower() == sw.lower():
+                    break
+                print(f"Expecting '{sw}', SKIPPING '{candidate['word']}'")
+                tries -= 1
+            if tries == 0:
                 raise ValueError(f"Expected '{sw}', got '{candidate['word']}'")
             print(f"Matched '{sw}' to '{candidate['word']}'")
-            if start_time is None:
-                start_time = candidate["start"]
-            else:
-                # This is usually bad data when it happens.
-                #start_time = min(start_time, candidate["start"])
-                pass
-            if end_time is None:
-                end_time = candidate["end"]
-            else:
-                end_time = max(end_time, candidate["end"])
-        if start_time is None:
-            print("No start time found for segment", file=sys.stderr)
+            matching_word_infos.append(candidate)
+        if matching_word_infos:
+            start_time = matching_word_infos[0]["start"]
+            end_time = matching_word_infos[-1]["end"]
+        else:
+            print("No words in segment", file=sys.stderr)
             start_time = s["start"]
-        if end_time is None:
-            print("No end time found for segment", file=sys.stderr)
             end_time = s["end"]
 
         start_time_text = format_time(start_time)
