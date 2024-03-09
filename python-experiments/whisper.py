@@ -21,12 +21,21 @@ def text_to_speech(audio_file_path: str, prompt_path: str, output_path: str):
         model="whisper-1",
         prompt=prompt,
         response_format="verbose_json",
-        timestamp_granularities=["word"]
+        # "segment" gives punctuation, but "word" actually seems to give
+        # more accurate timestamps. Not perfect ones, unfortunately.
+        timestamp_granularities=["segment", "word"]
     )
 
     # Write the transcript to a JSON file.
+    transcript_data = {
+        "language": transcript.language,
+        "duration": transcript.duration,
+        "text": transcript.text,
+        "words": transcript.words,
+        "segments": transcript.segments,
+    }
     with open(output_path, "w") as f:
-        f.write(json.dumps(transcript.words, indent=4))
+        f.write(json.dumps(transcript_data, indent=4))
 
 # Command line entry point.
 #
