@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.5.1] - 2024-03-10
+
+### Changed
+
+- Switched to the Apache 2.0 license for new code.
+
+### Added
+
+- Import Whisper JSON output using `substudy import whisper-json whisper.json > output.srt`. To create `whisper.json`, see [the `whisper.py` script](https://github.com/emk/subtitles-rs/blob/a7f9f03bdf45ea22550b9abe311bb473dd449cc3/python-experiments/whisper.py), which should work for audio files under 25 MB in major languages. We hope to integrate this into `substudy` in the future.
+
 ## [0.5.0] - 2024-03-07
 
 ### Fixed
