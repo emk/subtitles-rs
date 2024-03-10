@@ -144,8 +144,8 @@ impl ExportFormat {
 #[derive(Debug, Subcommand)]
 enum ImportFormat {
     /// Import from a Whisper JSON file.
-    #[command(name = "whisper")]
-    Whisper {
+    #[command(name = "whisper-json")]
+    WhisperJson {
         /// Path to the Whisper JSON file.
         whisper_json: PathBuf,
     },
@@ -239,7 +239,7 @@ fn cmd_export(
 
 fn cmd_import(format: ImportFormat) -> std::prelude::v1::Result<(), anyhow::Error> {
     match format {
-        ImportFormat::Whisper { whisper_json } => {
+        ImportFormat::WhisperJson { whisper_json } => {
             let srt = import::import_whisper_json(&whisper_json)?;
             print!("{}", srt.to_string());
             Ok(())
