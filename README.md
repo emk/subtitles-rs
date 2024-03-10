@@ -5,31 +5,24 @@
 **Are you looking for `substudy`? Try [here][substudy].** (`substudy` has been
 merged into the `subtitles-rs` project.)
 
-This repository contains a number of related tools and libraries for
-manipulating subtitles.  See the `README.md` files in this individual
-subdirectories for more details.
+This repository contains a number of related tools and libraries for manipulating subtitles.  See the `README.md` files in this individual subdirectories for more details.
 
-- [substudy][]: Learn foreign languages using audio and subtitles extracted
-  from video files.
+- [substudy][]: Learn foreign languages using audio and subtitles extracted from video files.
 - [common_failures][]: Useful `Fail` implementations and error-handling tools.
 - [cli_test_dir][]: A simple integration testing harness for CLI tools.
 - [vobsub][]: A Rust library for parsing subtitles in sub/idx format.
-- [vobsub2png][]: A command-line tool for converting sub/idx subtitles to
-  PNGs with JSON metadata.
+- [vobsub2png][]: A command-line tool for converting sub/idx subtitles to PNGs with JSON metadata.
 
 ### Historical interest
 
 The following assorted libraries have been moved into the `archive` sub-directory, and are no longer maintained. The `vobsub`-related libraries might be worth updating at some point, although relatively few language learners rely on DVD subtitles these days.
 
 
-- [opus_tools][]: Utilities for parsing subtitle data from the OPUS project,
-  for use as input to various language models.
+- [opus_tools][]: Utilities for parsing subtitle data from the OPUS project, for use as input to various language models.
 
 The following subtitle-related projects can be found in other repositories:
 
-- [aligner][]: This GPLed library by kaegi uses dynamic programming to
-  re-align out-of-sync subtitles using another subtitle file with
-  known-good timing.
+- [aligner][]: This GPLed library by kaegi uses dynamic programming to re-align out-of-sync subtitles using another subtitle file with known-good timing.
 - [subparse][]: This library by kaegi parses many common subtitle formats.
 
 [vobsub]: ./archive/vobsub/README.md
@@ -43,12 +36,11 @@ The following subtitle-related projects can be found in other repositories:
 
 ## License
 
-This code is distributed under the CC0 1.0 Universal public domain grant
-(plus fallback license), with the exception of some data in the `fixtures`
-directory, which contains a few individual frames of subtitle data used in
-tests.  Note that none of the individual crates include that data.
+This code is distributed under the Apache 2.0 license, with the exception of some data in the `fixtures` directory, which contains a few individual frames of subtitle data used in tests. Note that none of the individual crates include that data.
+
+Earlier versions of this code were distributed under the CC0 1.0 Universal public domain grant
+(plus fallback license). This may give you additional rights in certain jurisdictions, but you'd have to check with a legal professional.
 
 ## Contributions
 
-Your feedback and contributions are welcome!  Please feel free to submit
-issues and pull requests using GitHub.
+Your feedback and contributions are welcome!  Please feel free to submit issues and pull requests using GitHub.

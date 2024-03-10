@@ -142,6 +142,6 @@ I'm happy to leave serious, interactive subtitle editing to [Subtitle Edit][], a
 
 ## License
 
-This program is released into the public domain using the [CC0 public domain declaration][CC0].  Our test suites contain a half-dozen lines of subtitles from copyrighted TV shows, which should presumably fall under _de minimis_, fair use or equivalent exceptions in most jurisdictions.
+This code is distributed under the Apache 2.0 license.  Our test suites contain a half-dozen lines of subtitles from copyrighted TV shows, which should presumably fall under _de minimis_, fair use or equivalent exceptions in most jurisdictions.
 
-[CC0]: https://creativecommons.org/publicdomain/zero/1.0/
+Earlier versions of this code were distributed under the CC0 1.0 Universal public domain grant (plus fallback license). This may give you additional rights in certain jurisdictions, but you'd have to check with a legal professional.

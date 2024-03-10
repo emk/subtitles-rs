@@ -5,7 +5,7 @@ authors = ["Eric Kidd <git@randomhacks.net>"]
 edition = "2021"
 
 description = "Tools for testing Rust command-line utilities"
-license = "CC0-1.0"
+license = "Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/emk/subtitles-rs"
 documentation = "https://docs.rs/cli_test_dir/"

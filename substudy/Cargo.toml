@@ -3,7 +3,7 @@
 name = "substudy"
 version = "0.5.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
-license = "CC0-1.0"
+license = "Apache-2.0"
 edition = "2021"
 
 description = """Language-learning tools for working with parallel, bilingual
