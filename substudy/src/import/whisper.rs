@@ -1,9 +1,9 @@
 use std::{fmt, fs::File, iter::repeat, path::Path};
 
-use anyhow::{anyhow, Context as _};
+use anyhow::Context as _;
 use lazy_static::lazy_static;
 use lending_iterator::{lending_iterator::constructors::windows_mut, LendingIterator};
-use log::{debug, info, trace, warn};
+use log::{debug, trace, warn};
 use ordered_float::NotNan;
 use regex::Regex;
 use serde::Deserialize;
@@ -84,7 +84,7 @@ enum Overlap {
 
 impl Overlap {
     /// Compute overlap type from start and end times.
-    fn from_times(start1: f32, end1: f32, start2: f32, end2: f32) -> Overlap {
+    fn from_times(_start1: f32, end1: f32, start2: f32, end2: f32) -> Overlap {
         if end1 > start2 + 1.0 || end1 > end2 {
             Overlap::Severe
         } else if end1 + 0.01 > start2 {
@@ -356,7 +356,7 @@ impl AnalyzedSegments {
         chars_per_sec.sort_unstable();
         let median_chars_per_sec = if chars_per_sec.is_empty() {
             warn!("No valid segment times found");
-            10.0
+            DEFAULT_CHARS_PER_SECOND
         } else {
             chars_per_sec[chars_per_sec.len() / 2].into_inner()
         };

@@ -3,9 +3,12 @@
 use std::path::{Path, PathBuf};
 
 use clap::{Parser, Subcommand};
+use dotenv::dotenv;
 use substudy::{
-    align::combine_files, export, import, srt::SubtitleFile, video, Result,
+    align::combine_files, export, import, lang::Lang,
+    services::oai::translate_subtitle_file, srt::SubtitleFile, video, Result,
 };
+use tokio::task::spawn_blocking;
 
 #[derive(Debug, Parser)]
 /// Subtitle processing tools for students of foreign languages. (For now, all
@@ -50,6 +53,17 @@ enum Args {
     List {
         #[command(subcommand)]
         to_list: ToList,
+    },
+
+    /// Translate subtitles.
+    #[command(name = "translate")]
+    Translate {
+        /// Path to the subtitle file to translate.
+        foreign_subs: PathBuf,
+
+        /// Target language code (e.g. "en" for English).
+        #[arg(long)]
+        native_lang: String,
     },
 }
 
@@ -162,28 +176,39 @@ enum ToList {
 }
 
 // Choose and run the appropriate command.
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
+    dotenv().ok();
     env_logger::init();
 
     // Parse our command-line arguments using docopt (very shiny).
     let args: Args = Args::parse();
 
     match args {
-        Args::Clean { ref subs } => cmd_clean(subs),
+        Args::Clean { subs } => spawn_blocking(move || cmd_clean(&subs)).await?,
         Args::Combine {
-            ref foreign_subs,
-            ref native_subs,
-        } => cmd_combine(foreign_subs, native_subs),
-        Args::Export { ref format } => cmd_export(
-            format.name(),
-            format.video(),
-            format.foreign_subs(),
-            format.native_subs(),
-        ),
-        Args::Import { format } => cmd_import(format),
+            foreign_subs,
+            native_subs,
+        } => spawn_blocking(move || cmd_combine(&foreign_subs, &native_subs)).await?,
+        Args::Export { format } => {
+            spawn_blocking(move || {
+                cmd_export(
+                    format.name(),
+                    format.video(),
+                    format.foreign_subs(),
+                    format.native_subs(),
+                )
+            })
+            .await?
+        }
+        Args::Import { format } => spawn_blocking(move || cmd_import(format)).await?,
         Args::List {
-            to_list: ToList::Tracks { ref video },
-        } => cmd_tracks(video),
+            to_list: ToList::Tracks { video },
+        } => spawn_blocking(move || cmd_tracks(&video)).await?,
+        Args::Translate {
+            foreign_subs,
+            native_lang,
+        } => cmd_translate(&foreign_subs, &native_lang).await,
     }
 }
 
@@ -245,4 +270,12 @@ fn cmd_import(format: ImportFormat) -> std::prelude::v1::Result<(), anyhow::Erro
             Ok(())
         }
     }
+}
+
+async fn cmd_translate(foreign_subs: &Path, native_lang: &str) -> Result<()> {
+    let file = SubtitleFile::cleaned_from_path(foreign_subs)?;
+    let native_lang = Lang::iso639(native_lang)?;
+    let translated = translate_subtitle_file(&file, native_lang).await?;
+    print!("{}", translated.to_string());
+    Ok(())
 }

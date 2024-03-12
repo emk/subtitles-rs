@@ -1,6 +1,6 @@
 //! Naming and identifying languages.  We use
 
-use std::{collections::HashMap, fmt, iter::FromIterator, result, str::from_utf8};
+use std::{collections::HashMap, fmt, result, str::from_utf8};
 
 use anyhow::anyhow;
 use lazy_static::lazy_static;
@@ -10,66 +10,59 @@ use whatlang;
 
 use crate::Result;
 
+/// External CSV data from the LoC.
+///
+/// This is a CSV file which looks like:
+///
+/// ```csv
+/// alpha3-b,alpha3-t,alpha2,English,French
+/// aar,null,aa,Afar,afar
+/// ```
+static ISO_639_CODES: &str = include_str!("data/language-codes-full.csv");
+
+/// Maps related to ISO 639 language codes.
+struct LangMaps {
+    canonical_codes: HashMap<String, String>,
+    names: HashMap<String, String>,
+}
+
+/// Helper function called to build language maps.
+fn iso_689_canonical_codes_and_names() -> LangMaps {
+    let mut canonical_codes = HashMap::new();
+    let mut names = HashMap::new();
+
+    // Parse using `csv` crate.
+    let mut rdr = csv::Reader::from_reader(ISO_639_CODES.as_bytes());
+    let mut r = csv::StringRecord::new();
+    while rdr.read_record(&mut r).expect("error reading embedded CSV") {
+        let (a3b, a3t, a2, en, _fr) = (&r[0], &r[1], &r[2], &r[3], &r[4]);
+        if a2 != "null" {
+            if a3b != "null" {
+                canonical_codes.insert(a3b.to_owned(), a2.to_owned());
+            }
+            if a3t != "null" {
+                canonical_codes.insert(a3t.to_owned(), a2.to_owned());
+            }
+            names.insert(a2.to_owned(), en.to_owned());
+        } else {
+            if a3b != "null" {
+                names.insert(a3b.to_owned(), en.to_owned());
+            }
+            if a3t != "null" {
+                names.insert(a3t.to_owned(), en.to_owned());
+            }
+        }
+    }
+    LangMaps {
+        canonical_codes,
+        names,
+    }
+}
+
 // Use the third-party `lazy_static!` macro to declare variables that will
 // initialized the first time we use them.
 lazy_static! {
-    /// Maps ISO 639 codes to their preferred internal forms.  Based on
-    /// http://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt
-    static ref CANONICAL_CODE: HashMap<&'static str, &'static str> = {
-        HashMap::from_iter([
-            ("aar", "aa"), ("abk", "ab"), ("afr", "af"), ("aka", "ak"),
-            ("alb", "sq"), ("sqi", "sq"), ("amh", "am"), ("ara", "ar"),
-            ("arg", "an"), ("arm", "hy"), ("hye", "hy"), ("asm", "as"),
-            ("ava", "av"), ("ave", "ae"), ("aym", "ay"), ("aze", "az"),
-            ("bak", "ba"), ("bam", "bm"), ("baq", "eu"), ("eus", "eu"),
-            ("bel", "be"), ("ben", "bn"), ("bih", "bh"), ("bis", "bi"),
-            ("bos", "bs"), ("bre", "br"), ("bul", "bg"), ("bur", "my"),
-            ("mya", "my"), ("cat", "ca"), ("cha", "ch"), ("che", "ce"),
-            ("chi", "zh"), ("zho", "zh"), ("chu", "cu"), ("chv", "cv"),
-            ("cor", "kw"), ("cos", "co"), ("cre", "cr"), ("ces", "cs"),
-            ("cze", "cs"), ("dan", "da"), ("div", "dv"), ("dut", "nl"),
-            ("nld", "nl"), ("dzo", "dz"), ("eng", "en"), ("epo", "eo"),
-            ("est", "et"), ("ewe", "ee"), ("fao", "fo"), ("fij", "fj"),
-            ("fin", "fi"), ("fra", "fr"), ("fre", "fr"), ("fry", "fy"),
-            ("ful", "ff"), ("geo", "ka"), ("kat", "ka"), ("deu", "de"),
-            ("ger", "de"), ("gla", "gd"), ("gle", "ga"), ("glg", "gl"),
-            ("glv", "gv"), ("ell", "el"), ("gre", "el"), ("grn", "gn"),
-            ("guj", "gu"), ("hat", "ht"), ("hau", "ha"), ("heb", "he"),
-            ("her", "hz"), ("hin", "hi"), ("hmo", "ho"), ("hrv", "hr"),
-            ("hun", "hu"), ("ibo", "ig"), ("ice", "is"), ("isl", "is"),
-            ("ido", "io"), ("iii", "ii"), ("iku", "iu"), ("ile", "ie"),
-            ("ina", "ia"), ("ind", "id"), ("ipk", "ik"), ("ita", "it"),
-            ("jav", "jv"), ("jpn", "ja"), ("kal", "kl"), ("kan", "kn"),
-            ("kas", "ks"), ("kau", "kr"), ("kaz", "kk"), ("khm", "km"),
-            ("kik", "ki"), ("kin", "rw"), ("kir", "ky"), ("kom", "kv"),
-            ("kon", "kg"), ("kor", "ko"), ("kua", "kj"), ("kur", "ku"),
-            ("lao", "lo"), ("lat", "la"), ("lav", "lv"), ("lim", "li"),
-            ("lin", "ln"), ("lit", "lt"), ("ltz", "lb"), ("lub", "lu"),
-            ("lug", "lg"), ("mac", "mk"), ("mkd", "mk"), ("mah", "mh"),
-            ("mal", "ml"), ("mao", "mi"), ("mri", "mi"), ("mar", "mr"),
-            ("may", "ms"), ("msa", "ms"), ("mlg", "mg"), ("mlt", "mt"),
-            ("mon", "mn"), ("nau", "na"), ("nav", "nv"), ("nbl", "nr"),
-            ("nde", "nd"), ("ndo", "ng"), ("nep", "ne"), ("nno", "nn"),
-            ("nob", "nb"), ("nor", "no"), ("nya", "ny"), ("oci", "oc"),
-            ("oji", "oj"), ("ori", "or"), ("orm", "om"), ("oss", "os"),
-            ("pan", "pa"), ("fas", "fa"), ("per", "fa"), ("pli", "pi"),
-            ("pol", "pl"), ("por", "pt"), ("pus", "ps"), ("que", "qu"),
-            ("roh", "rm"), ("ron", "ro"), ("rum", "ro"), ("run", "rn"),
-            ("rus", "ru"), ("sag", "sg"), ("san", "sa"), ("sin", "si"),
-            ("slk", "sk"), ("slo", "sk"), ("slv", "sl"), ("sme", "se"),
-            ("smo", "sm"), ("sna", "sn"), ("snd", "sd"), ("som", "so"),
-            ("sot", "st"), ("spa", "es"), ("srd", "sc"), ("srp", "sr"),
-            ("ssw", "ss"), ("sun", "su"), ("swa", "sw"), ("swe", "sv"),
-            ("tah", "ty"), ("tam", "ta"), ("tat", "tt"), ("tel", "te"),
-            ("tgk", "tg"), ("tgl", "tl"), ("tha", "th"), ("bod", "bo"),
-            ("tib", "bo"), ("tir", "ti"), ("ton", "to"), ("tsn", "tn"),
-            ("tso", "ts"), ("tuk", "tk"), ("tur", "tr"), ("twi", "tw"),
-            ("uig", "ug"), ("ukr", "uk"), ("urd", "ur"), ("uzb", "uz"),
-            ("ven", "ve"), ("vie", "vi"), ("vol", "vo"), ("cym", "cy"),
-            ("wel", "cy"), ("wln", "wa"), ("wol", "wo"), ("xho", "xh"),
-            ("yid", "yi"), ("yor", "yo"), ("zha", "za"), ("zul", "zu"),
-        ].iter().cloned())
-    };
+    static ref LANG_MAPS: LangMaps = iso_689_canonical_codes_and_names();
 }
 
 /// A language identifier.
@@ -91,7 +84,11 @@ impl Lang {
     /// assert!(Lang::iso639("abcd").is_err());
     /// ```
     pub fn iso639(code: &str) -> Result<Lang> {
-        let canon = CANONICAL_CODE.get(code).cloned().unwrap_or(code);
+        let canon = LANG_MAPS
+            .canonical_codes
+            .get(code)
+            .cloned()
+            .unwrap_or_else(|| code.to_owned());
         let c = canon.as_bytes();
         match (canon.is_ascii(), c.len()) {
             (true, 2) => Ok(Lang {
@@ -137,6 +134,27 @@ impl Lang {
             }
         }
         None
+    }
+
+    /// Names of the language (or related languages) in English. These
+    /// may be separated by semi-colons.
+    ///
+    /// ```
+    /// use substudy::lang::Lang;
+    /// assert_eq!(
+    ///     vec!["English".to_owned()],
+    ///     Lang::iso639("en").unwrap().english_names().unwrap(),
+    /// );
+    /// ```
+    pub fn english_names(&self) -> Result<Vec<&'static str>> {
+        let name_str = LANG_MAPS
+            .names
+            .get(self.as_str())
+            .map(|s| s.as_str())
+            .ok_or_else(|| {
+                anyhow!("No English name for language code: {:?}", self.as_str())
+            })?;
+        Ok(name_str.split("; ").collect())
     }
 }
 

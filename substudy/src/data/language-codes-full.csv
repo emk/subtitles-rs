@@ -1,0 +1,487 @@
+alpha3-b,alpha3-t,alpha2,English,French
+aar,null,aa,Afar,afar
+abk,null,ab,Abkhazian,abkhaze
+ace,null,null,Achinese,aceh
+ach,null,null,Acoli,acoli
+ada,null,null,Adangme,adangme
+ady,null,null,Adyghe; Adygei,adyghé
+afa,null,null,Afro-Asiatic languages,"afro-asiatiques, langues"
+afh,null,null,Afrihili,afrihili
+afr,null,af,Afrikaans,afrikaans
+ain,null,null,Ainu,aïnou
+aka,null,ak,Akan,akan
+akk,null,null,Akkadian,akkadien
+alb,sqi,sq,Albanian,albanais
+ale,null,null,Aleut,aléoute
+alg,null,null,Algonquian languages,"algonquines, langues"
+alt,null,null,Southern Altai,altai du Sud
+amh,null,am,Amharic,amharique
+ang,null,null,"English, Old (ca.450-1100)",anglo-saxon (ca.450-1100)
+anp,null,null,Angika,angika
+apa,null,null,Apache languages,"apaches, langues"
+ara,null,ar,Arabic,arabe
+arc,null,null,Official Aramaic (700-300 BCE); Imperial Aramaic (700-300 BCE),araméen d'empire (700-300 BCE)
+arg,null,an,Aragonese,aragonais
+arm,hye,hy,Armenian,arménien
+arn,null,null,Mapudungun; Mapuche,mapudungun; mapuche; mapuce
+arp,null,null,Arapaho,arapaho
+art,null,null,Artificial languages,"artificielles, langues"
+arw,null,null,Arawak,arawak
+asm,null,as,Assamese,assamais
+ast,null,null,Asturian; Bable; Leonese; Asturleonese,asturien; bable; léonais; asturoléonais
+ath,null,null,Athapascan languages,"athapascanes, langues"
+aus,null,null,Australian languages,"australiennes, langues"
+ava,null,av,Avaric,avar
+ave,null,ae,Avestan,avestique
+awa,null,null,Awadhi,awadhi
+aym,null,ay,Aymara,aymara
+aze,null,az,Azerbaijani,azéri
+bad,null,null,Banda languages,"banda, langues"
+bai,null,null,Bamileke languages,"bamiléké, langues"
+bak,null,ba,Bashkir,bachkir
+bal,null,null,Baluchi,baloutchi
+bam,null,bm,Bambara,bambara
+ban,null,null,Balinese,balinais
+baq,eus,eu,Basque,basque
+bas,null,null,Basa,basa
+bat,null,null,Baltic languages,"baltes, langues"
+bej,null,null,Beja; Bedawiyet,bedja
+bel,null,be,Belarusian,biélorusse
+bem,null,null,Bemba,bemba
+ben,null,bn,Bengali,bengali
+ber,null,null,Berber languages,"berbères, langues"
+bho,null,null,Bhojpuri,bhojpuri
+bih,null,bh,Bihari languages,langues biharis
+bik,null,null,Bikol,bikol
+bin,null,null,Bini; Edo,bini; edo
+bis,null,bi,Bislama,bichlamar
+bla,null,null,Siksika,blackfoot
+bnt,null,null,Bantu (Other),"bantoues, autres langues"
+bos,null,bs,Bosnian,bosniaque
+bra,null,null,Braj,braj
+bre,null,br,Breton,breton
+btk,null,null,Batak languages,"batak, langues"
+bua,null,null,Buriat,bouriate
+bug,null,null,Buginese,bugi
+bul,null,bg,Bulgarian,bulgare
+bur,mya,my,Burmese,birman
+byn,null,null,Blin; Bilin,blin; bilen
+cad,null,null,Caddo,caddo
+cai,null,null,Central American Indian languages,"amérindiennes de L'Amérique centrale, langues"
+car,null,null,Galibi Carib,karib; galibi; carib
+cat,null,ca,Catalan; Valencian,catalan; valencien
+cau,null,null,Caucasian languages,"caucasiennes, langues"
+ceb,null,null,Cebuano,cebuano
+cel,null,null,Celtic languages,"celtiques, langues; celtes, langues"
+cha,null,ch,Chamorro,chamorro
+chb,null,null,Chibcha,chibcha
+che,null,ce,Chechen,tchétchène
+chg,null,null,Chagatai,djaghataï
+chi,zho,zh,Chinese,chinois
+chk,null,null,Chuukese,chuuk
+chm,null,null,Mari,mari
+chn,null,null,Chinook jargon,"chinook, jargon"
+cho,null,null,Choctaw,choctaw
+chp,null,null,Chipewyan; Dene Suline,chipewyan
+chr,null,null,Cherokee,cherokee
+chu,null,cu,Church Slavic; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic,slavon d'église; vieux slave; slavon liturgique; vieux bulgare
+chv,null,cv,Chuvash,tchouvache
+chy,null,null,Cheyenne,cheyenne
+cmc,null,null,Chamic languages,"chames, langues"
+cop,null,null,Coptic,copte
+cor,null,kw,Cornish,cornique
+cos,null,co,Corsican,corse
+cpe,null,null,"Creoles and pidgins, English based",créoles et pidgins basés sur l'anglais
+cpf,null,null,"Creoles and pidgins, French-based",créoles et pidgins basés sur le français
+cpp,null,null,"Creoles and pidgins, Portuguese-based",créoles et pidgins basés sur le portugais
+cre,null,cr,Cree,cree
+crh,null,null,Crimean Tatar; Crimean Turkish,tatar de Crimé
+crp,null,null,Creoles and pidgins,créoles et pidgins
+csb,null,null,Kashubian,kachoube
+cus,null,null,Cushitic languages,"couchitiques, langues"
+cze,ces,cs,Czech,tchèque
+dak,null,null,Dakota,dakota
+dan,null,da,Danish,danois
+dar,null,null,Dargwa,dargwa
+day,null,null,Land Dayak languages,"dayak, langues"
+del,null,null,Delaware,delaware
+den,null,null,Slave (Athapascan),esclave (athapascan)
+dgr,null,null,Dogrib,dogrib
+din,null,null,Dinka,dinka
+div,null,dv,Divehi; Dhivehi; Maldivian,maldivien
+doi,null,null,Dogri,dogri
+dra,null,null,Dravidian languages,"dravidiennes, langues"
+dsb,null,null,Lower Sorbian,bas-sorabe
+dua,null,null,Duala,douala
+dum,null,null,"Dutch, Middle (ca.1050-1350)",néerlandais moyen (ca. 1050-1350)
+dut,nld,nl,Dutch; Flemish,néerlandais; flamand
+dyu,null,null,Dyula,dioula
+dzo,null,dz,Dzongkha,dzongkha
+efi,null,null,Efik,efik
+egy,null,null,Egyptian (Ancient),égyptien
+eka,null,null,Ekajuk,ekajuk
+elx,null,null,Elamite,élamite
+eng,null,en,English,anglais
+enm,null,null,"English, Middle (1100-1500)",anglais moyen (1100-1500)
+epo,null,eo,Esperanto,espéranto
+est,null,et,Estonian,estonien
+ewe,null,ee,Ewe,éwé
+ewo,null,null,Ewondo,éwondo
+fan,null,null,Fang,fang
+fao,null,fo,Faroese,féroïen
+fat,null,null,Fanti,fanti
+fij,null,fj,Fijian,fidjien
+fil,null,null,Filipino; Pilipino,filipino; pilipino
+fin,null,fi,Finnish,finnois
+fiu,null,null,Finno-Ugrian languages,"finno-ougriennes, langues"
+fon,null,null,Fon,fon
+fre,fra,fr,French,français
+frm,null,null,"French, Middle (ca.1400-1600)",français moyen (1400-1600)
+fro,null,null,"French, Old (842-ca.1400)",français ancien (842-ca.1400)
+frr,null,null,Northern Frisian,frison septentrional
+frs,null,null,Eastern Frisian,frison oriental
+fry,null,fy,Western Frisian,frison occidental
+ful,null,ff,Fulah,peul
+fur,null,null,Friulian,frioulan
+gaa,null,null,Ga,ga
+gay,null,null,Gayo,gayo
+gba,null,null,Gbaya,gbaya
+gem,null,null,Germanic languages,"germaniques, langues"
+geo,kat,ka,Georgian,géorgien
+ger,deu,de,German,allemand
+gez,null,null,Geez,guèze
+gil,null,null,Gilbertese,kiribati
+gla,null,gd,Gaelic; Scottish Gaelic,gaélique; gaélique écossais
+gle,null,ga,Irish,irlandais
+glg,null,gl,Galician,galicien
+glv,null,gv,Manx,manx; mannois
+gmh,null,null,"German, Middle High (ca.1050-1500)","allemand, moyen haut (ca. 1050-1500)"
+goh,null,null,"German, Old High (ca.750-1050)","allemand, vieux haut (ca. 750-1050)"
+gon,null,null,Gondi,gond
+gor,null,null,Gorontalo,gorontalo
+got,null,null,Gothic,gothique
+grb,null,null,Grebo,grebo
+grc,null,null,"Greek, Ancient (to 1453)",grec ancien (jusqu'à 1453)
+gre,ell,el,"Greek, Modern (1453-)",grec moderne (après 1453)
+grn,null,gn,Guarani,guarani
+gsw,null,null,Swiss German; Alemannic; Alsatian,suisse alémanique; alémanique; alsacien
+guj,null,gu,Gujarati,goudjrati
+gwi,null,null,Gwich'in,gwich'in
+hai,null,null,Haida,haida
+hat,null,ht,Haitian; Haitian Creole,haïtien; créole haïtien
+hau,null,ha,Hausa,haoussa
+haw,null,null,Hawaiian,hawaïen
+heb,null,he,Hebrew,hébreu
+her,null,hz,Herero,herero
+hil,null,null,Hiligaynon,hiligaynon
+him,null,null,Himachali languages; Western Pahari languages,langues himachalis; langues paharis occidentales
+hin,null,hi,Hindi,hindi
+hit,null,null,Hittite,hittite
+hmn,null,null,Hmong; Mong,hmong
+hmo,null,ho,Hiri Motu,hiri motu
+hrv,null,hr,Croatian,croate
+hsb,null,null,Upper Sorbian,haut-sorabe
+hun,null,hu,Hungarian,hongrois
+hup,null,null,Hupa,hupa
+iba,null,null,Iban,iban
+ibo,null,ig,Igbo,igbo
+ice,isl,is,Icelandic,islandais
+ido,null,io,Ido,ido
+iii,null,ii,Sichuan Yi; Nuosu,yi de Sichuan
+ijo,null,null,Ijo languages,"ijo, langues"
+iku,null,iu,Inuktitut,inuktitut
+ile,null,ie,Interlingue; Occidental,interlingue
+ilo,null,null,Iloko,ilocano
+ina,null,ia,Interlingua (International Auxiliary Language Association),interlingua (langue auxiliaire internationale)
+inc,null,null,Indic languages,"indo-aryennes, langues"
+ind,null,id,Indonesian,indonésien
+ine,null,null,Indo-European languages,"indo-européennes, langues"
+inh,null,null,Ingush,ingouche
+ipk,null,ik,Inupiaq,inupiaq
+ira,null,null,Iranian languages,"iraniennes, langues"
+iro,null,null,Iroquoian languages,"iroquoises, langues"
+ita,null,it,Italian,italien
+jav,null,jv,Javanese,javanais
+jbo,null,null,Lojban,lojban
+jpn,null,ja,Japanese,japonais
+jpr,null,null,Judeo-Persian,judéo-persan
+jrb,null,null,Judeo-Arabic,judéo-arabe
+kaa,null,null,Kara-Kalpak,karakalpak
+kab,null,null,Kabyle,kabyle
+kac,null,null,Kachin; Jingpho,kachin; jingpho
+kal,null,kl,Kalaallisut; Greenlandic,groenlandais
+kam,null,null,Kamba,kamba
+kan,null,kn,Kannada,kannada
+kar,null,null,Karen languages,"karen, langues"
+kas,null,ks,Kashmiri,kashmiri
+kau,null,kr,Kanuri,kanouri
+kaw,null,null,Kawi,kawi
+kaz,null,kk,Kazakh,kazakh
+kbd,null,null,Kabardian,kabardien
+kha,null,null,Khasi,khasi
+khi,null,null,Khoisan languages,"khoïsan, langues"
+khm,null,km,Central Khmer,khmer central
+kho,null,null,Khotanese; Sakan,khotanais; sakan
+kik,null,ki,Kikuyu; Gikuyu,kikuyu
+kin,null,rw,Kinyarwanda,rwanda
+kir,null,ky,Kirghiz; Kyrgyz,kirghiz
+kmb,null,null,Kimbundu,kimbundu
+kok,null,null,Konkani,konkani
+kom,null,kv,Komi,kom
+kon,null,kg,Kongo,kongo
+kor,null,ko,Korean,coréen
+kos,null,null,Kosraean,kosrae
+kpe,null,null,Kpelle,kpellé
+krc,null,null,Karachay-Balkar,karatchai balkar
+krl,null,null,Karelian,carélien
+kro,null,null,Kru languages,"krou, langues"
+kru,null,null,Kurukh,kurukh
+kua,null,kj,Kuanyama; Kwanyama,kuanyama; kwanyama
+kum,null,null,Kumyk,koumyk
+kur,null,ku,Kurdish,kurde
+kut,null,null,Kutenai,kutenai
+lad,null,null,Ladino,judéo-espagnol
+lah,null,null,Lahnda,lahnda
+lam,null,null,Lamba,lamba
+lao,null,lo,Lao,lao
+lat,null,la,Latin,latin
+lav,null,lv,Latvian,letton
+lez,null,null,Lezghian,lezghien
+lim,null,li,Limburgan; Limburger; Limburgish,limbourgeois
+lin,null,ln,Lingala,lingala
+lit,null,lt,Lithuanian,lituanien
+lol,null,null,Mongo,mongo
+loz,null,null,Lozi,lozi
+ltz,null,lb,Luxembourgish; Letzeburgesch,luxembourgeois
+lua,null,null,Luba-Lulua,luba-lulua
+lub,null,lu,Luba-Katanga,luba-katanga
+lug,null,lg,Ganda,ganda
+lui,null,null,Luiseno,luiseno
+lun,null,null,Lunda,lunda
+luo,null,null,Luo (Kenya and Tanzania),luo (Kenya et Tanzanie)
+lus,null,null,Lushai,lushai
+mac,mkd,mk,Macedonian,macédonien
+mad,null,null,Madurese,madourais
+mag,null,null,Magahi,magahi
+mah,null,mh,Marshallese,marshall
+mai,null,null,Maithili,maithili
+mak,null,null,Makasar,makassar
+mal,null,ml,Malayalam,malayalam
+man,null,null,Mandingo,mandingue
+mao,mri,mi,Maori,maori
+map,null,null,Austronesian languages,"austronésiennes, langues"
+mar,null,mr,Marathi,marathe
+mas,null,null,Masai,massaï
+may,msa,ms,Malay,malais
+mdf,null,null,Moksha,moksa
+mdr,null,null,Mandar,mandar
+men,null,null,Mende,mendé
+mga,null,null,"Irish, Middle (900-1200)",irlandais moyen (900-1200)
+mic,null,null,Mi'kmaq; Micmac,mi'kmaq; micmac
+min,null,null,Minangkabau,minangkabau
+mis,null,null,Uncoded languages,langues non codées
+mkh,null,null,Mon-Khmer languages,"môn-khmer, langues"
+mlg,null,mg,Malagasy,malgache
+mlt,null,mt,Maltese,maltais
+mnc,null,null,Manchu,mandchou
+mni,null,null,Manipuri,manipuri
+mno,null,null,Manobo languages,"manobo, langues"
+moh,null,null,Mohawk,mohawk
+mon,null,mn,Mongolian,mongol
+mos,null,null,Mossi,moré
+mul,null,null,Multiple languages,multilingue
+mun,null,null,Munda languages,"mounda, langues"
+mus,null,null,Creek,muskogee
+mwl,null,null,Mirandese,mirandais
+mwr,null,null,Marwari,marvari
+myn,null,null,Mayan languages,"maya, langues"
+myv,null,null,Erzya,erza
+nah,null,null,Nahuatl languages,"nahuatl, langues"
+nai,null,null,North American Indian languages,"nord-amérindiennes, langues"
+nap,null,null,Neapolitan,napolitain
+nau,null,na,Nauru,nauruan
+nav,null,nv,Navajo; Navaho,navaho
+nbl,null,nr,"Ndebele, South; South Ndebele",ndébélé du Sud
+nde,null,nd,"Ndebele, North; North Ndebele",ndébélé du Nord
+ndo,null,ng,Ndonga,ndonga
+nds,null,null,"Low German; Low Saxon; German, Low; Saxon, Low","bas allemand; bas saxon; allemand, bas; saxon, bas"
+nep,null,ne,Nepali,népalais
+new,null,null,Nepal Bhasa; Newari,nepal bhasa; newari
+nia,null,null,Nias,nias
+nic,null,null,Niger-Kordofanian languages,"nigéro-kordofaniennes, langues"
+niu,null,null,Niuean,niué
+nno,null,nn,"Norwegian Nynorsk; Nynorsk, Norwegian","norvégien nynorsk; nynorsk, norvégien"
+nob,null,nb,"Bokmål, Norwegian; Norwegian Bokmål",norvégien bokmål
+nog,null,null,Nogai,nogaï; nogay
+non,null,null,"Norse, Old","norrois, vieux"
+nor,null,no,Norwegian,norvégien
+nqo,null,null,N'Ko,n'ko
+nso,null,null,Pedi; Sepedi; Northern Sotho,pedi; sepedi; sotho du Nord
+nub,null,null,Nubian languages,"nubiennes, langues"
+nwc,null,null,Classical Newari; Old Newari; Classical Nepal Bhasa,newari classique
+nya,null,ny,Chichewa; Chewa; Nyanja,chichewa; chewa; nyanja
+nym,null,null,Nyamwezi,nyamwezi
+nyn,null,null,Nyankole,nyankolé
+nyo,null,null,Nyoro,nyoro
+nzi,null,null,Nzima,nzema
+oci,null,oc,Occitan (post 1500); Provençal,occitan (après 1500); provençal
+oji,null,oj,Ojibwa,ojibwa
+ori,null,or,Oriya,oriya
+orm,null,om,Oromo,galla
+osa,null,null,Osage,osage
+oss,null,os,Ossetian; Ossetic,ossète
+ota,null,null,"Turkish, Ottoman (1500-1928)",turc ottoman (1500-1928)
+oto,null,null,Otomian languages,"otomi, langues"
+paa,null,null,Papuan languages,"papoues, langues"
+pag,null,null,Pangasinan,pangasinan
+pal,null,null,Pahlavi,pahlavi
+pam,null,null,Pampanga; Kapampangan,pampangan
+pan,null,pa,Panjabi; Punjabi,pendjabi
+pap,null,null,Papiamento,papiamento
+pau,null,null,Palauan,palau
+peo,null,null,"Persian, Old (ca.600-400 B.C.)","perse, vieux (ca. 600-400 av. J.-C.)"
+per,fas,fa,Persian,persan
+phi,null,null,Philippine languages,"philippines, langues"
+phn,null,null,Phoenician,phénicien
+pli,null,pi,Pali,pali
+pol,null,pl,Polish,polonais
+pon,null,null,Pohnpeian,pohnpei
+por,null,pt,Portuguese,portugais
+pra,null,null,Prakrit languages,"prâkrit, langues"
+pro,null,null,"Provençal, Old (to 1500)",provençal ancien (jusqu'à 1500)
+pus,null,ps,Pushto; Pashto,pachto
+qaa-qtz,null,null,Reserved for local use,réservée à l'usage local
+que,null,qu,Quechua,quechua
+raj,null,null,Rajasthani,rajasthani
+rap,null,null,Rapanui,rapanui
+rar,null,null,Rarotongan; Cook Islands Maori,rarotonga; maori des îles Cook
+roa,null,null,Romance languages,"romanes, langues"
+roh,null,rm,Romansh,romanche
+rom,null,null,Romany,tsigane
+rum,ron,ro,Romanian; Moldavian; Moldovan,roumain; moldave
+run,null,rn,Rundi,rundi
+rup,null,null,Aromanian; Arumanian; Macedo-Romanian,aroumain; macédo-roumain
+rus,null,ru,Russian,russe
+sad,null,null,Sandawe,sandawe
+sag,null,sg,Sango,sango
+sah,null,null,Yakut,iakoute
+sai,null,null,South American Indian (Other),"indiennes d'Amérique du Sud, autres langues"
+sal,null,null,Salishan languages,"salishennes, langues"
+sam,null,null,Samaritan Aramaic,samaritain
+san,null,sa,Sanskrit,sanskrit
+sas,null,null,Sasak,sasak
+sat,null,null,Santali,santal
+scn,null,null,Sicilian,sicilien
+sco,null,null,Scots,écossais
+sel,null,null,Selkup,selkoupe
+sem,null,null,Semitic languages,"sémitiques, langues"
+sga,null,null,"Irish, Old (to 900)",irlandais ancien (jusqu'à 900)
+sgn,null,null,Sign Languages,langues des signes
+shn,null,null,Shan,chan
+sid,null,null,Sidamo,sidamo
+sin,null,si,Sinhala; Sinhalese,singhalais
+sio,null,null,Siouan languages,"sioux, langues"
+sit,null,null,Sino-Tibetan languages,"sino-tibétaines, langues"
+sla,null,null,Slavic languages,"slaves, langues"
+slo,slk,sk,Slovak,slovaque
+slv,null,sl,Slovenian,slovène
+sma,null,null,Southern Sami,sami du Sud
+sme,null,se,Northern Sami,sami du Nord
+smi,null,null,Sami languages,"sames, langues"
+smj,null,null,Lule Sami,sami de Lule
+smn,null,null,Inari Sami,sami d'Inari
+smo,null,sm,Samoan,samoan
+sms,null,null,Skolt Sami,sami skolt
+sna,null,sn,Shona,shona
+snd,null,sd,Sindhi,sindhi
+snk,null,null,Soninke,soninké
+sog,null,null,Sogdian,sogdien
+som,null,so,Somali,somali
+son,null,null,Songhai languages,"songhai, langues"
+sot,null,st,"Sotho, Southern",sotho du Sud
+spa,null,es,Spanish; Castilian,espagnol; castillan
+srd,null,sc,Sardinian,sarde
+srn,null,null,Sranan Tongo,sranan tongo
+srp,null,sr,Serbian,serbe
+srr,null,null,Serer,sérère
+ssa,null,null,Nilo-Saharan languages,"nilo-sahariennes, langues"
+ssw,null,ss,Swati,swati
+suk,null,null,Sukuma,sukuma
+sun,null,su,Sundanese,soundanais
+sus,null,null,Susu,soussou
+sux,null,null,Sumerian,sumérien
+swa,null,sw,Swahili,swahili
+swe,null,sv,Swedish,suédois
+syc,null,null,Classical Syriac,syriaque classique
+syr,null,null,Syriac,syriaque
+tah,null,ty,Tahitian,tahitien
+tai,null,null,Tai languages,"tai, langues"
+tam,null,ta,Tamil,tamoul
+tat,null,tt,Tatar,tatar
+tel,null,te,Telugu,télougou
+tem,null,null,Timne,temne
+ter,null,null,Tereno,tereno
+tet,null,null,Tetum,tetum
+tgk,null,tg,Tajik,tadjik
+tgl,null,tl,Tagalog,tagalog
+tha,null,th,Thai,thaï
+tib,bod,bo,Tibetan,tibétain
+tig,null,null,Tigre,tigré
+tir,null,ti,Tigrinya,tigrigna
+tiv,null,null,Tiv,tiv
+tkl,null,null,Tokelau,tokelau
+tlh,null,null,Klingon; tlhIngan-Hol,klingon
+tli,null,null,Tlingit,tlingit
+tmh,null,null,Tamashek,tamacheq
+tog,null,null,Tonga (Nyasa),tonga (Nyasa)
+ton,null,to,Tonga (Tonga Islands),tongan (Îles Tonga)
+tpi,null,null,Tok Pisin,tok pisin
+tsi,null,null,Tsimshian,tsimshian
+tsn,null,tn,Tswana,tswana
+tso,null,ts,Tsonga,tsonga
+tuk,null,tk,Turkmen,turkmène
+tum,null,null,Tumbuka,tumbuka
+tup,null,null,Tupi languages,"tupi, langues"
+tur,null,tr,Turkish,turc
+tut,null,null,Altaic languages,"altaïques, langues"
+tvl,null,null,Tuvalu,tuvalu
+twi,null,tw,Twi,twi
+tyv,null,null,Tuvinian,touva
+udm,null,null,Udmurt,oudmourte
+uga,null,null,Ugaritic,ougaritique
+uig,null,ug,Uighur; Uyghur,ouïgour
+ukr,null,uk,Ukrainian,ukrainien
+umb,null,null,Umbundu,umbundu
+und,null,null,Undetermined,indéterminée
+urd,null,ur,Urdu,ourdou
+uzb,null,uz,Uzbek,ouszbek
+vai,null,null,Vai,vaï
+ven,null,ve,Venda,venda
+vie,null,vi,Vietnamese,vietnamien
+vol,null,vo,Volapük,volapük
+vot,null,null,Votic,vote
+wak,null,null,Wakashan languages,"wakashanes, langues"
+wal,null,null,Walamo,walamo
+war,null,null,Waray,waray
+was,null,null,Washo,washo
+wel,cym,cy,Welsh,gallois
+wen,null,null,Sorbian languages,"sorabes, langues"
+wln,null,wa,Walloon,wallon
+wol,null,wo,Wolof,wolof
+xal,null,null,Kalmyk; Oirat,kalmouk; oïrat
+xho,null,xh,Xhosa,xhosa
+yao,null,null,Yao,yao
+yap,null,null,Yapese,yapois
+yid,null,yi,Yiddish,yiddish
+yor,null,yo,Yoruba,yoruba
+ypk,null,null,Yupik languages,"yupik, langues"
+zap,null,null,Zapotec,zapotèque
+zbl,null,null,Blissymbols; Blissymbolics; Bliss,symboles Bliss; Bliss
+zen,null,null,Zenaga,zenaga
+zgh,null,null,Standard Moroccan Tamazight,amazighe standard marocain
+zha,null,za,Zhuang; Chuang,zhuang; chuang
+znd,null,null,Zande languages,"zandé, langues"
+zul,null,zu,Zulu,zoulou
+zun,null,null,Zuni,zuni
+zxx,null,null,No linguistic content; Not applicable,pas de contenu linguistique; non applicable
+zza,null,null,Zaza; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki,zaza; dimili; dimli; kirdki; kirmanjki; zazaki

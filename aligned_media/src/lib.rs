@@ -5,63 +5,77 @@
 //!
 //! [spec]: https://github.com/language-learners/aligned-media-spec
 
-#[warn(missing_docs)]
+#![warn(missing_docs)]
 
-#[macro_use]
-extern crate failure;
-extern crate isolang;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-
-use failure::ResultExt;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::Error as DeError;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::HashMap;
 use std::result;
+use thiserror::Error;
 
 pub mod html;
 
+/// Our standard result type.
+pub type Result<T, E = Error> = result::Result<T, E>;
+
 /// Errors which can be returned by this crate.
-#[derive(Debug, Fail)]
+#[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum Error {
     /// We could not parse the specified HTML.
-    #[fail(display = "could not parse HTML {:?}", html)]
+    #[error("could not parse HTML {html:?}")]
+    #[non_exhaustive]
     CouldNotParseHtml {
+        /// The HTML that we could not parse.
         html: String,
+
+        /// The underlying error.
+        source: Box<dyn std::error::Error + Send + Sync + 'static>,
     },
 
     /// We could not parse the input data.
-    #[fail(display = "could not parse metadata")]
-    CouldNotParseMetadata,
+    #[error("could not parse metadata")]
+    #[non_exhaustive]
+    CouldNotParseMetadata {
+        /// The underlying error.
+        source: Box<dyn std::error::Error + Send + Sync + 'static>,
+    },
 
     /// We encountered an unsupported HTML attribute.
-    #[fail(display = "the HTML attribute {:?} is not allowed", name)]
+    #[error("the HTML attribute {name:?} is not allowed")]
+    #[non_exhaustive]
     HtmlAttributeForbidden {
+        /// The name of the forbidden attribute.
         name: String,
     },
 
     /// We encountered an unsupported HTML element.
-    #[fail(display = "the HTML element {:?} is not allowed", name)]
+    #[error("the HTML element {name:?} is not allowed")]
+    #[non_exhaustive]
     HtmlElementForbidden {
+        /// The name of the forbidden element.
         name: String,
     },
 
     /// We encountered an unsupported HTML entity.
-    #[fail(display = "the HTML entity {:?} is not allowed", name)]
+    #[error("the HTML entity {name:?} is not allowed")]
+    #[non_exhaustive]
     HtmlEntityForbidden {
+        /// The name of the forbidden entity.
         name: String,
     },
 
     /// We encountered an invalid path.
-    #[fail(display = "path {:?} is not allowed", path)]
+    #[error("path {path:?} is not allowed")]
+    #[non_exhaustive]
     InvalidPath {
+        /// The invalid path.
         path: String,
     },
 
     /// We encountered an invalid span.
-    #[fail(display = "beginning of time span {},{} is greater than end", begin, end)]
+    #[error("beginning of time span {begin},{end} is greater than end")]
+    #[non_exhaustive]
     InvalidSpan {
         /// The beginning of the invalid span.
         begin: f32,
@@ -70,22 +84,23 @@ pub enum Error {
     },
 
     /// We encountered an unknown track type that didn't begin with "x-".
-    #[fail(display = "unsupported track type {:?} (did you want to prefix it with \"x-\"?)", value)]
+    #[error(
+        "unsupported track type {value:?} (did you want to prefix it with \"x-\"?)"
+    )]
+    #[non_exhaustive]
     UnsupportedTrackType {
         /// The unknown track type.
         value: String,
     },
 }
 
-/// Type alias for results returned by our crate.
-pub type Result<T> = result::Result<T, Error>;
-
 /// A single media file, typically an episode of a TV series, a film, an chapter
 /// of an audiobook. It might also be something more exotic, like a PDF of a
 /// graphic novel.
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-#[cfg_attr(feature="no_forwards_compatibility", serde(deny_unknown_fields))]
+#[cfg_attr(feature = "no_forwards_compatibility", serde(deny_unknown_fields))]
+#[non_exhaustive]
 pub struct Metadata {
     /// The title of a book, TV series, album, etc. This may be the same for
     /// multiple files if `section_number` and/or `section_title` are used.
@@ -128,21 +143,21 @@ pub struct Metadata {
     /// Application-specific extension data.
     #[serde(default, skip_serializing_if = "ExtensionData::is_empty")]
     pub ext: ExtensionData,
-
-    /// Placeholder to allow for future extensibility without breaking the API.
-    #[serde(default, skip_serializing)]
-    _placeholder: (),
 }
 
 impl Metadata {
     /// Parse `metadata.json` represented as raw bytes. This will be interpreted
     /// as UTF-8, because the format is strict.
-    pub fn from_bytes(data: &[u8]) -> result::Result<Metadata, failure::Error> {
-        Ok(serde_json::from_slice(data).context(Error::CouldNotParseMetadata)?)
+    pub fn from_bytes(data: &[u8]) -> Result<Metadata> {
+        Ok(serde_json::from_slice(data).map_err(|err| {
+            Error::CouldNotParseMetadata {
+                source: Box::new(err),
+            }
+        })?)
     }
 
     /// Parse `metadata.json` represented as a UTF-8 Rust string.
-    pub fn from_str(data: &str) -> result::Result<Metadata, failure::Error> {
+    pub fn from_str(data: &str) -> Result<Metadata> {
         Self::from_bytes(data.as_bytes())
     }
 }
@@ -152,11 +167,12 @@ fn parse_metadata() {
     let examples = &[
         include_str!("../fixtures/examples/book_example.aligned/metadata.json"),
         include_str!("../fixtures/examples/subtitle_example.aligned/metadata.json"),
-        include_str!("../fixtures/examples/subtitle_extracted_example.aligned/metadata.json"),
+        include_str!(
+            "../fixtures/examples/subtitle_extracted_example.aligned/metadata.json"
+        ),
     ];
     for example in examples {
-        Metadata::from_str(example)
-            .expect("failed to parse example metadata");
+        Metadata::from_str(example).expect("failed to parse example metadata");
     }
 }
 
@@ -164,9 +180,10 @@ fn parse_metadata() {
 /// single language, or a still image taken from a video
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-#[cfg_attr(feature="no_forwards_compatibility", serde(deny_unknown_fields))]
+#[cfg_attr(feature = "no_forwards_compatibility", serde(deny_unknown_fields))]
+#[non_exhaustive]
 pub struct Track {
-    // The kind of data stored in this track.
+    /// The kind of data stored in this track.
     #[serde(rename = "type")]
     pub track_type: TrackType,
 
@@ -175,16 +192,15 @@ pub struct Track {
     /// included in ISO 639-1. If this is omitted, then programs may assume that
     /// this track might be something like a still image from a video or an
     /// illustration, that provides context but contains no linguistic data.
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "iso_short_code_serialization::opt")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lang: Option<isolang::Language>,
 
-    // The actual underlying file on disk, if any. Either this or `html` should
-    // be present, but not both.
-    file: Option<FilePath>,
+    /// The actual underlying file on disk, if any. Either this or `html` should
+    /// be present, but not both.
+    pub file: Option<FilePath>,
 
     // TODO: Do we want a `fileSpan: Span` element, to select only a portion of
     // a media file?
-
     /// Textual context, which should be valid HTML 5, optionally with embedded
     /// tags like `<b>`, `<i>` and `<br>`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -193,10 +209,6 @@ pub struct Track {
     /// Application-specific extension data.
     #[serde(default, skip_serializing_if = "ExtensionData::is_empty")]
     pub ext: ExtensionData,
-
-    /// Placeholder to allow for future extensibility without breaking the API.
-    #[serde(default, skip_serializing)]
-    _placeholder: (),
 }
 
 impl Track {
@@ -209,7 +221,6 @@ impl Track {
             file: None,
             html: None,
             ext: ExtensionData::default(),
-            _placeholder: (),
         }
     }
 
@@ -224,7 +235,6 @@ impl Track {
             file: None,
             html: Some(html.into()),
             ext: ExtensionData::default(),
-            _placeholder: (),
         }
     }
 
@@ -239,13 +249,13 @@ impl Track {
             file: None,
             html: Some(html::Fragment::from_text(text)),
             ext: ExtensionData::default(),
-            _placeholder: (),
         }
     }
 }
 
 /// Different possible track types.
 #[derive(Clone, Debug, Eq, Hash, PartialEq, PartialOrd, Ord)]
+#[non_exhaustive]
 pub enum TrackType {
     /// This track contains HTML data.
     Html,
@@ -268,11 +278,9 @@ impl<'de> Deserialize<'de> for TrackType {
             other if other.starts_with("x-") => {
                 Ok(TrackType::Ext(other[2..].to_owned()))
             }
-            other => {
-                Err(D::Error::custom(Error::UnsupportedTrackType {
-                    value: other.to_owned(),
-                }))
-            }
+            other => Err(D::Error::custom(Error::UnsupportedTrackType {
+                value: other.to_owned(),
+            })),
         }
     }
 }
@@ -286,9 +294,7 @@ impl Serialize for TrackType {
             TrackType::Html => "html".serialize(serializer),
             TrackType::Media => "media".serialize(serializer),
             TrackType::Image => "image".serialize(serializer),
-            TrackType::Ext(ref name) => {
-                format!("x-{}", name).serialize(serializer)
-            }
+            TrackType::Ext(ref name) => format!("x-{}", name).serialize(serializer),
         }
     }
 }
@@ -298,7 +304,8 @@ impl Serialize for TrackType {
 /// application can do.
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-#[cfg_attr(feature="no_forwards_compatibility", serde(deny_unknown_fields))]
+#[cfg_attr(feature = "no_forwards_compatibility", serde(deny_unknown_fields))]
+#[non_exhaustive]
 pub struct Alignment {
     /// The time span associated with this alignment, relative to
     /// `MediaFile.baseTrack`. If `MediaFile.baseTrack` was not specified, this
@@ -390,7 +397,9 @@ impl FilePath {
     pub fn new<S: Into<String>>(path: S) -> Result<FilePath> {
         let path = path.into();
         for component in path.split("/") {
-            if component == "" || component == "." || component == ".."
+            if component == ""
+                || component == "."
+                || component == ".."
                 || component.contains("\\")
             {
                 return Err(Error::InvalidPath { path: path.clone() });
@@ -436,55 +445,3 @@ impl Serialize for FilePath {
 /// `myapp-attrname`, where `myapp` is the application that uses them. This is a
 /// map with string keys and arbitrary JSON values.
 pub type ExtensionData = HashMap<String, serde_json::Value>;
-
-/// Routines for serialzing and deserialzing optional ISO 639-1 and 639-3 codes,
-/// represented as `isolang::Language`. These are intended for use with
-/// `serde_derive`'s `with =` argument.
-pub mod iso_short_code_serialization {
-    /// Serialize and deserialize `Option<isolang::Language>`.
-    pub mod opt {
-        use isolang::Language;
-        use serde::{Deserialize, Deserializer, Serialize, Serializer};
-        use serde::de::Error;
-        use std::result::Result;
-
-        // Deserialize an ISO 639-1 or 639-3 code.
-        pub fn deserialize<'de, D>(d: D) -> Result<Option<Language>, D::Error>
-        where
-            D: Deserializer<'de>,
-        {
-            // We need to do this manually because of
-            // https://github.com/humenda/isolang-rs/issues/7
-            let code: Option<&str> = Deserialize::deserialize(d)?;
-            match code {
-                None => Ok(None),
-                Some(c) => {
-                    let lang = Language::from_639_3(c)
-                        .or_else(|| Language::from_639_1(c))
-                        .ok_or_else(|| {
-                            D::Error::unknown_variant(
-                                c,
-                                &["an ISO 639-1 or 639-3 language code"],
-                            )
-                        })?;
-                    Ok(Some(lang))
-                }
-            }
-        }
-
-        /// Serialize an `isolang::Language` as a 2-letter code if possible, or
-        /// a 3-letter code otherwise.
-        pub fn serialize<S>(
-            lang: &Option<Language>,
-            serializer: S,
-        ) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-        {
-            let code = lang.map(|l| l.to_639_1().unwrap_or_else(|| l.to_639_3()));
-            code.serialize(serializer)
-        }
-    }
-}
-
-

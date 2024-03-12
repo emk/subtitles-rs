@@ -11,14 +11,17 @@ use std::{
 
 use anyhow::{anyhow, Context as _};
 use cast;
+use indicatif::ProgressBar;
 use log::debug;
 use num::rational::Ratio;
-use pbr::ProgressBar;
 use regex::Regex;
 use serde::{de, Deserialize, Deserializer};
 use serde_json;
 
-use crate::{errors::RunCommandError, lang::Lang, time::Period, Result};
+use crate::{
+    errors::RunCommandError, lang::Lang, progress::default_progress_style,
+    time::Period, Result,
+};
 
 /// Information about an MP3 track (optional).
 #[derive(Debug, Default)]
@@ -346,21 +349,24 @@ impl Video {
     /// batch interface to avoid making too many passes through the file.
     /// We assume that the extractions are sorted in temporal order.
     pub fn extract(&self, extractions: &[Extraction]) -> Result<()> {
-        let mut pb = ProgressBar::new(cast::u64(extractions.len()));
-        pb.format("[== ]");
+        let pb = ProgressBar::new(cast::u64(extractions.len()));
+        pb.set_style(default_progress_style());
+        pb.set_prefix("✂️  Extracting media");
+        pb.tick();
+
         let mut batch: Vec<&Extraction> = vec![];
         for e in extractions {
             if e.spec.can_be_batched() {
                 batch.push(e);
             } else {
                 self.extract_one(e)?;
-                pb.inc();
+                pb.inc(1);
             }
         }
 
         for chunk in batch.chunks(20) {
             self.extract_batch(chunk)?;
-            pb.add(cast::u64(chunk.len()));
+            pb.inc(cast::u64(chunk.len()));
         }
         Ok(())
     }

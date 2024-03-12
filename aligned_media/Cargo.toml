@@ -2,6 +2,7 @@
 name = "aligned_media"
 version = "0.1.0"
 authors = ["Eric Kidd <git@randomhacks.net>"]
+edition = "2021"
 
 description = "Rust implementation of the \"aligned media\" format for language-learning software."
 license = "CC0-1.0"
@@ -18,12 +19,9 @@ documentation = "https://docs.rs/aligned_media/"
 # for actual end-user software.
 no_forwards_compatibility = []
 
-[build-dependencies]
-peg = "0.5"
-
 [dependencies]
-failure = "0.1.1"
-isolang = { version = "0.2", features = ["serde_serialize"] }
-serde = "1.0"
-serde_derive = "1.0"
+isolang = { version = "2.4.0", features = ["serde"] }
+peg = "0.8.2"
+serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+thiserror = "1.0.58"

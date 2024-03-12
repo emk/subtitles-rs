@@ -19,25 +19,32 @@ exclude = ["fixtures/empty.mp4"]
 
 [dependencies]
 anyhow = "1.0.80"
+async-openai = "0.19.0"
 cast = "0.3.0"
 chardet = "0.2"
 clap = { version = "4.5.1", features = ["derive", "wrap_help"] }
 csv = "1.0.0"
 diff = "0.1.13"
+dotenv = "0.15.0"
 encoding = "0.2"
 env_logger = "0.11.2"
 handlebars = "5.1.0"
+indicatif = "0.17.8"
 lazy_static = "1.0"
 lending-iterator = "0.1.7"
 log = "0.4.21"
 num = "0.4.1"
 ordered-float = { version = "4.0", default-features = false }
 paragraph-breaker = "0.4.4"
-pbr = "1.0"
 peg = "0.8.2"
 regex = "1.10.3"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+tokio = { version = "1.0", default-features = false, features = [
+    "rt",
+    "rt-multi-thread",
+    "macros",
+] }
 unicode-width = "0.1.5"
 whatlang = "0.16.4"
 
