@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.5.2] - 2024-03-12
+
+### Added
+
+- Add automatic subtitle translation using `substudy translate foreign_subs.srt --native-lang=en > native_subs.srt`. This requires setting an `OPENAI_API_KEY` environment variable. (Or [a `.env` file](https://crates.io/crates/dotenv) containing that variable.) This is still experimental, but it worked well for Spanish-to-English translations in my test.
+
+### Fixed
+
+- Much prettier progress bars.
+
 ## [0.5.1] - 2024-03-10
 
 ### Changed
