@@ -3,28 +3,30 @@
 use std::{
     collections::BTreeMap,
     ffi::OsStr,
+    future::Future,
     path::{Path, PathBuf},
-    process::Command,
+    process::{Command, Stdio},
     result,
     str::{from_utf8, FromStr},
+    time::Duration,
 };
 
 use anyhow::{anyhow, Context as _};
 use cast;
-use indicatif::ProgressBar;
 use log::debug;
 use num::rational::Ratio;
 use regex::Regex;
 use serde::{de, Deserialize, Deserializer};
 use serde_json;
-
-use crate::{
-    errors::RunCommandError, lang::Lang, progress::default_progress_style,
-    time::Period, Result,
+use tokio::{
+    io::{AsyncRead, BufReader},
+    process::Command as AsyncCommand,
 };
 
+use crate::{errors::RunCommandError, lang::Lang, time::Period, ui::Ui, Result};
+
 /// Information about an MP3 track (optional).
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 #[allow(missing_docs)]
 pub struct Id3Metadata {
     pub genre: Option<String>,
@@ -60,7 +62,7 @@ impl Id3Metadata {
 }
 
 /// Individual streams inside a video are labelled with a codec type.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 #[allow(missing_docs)]
 pub enum CodecType {
     Audio,
@@ -116,7 +118,7 @@ impl<'de> Deserialize<'de> for Fraction {
 }
 
 /// An individual content stream within a video.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[allow(missing_docs)]
 pub struct Stream {
     pub index: usize,
@@ -165,6 +167,7 @@ fn test_stream_decode() {
 
 /// What kind of data do we want to extract, and from what position in the
 /// video clip?
+#[derive(Clone)]
 pub enum ExtractionSpec {
     /// Extract an image at the specified time.
     Image(f32),
@@ -174,7 +177,7 @@ pub enum ExtractionSpec {
 
 impl ExtractionSpec {
     /// The earliest time at which we might need to extract data.
-    fn earliest_time(&self) -> f32 {
+    pub fn earliest_time(&self) -> f32 {
         match self {
             &ExtractionSpec::Image(time) => time,
             &ExtractionSpec::Audio(_, period, _) => period.begin(),
@@ -225,6 +228,7 @@ impl ExtractionSpec {
 }
 
 /// Information about what kind of data we want to extract.
+#[derive(Clone)]
 pub struct Extraction {
     /// The path to extract to.
     pub path: PathBuf,
@@ -241,13 +245,13 @@ impl Extraction {
 }
 
 /// Metadata associated with a video.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 struct Metadata {
     streams: Vec<Stream>,
 }
 
 /// Represents a video file on disk.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Video {
     path: PathBuf,
     metadata: Metadata,
@@ -348,10 +352,10 @@ impl Video {
     /// Perform a list of extractions as efficiently as possible.  We use a
     /// batch interface to avoid making too many passes through the file.
     /// We assume that the extractions are sorted in temporal order.
-    pub fn extract(&self, extractions: &[Extraction]) -> Result<()> {
-        let pb = ProgressBar::new(cast::u64(extractions.len()));
-        pb.set_style(default_progress_style());
-        pb.set_prefix("✂️  Extracting media");
+    pub fn extract(&self, ui: &Ui, extractions: &[Extraction]) -> Result<()> {
+        let pb = ui.new_progress_bar(cast::u64(extractions.len()));
+        pb.set_prefix("✂️");
+        pb.set_message("Extracting media");
         pb.tick();
 
         let mut batch: Vec<&Extraction> = vec![];
@@ -364,10 +368,59 @@ impl Video {
             }
         }
 
+        // Poke the progress bar occasionally, so that it displays more reliably
+        // even when the first batch of extractions is long.
+        pb.enable_steady_tick(Duration::from_millis(250));
+
         for chunk in batch.chunks(20) {
             self.extract_batch(chunk)?;
             pb.inc(cast::u64(chunk.len()));
         }
+        pb.finish_with_message("Extracted media items");
         Ok(())
+    }
+
+    /// Open a stream from the video file as an async buffered reader.
+    ///
+    /// ```sh
+    /// ffmpeg -i audio16000.mp3 -f s16le -ac 1 -ar 8000 -
+    /// ```
+    ///
+    /// The stream will contain either 16-bit signed little-endian PCM or
+    /// big-endian PCM, depending on the target architecture.
+    pub async fn open_audio_stream(
+        &self,
+        id: usize,
+        rate: usize,
+    ) -> Result<(BufReader<impl AsyncRead>, impl Future<Output = Result<()>>)> {
+        let encoding = if cfg!(target_endian = "big") {
+            "s16be"
+        } else {
+            "s16le"
+        };
+
+        let mut cmd = AsyncCommand::new("ffmpeg");
+        cmd.arg("-v").arg("quiet");
+        cmd.arg("-i").arg(&self.path);
+        cmd.arg("-map").arg(format!("0:{}", id));
+        cmd.arg("-acodec").arg(format!("pcm_{}", encoding));
+        cmd.arg("-f").arg(encoding);
+        cmd.arg("-ac").arg("1");
+        cmd.arg("-ar").arg(rate.to_string());
+        cmd.arg("-");
+        let mut child = cmd
+            .stdout(Stdio::piped())
+            .spawn()
+            .with_context(|| RunCommandError::new("ffmpg"))?;
+        let stdout = child.stdout.take().expect("should always have stdout");
+        let join_handle = async move {
+            let status = child.wait().await?;
+            if !status.success() {
+                Err(RunCommandError::new("ffmpg").into())
+            } else {
+                Ok(())
+            }
+        };
+        Ok((BufReader::new(stdout), join_handle))
     }
 }

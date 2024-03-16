@@ -2,7 +2,6 @@
 
 use anyhow::anyhow;
 use async_openai::{config::OpenAIConfig, types::CreateChatCompletionRequest, Client};
-use indicatif::ProgressBar;
 use lazy_static::lazy_static;
 use log::{debug, trace};
 use regex::Regex;
@@ -15,17 +14,17 @@ use super::{
 };
 use crate::{
     lang::Lang,
-    progress::default_progress_style,
     srt::{Subtitle, SubtitleFile},
+    ui::Ui,
     Result,
 };
 
 /// Always send this many lines in a prompt, and the try to end
 /// on a sentence boundary.
-const MIN_CHUNK_SIZE: usize = 10;
+const MIN_CHUNK_SIZE: usize = 8;
 
 /// If we can't find a sentence boundary, end no later than this.
-const MAX_CHUNK_SIZE: usize = 15;
+const MAX_CHUNK_SIZE: usize = 12;
 
 lazy_static! {
     /// A JSON Schema for the report_translation"function" we tell OpenAI to
@@ -65,6 +64,7 @@ lazy_static! {
 
 /// Translate subtitle lines using OpenAI's GPT API.
 pub async fn translate_subtitle_file(
+    ui: &Ui,
     file: &SubtitleFile,
     to_lang: Lang,
 ) -> Result<SubtitleFile> {
@@ -93,9 +93,9 @@ pub async fn translate_subtitle_file(
         sub_chunks.push(current_chunk);
     }
 
-    let progress = ProgressBar::new(file.subtitles.len() as u64);
-    progress.set_style(default_progress_style());
-    progress.set_prefix("📖  Translating");
+    let progress = ui.new_progress_bar(file.subtitles.len() as u64);
+    progress.set_prefix("📖");
+    progress.set_message("Translating");
     progress.tick();
 
     let client = Client::new();
@@ -118,7 +118,7 @@ pub async fn translate_subtitle_file(
         }
         progress.inc(chunk.len() as u64);
     }
-    progress.finish();
+    progress.finish_with_message("Translated subtitles");
 
     // Reassemble the translated chunks.
     Ok(SubtitleFile {
@@ -184,7 +184,7 @@ fn prompt_from_chunk(
 
 ```json\n{template}```
 
-Please call the function `report_translation` with your output.",
+Please call the function `report_translation` with your output, maintaing the right number of lines.",
         from = from_lang.english_names()?[0],
         to = to_lang.english_names()?[0],
         template = json_template,

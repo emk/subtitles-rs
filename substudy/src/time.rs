@@ -75,7 +75,7 @@ impl Period {
             })
         } else {
             Err(anyhow!(
-                "Beginning of range is before end: {}-{}",
+                "Beginning of range is not before end: {}-{}",
                 begin,
                 end
             ))

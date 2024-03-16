@@ -5,8 +5,17 @@ use std::path::{Path, PathBuf};
 use clap::{Parser, Subcommand};
 use dotenv::dotenv;
 use substudy::{
-    align::combine_files, export, import, lang::Lang,
-    services::oai::translate_subtitle_file, srt::SubtitleFile, video, Result,
+    align::combine_files,
+    export,
+    import::{self, WhisperJson},
+    lang::Lang,
+    services::oai::{
+        transcribe_subtitles_to_srt_file, transcribe_subtitles_to_whisper_json,
+        translate_subtitle_file, TranscriptionFormat,
+    },
+    srt::SubtitleFile,
+    ui::Ui,
+    video, Result,
 };
 use tokio::task::spawn_blocking;
 
@@ -53,6 +62,21 @@ enum Args {
     List {
         #[command(subcommand)]
         to_list: ToList,
+    },
+
+    /// Transcribe subtitles from audio.
+    #[command(name = "transcribe")]
+    Transcribe {
+        /// Path to the video.
+        video: PathBuf,
+
+        /// Example text related to or similar to audio.
+        #[arg(long)]
+        example_text: PathBuf,
+
+        /// Output format for the transcription.
+        #[arg(long, default_value = "srt")]
+        format: TranscriptionFormat,
     },
 
     /// Translate subtitles.
@@ -179,7 +203,7 @@ enum ToList {
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenv().ok();
-    env_logger::init();
+    let ui = Ui::init();
 
     // Parse our command-line arguments using docopt (very shiny).
     let args: Args = Args::parse();
@@ -193,6 +217,7 @@ async fn main() -> Result<()> {
         Args::Export { format } => {
             spawn_blocking(move || {
                 cmd_export(
+                    &ui,
                     format.name(),
                     format.video(),
                     format.foreign_subs(),
@@ -205,10 +230,15 @@ async fn main() -> Result<()> {
         Args::List {
             to_list: ToList::Tracks { video },
         } => spawn_blocking(move || cmd_tracks(&video)).await?,
+        Args::Transcribe {
+            video,
+            example_text,
+            format,
+        } => cmd_transcribe(&ui, &video, &example_text, format).await,
         Args::Translate {
             foreign_subs,
             native_lang,
-        } => cmd_translate(&foreign_subs, &native_lang).await,
+        } => cmd_translate(&ui, &foreign_subs, &native_lang).await,
     }
 }
 
@@ -238,6 +268,7 @@ fn cmd_tracks(path: &Path) -> Result<()> {
 }
 
 fn cmd_export(
+    ui: &Ui,
     kind: &str,
     video_path: &Path,
     foreign_sub_path: &Path,
@@ -253,18 +284,19 @@ fn cmd_export(
 
     let mut exporter = export::Exporter::new(video, foreign_subs, native_subs, kind)?;
     match kind {
-        "csv" => export::export_csv(&mut exporter)?,
-        "review" => export::export_review(&mut exporter)?,
-        "tracks" => export::export_tracks(&mut exporter)?,
+        "csv" => export::export_csv(ui, &mut exporter)?,
+        "review" => export::export_review(ui, &mut exporter)?,
+        "tracks" => export::export_tracks(ui, &mut exporter)?,
         _ => panic!("Uknown export type: {}", kind),
     }
 
     Ok(())
 }
 
-fn cmd_import(format: ImportFormat) -> std::prelude::v1::Result<(), anyhow::Error> {
+fn cmd_import(format: ImportFormat) -> Result<()> {
     match format {
         ImportFormat::WhisperJson { whisper_json } => {
+            let whisper_json = WhisperJson::from_path(&whisper_json)?;
             let srt = import::import_whisper_json(&whisper_json)?;
             print!("{}", srt.to_string());
             Ok(())
@@ -272,10 +304,32 @@ fn cmd_import(format: ImportFormat) -> std::prelude::v1::Result<(), anyhow::Erro
     }
 }
 
-async fn cmd_translate(foreign_subs: &Path, native_lang: &str) -> Result<()> {
+async fn cmd_transcribe(
+    ui: &Ui,
+    video: &Path,
+    example_text: &Path,
+    format: TranscriptionFormat,
+) -> Result<()> {
+    let v = video::Video::new(video)?;
+    let text = std::fs::read_to_string(example_text)?;
+    match format {
+        TranscriptionFormat::WhisperJson => {
+            let json = transcribe_subtitles_to_whisper_json(ui, &v, &text).await?;
+            let json_str = serde_json::to_string_pretty(&json)?;
+            print!("{}", json_str);
+        }
+        TranscriptionFormat::Srt => {
+            let srt = transcribe_subtitles_to_srt_file(ui, &v, &text).await?;
+            print!("{}", srt.to_string());
+        }
+    }
+    Ok(())
+}
+
+async fn cmd_translate(ui: &Ui, foreign_subs: &Path, native_lang: &str) -> Result<()> {
     let file = SubtitleFile::cleaned_from_path(foreign_subs)?;
     let native_lang = Lang::iso639(native_lang)?;
-    let translated = translate_subtitle_file(&file, native_lang).await?;
+    let translated = translate_subtitle_file(ui, &file, native_lang).await?;
     print!("{}", translated.to_string());
     Ok(())
 }

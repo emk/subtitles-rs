@@ -18,11 +18,12 @@ pub mod export;
 pub mod import;
 pub mod lang;
 pub mod merge;
-pub(crate) mod progress;
 pub mod segment;
 pub mod services;
 pub mod srt;
 pub mod time;
+pub mod ui;
+mod vad;
 pub mod video;
 
 peg::parser! {

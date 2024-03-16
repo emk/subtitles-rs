@@ -19,7 +19,8 @@ exclude = ["fixtures/empty.mp4"]
 
 [dependencies]
 anyhow = "1.0.80"
-async-openai = "0.19.0"
+async-openai = { git = "https://github.com/emk/async-openai.git", branch = "transcription_verbose_json" }
+bytemuck = "1.15.0"
 cast = "0.3.0"
 chardet = "0.2"
 clap = { version = "4.5.1", features = ["derive", "wrap_help"] }
@@ -40,12 +41,15 @@ peg = "0.8.2"
 regex = "1.10.3"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+tempfile = "3.10.1"
 tokio = { version = "1.0", default-features = false, features = [
     "rt",
     "rt-multi-thread",
     "macros",
+    "process",
 ] }
 unicode-width = "0.1.5"
+webrtc-vad = "0.4.0"
 whatlang = "0.16.4"
 
 [dev-dependencies]

@@ -17,6 +17,7 @@ use crate::{
     lang::Lang,
     srt::{Subtitle, SubtitleFile},
     time::{Period, ToTimestamp},
+    ui::Ui,
     video::{Extraction, ExtractionSpec, Id3Metadata, Video},
     Result,
 };
@@ -214,8 +215,8 @@ impl Exporter {
     }
 
     /// Finish all scheduled exports.
-    pub fn finish_exports(&mut self) -> Result<()> {
-        self.video.extract(&self.extractions)?;
+    pub fn finish_exports(&mut self, ui: &Ui) -> Result<()> {
+        self.video.extract(ui, &self.extractions)?;
         Ok(())
     }
 }

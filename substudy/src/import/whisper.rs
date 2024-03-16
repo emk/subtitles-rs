@@ -3,10 +3,10 @@ use std::{fmt, fs::File, iter::repeat, path::Path};
 use anyhow::Context as _;
 use lazy_static::lazy_static;
 use lending_iterator::{lending_iterator::constructors::windows_mut, LendingIterator};
-use log::{debug, trace, warn};
+use log::{debug, log_enabled, trace, warn, Level};
 use ordered_float::NotNan;
 use regex::Regex;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     clean::clean_subtitle_file,
@@ -42,21 +42,8 @@ use crate::{
 const DEFAULT_CHARS_PER_SECOND: f32 = 15.0;
 
 /// Import a Whisper JSON file and convert it to an SRT file.
-pub fn import_whisper_json(whisper_json: &Path) -> Result<SubtitleFile> {
-    let rdr = File::open(whisper_json).with_context(|| {
-        format!(
-            "Failed to open Whisper JSON file: {}",
-            whisper_json.display()
-        )
-    })?;
-    let mut whisper = serde_json::from_reader::<_, WhisperJson>(rdr)
-        .with_context(|| {
-            format!(
-                "Failed to parse Whisper JSON file: {}",
-                whisper_json.display()
-            )
-        })?
-        .clean();
+pub fn import_whisper_json(whisper_json: &WhisperJson) -> Result<SubtitleFile> {
+    let mut whisper = whisper_json.clone().clean();
     whisper.resegment();
     let words = whisper.words_for_each_segment(&whisper.words);
     let mut analyzed = AnalyzedSegments::new(&whisper.segments, &words);
@@ -130,18 +117,72 @@ fn chars_per_second(text: &str, start: f32, end: f32) -> Option<f32> {
     }
 }
 
-// Format of the Whisper JSON file.
-#[derive(Debug, Deserialize)]
+/// Contents of the Whisper JSON file.
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[allow(dead_code)]
-struct WhisperJson {
+pub struct WhisperJson {
     language: String,
     duration: f32,
     text: String,
     words: Vec<Word>,
     segments: Vec<Segment>,
+
+    /// Other keys we don't recognize but want to keep.
+    #[serde(flatten)]
+    extra: serde_json::Map<String, serde_json::Value>,
 }
 
 impl WhisperJson {
+    /// Read from a file.
+    pub fn from_path(path: &Path) -> Result<WhisperJson> {
+        let rdr = File::open(path).with_context(|| {
+            format!("Failed to open Whisper JSON file: {}", path.display())
+        })?;
+        serde_json::from_reader(rdr).with_context(|| {
+            format!("Failed to parse Whisper JSON file: {}", path.display())
+        })
+    }
+
+    /// Read from a string.
+    pub fn from_str(s: &str) -> Result<WhisperJson> {
+        serde_json::from_str(s)
+            .with_context(|| format!("Failed to parse Whisper JSON string: {:?}", s))
+    }
+
+    /// Append another Whisper JSON file, shifting it by the specified time offset.
+    /// We use this to reassamble transcription segments.
+    pub fn append_with_offset(
+        &mut self,
+        mut other: WhisperJson,
+        time_offset: f32,
+    ) -> Result<()> {
+        if self.language != other.language {
+            return Err(anyhow::anyhow!(
+                "Whisper transcriptions have different languages: {:?} vs {:?}",
+                self.language,
+                other.language
+            ));
+        }
+        self.duration = time_offset + other.duration;
+        self.text.push('\n');
+        self.text.push_str(&other.text);
+        for word in &mut other.words {
+            word.offset(time_offset);
+        }
+        self.words.extend(other.words);
+        for segment in &mut other.segments {
+            segment.offset(time_offset);
+        }
+        self.segments.extend(other.segments);
+        if log_enabled!(Level::Debug) && !other.extra.is_empty() {
+            debug!(
+                "Ignoring extra keys in appended Whisper JSON: {:?}",
+                other.extra
+            );
+        }
+        Ok(())
+    }
+
     /// Clean up and normalize the Whisper JSON file.
     fn clean(mut self) -> WhisperJson {
         // We don't bother to clean the "text" field, because we don't use it to
@@ -170,6 +211,7 @@ impl WhisperJson {
                     start,
                     end,
                     no_speech_prob: segment.no_speech_prob,
+                    extra: segment.extra.clone(),
                 });
                 start = end;
             }
@@ -239,14 +281,24 @@ impl WhisperJson {
 }
 
 // Format of the "words" field in the Whisper JSON file.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 struct Word {
     word: String,
     start: f32,
     end: f32,
+
+    /// Other keys we don't recognize but want to keep.
+    #[serde(flatten)]
+    extra: serde_json::Map<String, serde_json::Value>,
 }
 
 impl Word {
+    /// Offset by the specified time.
+    fn offset(&mut self, time_offset: f32) {
+        self.start += time_offset;
+        self.end += time_offset;
+    }
+
     /// Clean up a word, discarding it if it looks useless.
     fn clean(mut self) -> Option<Word> {
         let scrubbed = scrub_text(&self.word);
@@ -271,15 +323,25 @@ impl Word {
 }
 
 // Format of the "segments" field in the Whisper JSON file.
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 struct Segment {
     text: String,
     start: f32,
     end: f32,
     no_speech_prob: f32,
+
+    /// Other keys we don't recognize but want to keep.
+    #[serde(flatten)]
+    extra: serde_json::Map<String, serde_json::Value>,
 }
 
 impl Segment {
+    /// Offset by the specified time.
+    fn offset(&mut self, time_offset: f32) {
+        self.start += time_offset;
+        self.end += time_offset;
+    }
+
     /// Clean up a segment, discarding it if it looks useless.
     fn clean(mut self) -> Option<Segment> {
         lazy_static! {

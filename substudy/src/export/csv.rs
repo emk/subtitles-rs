@@ -7,7 +7,7 @@ use serde::Serialize;
 
 use crate::{
     contexts::ItemsInContextExt, export::Exporter, srt::Subtitle,
-    time::seconds_to_hhmmss_sss, Result,
+    time::seconds_to_hhmmss_sss, ui::Ui, Result,
 };
 
 /// Attempt to guess a reasonable episode number, based on the file name.
@@ -46,7 +46,7 @@ struct AnkiNote {
 
 /// Export the video and subtitles as a CSV file with accompanying media
 /// files, for import into Anki.
-pub fn export_csv(exporter: &mut Exporter) -> Result<()> {
+pub fn export_csv(ui: &Ui, exporter: &mut Exporter) -> Result<()> {
     let foreign_lang = exporter.foreign().language;
     let prefix = episode_prefix(exporter.file_stem());
 
@@ -111,7 +111,7 @@ pub fn export_csv(exporter: &mut Exporter) -> Result<()> {
     exporter.export_data_file("cards.csv", &buffer)?;
 
     // Extract our media files.
-    exporter.finish_exports()?;
+    exporter.finish_exports(ui)?;
 
     Ok(())
 }

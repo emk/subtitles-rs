@@ -3,7 +3,7 @@
 use handlebars::Handlebars;
 use serde::Serialize;
 
-use crate::{export::Exporter, lang::Lang, time::Period, Result};
+use crate::{export::Exporter, lang::Lang, time::Period, ui::Ui, Result};
 
 /// Information about a subtitle for use by our Handlebars HTML template.
 #[derive(Debug, Serialize)]
@@ -25,7 +25,7 @@ struct ExportInfo {
 }
 
 /// Export the video and subtitles as a web page in "reviewable" format.
-pub fn export_review(exporter: &mut Exporter) -> Result<()> {
+pub fn export_review(ui: &Ui, exporter: &mut Exporter) -> Result<()> {
     let foreign_lang = exporter.foreign().language;
     // Start preparing information we'll pass to our HTML template.
     let mut bindings = ExportInfo {
@@ -71,7 +71,7 @@ pub fn export_review(exporter: &mut Exporter) -> Result<()> {
     exporter.export_data_file("index.html", html.as_bytes())?;
 
     // Extract our media files.
-    exporter.finish_exports()?;
+    exporter.finish_exports(ui)?;
 
     Ok(())
 }
