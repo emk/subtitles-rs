@@ -140,6 +140,11 @@ pub struct Metadata {
     /// content.
     pub alignments: Vec<Alignment>,
 
+    /// Tags. These may be used by the user or application to categorize the
+    /// media file.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tags: Vec<String>,
+
     /// Application-specific extension data.
     #[serde(default, skip_serializing_if = "ExtensionData::is_empty")]
     pub ext: ExtensionData,
@@ -206,6 +211,10 @@ pub struct Track {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub html: Option<html::Fragment>,
 
+    /// How was this generated? For AI-generated data, this should contain the
+    /// model name, such as `"whisper-1"` or `"gpt-3.5-turbo"`.
+    pub generated_by: Option<String>,
+
     /// Application-specific extension data.
     #[serde(default, skip_serializing_if = "ExtensionData::is_empty")]
     pub ext: ExtensionData,
@@ -220,6 +229,7 @@ impl Track {
             lang: None,
             file: None,
             html: None,
+            generated_by: None,
             ext: ExtensionData::default(),
         }
     }
@@ -234,6 +244,7 @@ impl Track {
             lang: Some(lang),
             file: None,
             html: Some(html.into()),
+            generated_by: None,
             ext: ExtensionData::default(),
         }
     }
@@ -248,6 +259,7 @@ impl Track {
             lang: Some(lang),
             file: None,
             html: Some(html::Fragment::from_text(text)),
+            generated_by: None,
             ext: ExtensionData::default(),
         }
     }
@@ -263,6 +275,9 @@ pub enum TrackType {
     Media,
     /// This track contains an image.
     Image,
+    /// This track contains notes in HTML format. These are not part of the
+    /// media themselves, but contain other useful information.
+    Note,
     /// This track contains a non-standard form of data. When serialized, it
     /// will be named starting with `"x-"`, followed by the `String` value.
     Ext(String),
@@ -294,6 +309,7 @@ impl Serialize for TrackType {
             TrackType::Html => "html".serialize(serializer),
             TrackType::Media => "media".serialize(serializer),
             TrackType::Image => "image".serialize(serializer),
+            TrackType::Note => "note".serialize(serializer),
             TrackType::Ext(ref name) => format!("x-{}", name).serialize(serializer),
         }
     }
@@ -323,13 +339,18 @@ pub struct Alignment {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub tracks: Vec<Track>,
 
+    /// Tags. These may be used by the user or application to categorize the
+    /// media file. The following values have special meanings by convention:
+    ///
+    /// - `"star"`: This alignment is of particular interest to the user. This might
+    ///   also be used to mark alignment for export (for example, to flash cards).
+    /// - `"fix"`: This track has been marked for manual correction.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tags: Vec<String>,
+
     /// Application-specific extension data.
     #[serde(default, skip_serializing_if = "ExtensionData::is_empty")]
     pub ext: ExtensionData,
-
-    /// Placeholder to allow for future extensibility without breaking the API.
-    #[serde(default, skip_serializing)]
-    _placeholder: (),
 }
 
 /// A span of time, measured in floating-point seconds.
