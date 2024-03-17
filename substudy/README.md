@@ -1,6 +1,6 @@
 [![Latest version](https://img.shields.io/crates/v/substudy.svg)](https://crates.io/crates/substudy) [![License](https://img.shields.io/crates/l/substudy.svg)](https://creativecommons.org/publicdomain/zero/1.0/) [![example workflow](https://github.com/emk/subtitles-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/emk/subtitles-rs/actions)
 
-This is an experimental tool to help language-learners exploit parallel subtitles in various ways.  Among other things, it can generate bilingual subtitles, review pages, and decks of Anki cards:
+This is an experimental command-line tool to help language-learners exploit parallel subtitles in various ways.  Among other things, it can generate bilingual subtitles, review pages, and decks of Anki cards:
 
 <a href="http://www.randomhacks.net/substudy/#bilingual">
 <img src="http://www.randomhacks.net/images/substudy/bilingual-subtitles.jpg"
@@ -15,21 +15,53 @@ This is an experimental tool to help language-learners exploit parallel subtitle
      title="Studying subtitles with Anki">
 </a>
 
-Here's the documentation:
+Here's an overview of substudy, with screenshots and advice on how to use it:
 
-- [Overview and user documentation][docs]
+- [Overview and advice][docs]
 
 Example usage:
 
 ```sh
+# Transcribe audio from a video file (requires an `OPENAI_API_KEY`).
+substudy transcribe episode_01_01.mkv --example-text=short-text.txt >
+    episode_01_01.es.srt
+```
+
+For the `OPENAI_API_KEY` environment variable, see below.
+
+`short-text.txt` contains a short example (50-200 words) related to the content of the video: some lyrics of a song, a few lines of a movie, the introduction of a TV show, etc. This must be in the language we wish to transcribe, and it is used to provide context to the transcriber.
+
+```sh
+# Translate a subtitle file (requires an `OPENAI_API_KEY`).
+substudy translate episode_01_01.es.srt --native-lang=en >
+    episode_01_01.en.srt
+
 # Create a bilingual subtitle file.
-substudy combine episode_01_01.es.srt episode_01_01.en.srt \
-    > episode_01_01.bilingual.srt
+substudy combine episode_01_01.es.srt episode_01_01.en.srt >
+    episode_01_01.bilingual.srt
 
 # Export images, audio clips and subtitles as a web page.
 substudy export review episode_01_01.mkv \
     episode_01_01.es.srt episode_01_01.en.srt
+
+# Export as CSV and `collection.media` files for Anki.
+substudy export csv episode_01_01.mkv \
+    episode_01_01.es.srt episode_01_01.en.srt
+
+# Export as MP3 tracks and a playlist, cutting out all the non-dialog bits.
+substudy export tracks episode_01_01.mkv episode_01_01.es.srt
+
+# List other commands.
+substudy --help
 ```
+
+## Prerequisites
+
+You will need to know some command-line basics: How to open your terminal, how to install command-line tools, how to configure you `PATH`, how to change directories, and how to set environment variables. But you shouldn't need much more than that, because `substudy` is designed to be a friendly command-line tool, as such things go.
+
+`substudy` is developed on Linux. We have automated tests for MacOS and Windows, but we probably can't give you much advice if you run into problems.
+
+Also, `substudy` assumes that your media is in decent shape. If you have a bunch of audio tracks that are tagged with the wrong language, or something like that, you'll probably need to fix that first using other tools. Similarly, `substudy` cannot timeshift existing SRT subtitles if they're off by 5 seconds.
 
 [docs]: http://www.randomhacks.net/substudy/
 
@@ -72,7 +104,7 @@ For Windows, you'll have to figure it out yourself for now. But if you do, pleas
 
 Linux trusts you to run software you download.
 
-Normally, MacOS and Windows want all programs to be signed by a developer. This would cost me money every year ($99/year for MacOS, and around $300–400/year for an EV certificate Windows). You might be able to work around this by following these instructions:
+Normally, MacOS and Windows want all programs to be signed by a developer. This would cost me money every year ($99/year for MacOS, and around $300–400/year for an EV certificate for Windows). You might be able to work around this by following these instructions:
 
 - [MacOS: Open an app from an unidentified developer](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac)
 - [OK Windows 10, we get it: You really do not want us to install this unsigned application. But 7 steps borders on ridiculous](https://www.theregister.com/2020/06/05/windows_10_microsoft_defender_smartscreen/)
@@ -85,13 +117,13 @@ Several commands, including `substudy transcribe` and `substudy translate`, requ
 
 ```sh
 # Linux and Mac.
-export OPEN_AI_API_KEY=your-key-here
+export OPENAI_API_KEY=your-key-here
 
 # Windows.
-set OPEN_AI_API_KEY=your-key-here
+set OPENAI_API_KEY=your-key-here
 
 # Windows PowerShell.
-$env:OPEN_AI_API_KEY="your-key-here"
+$env:OPENAI_API_KEY="your-key-here"
 ```
 
 Alternatively, `substudy` supports `.env` files. Just place a file somewhere in your working directory (or in a parent directory) with the following contents:
@@ -100,7 +132,7 @@ Alternatively, `substudy` supports `.env` files. Just place a file somewhere in 
 OPENAI_API_KEY=your-key-here
 ```
 
-Note that these features will cost you money. I pay about US$0.15 to transcribe a 22-minute episode of a TV show, and several cents to translate it. Your costs may vary, so pay attention to your billing limits!
+Note that the OpenAI-based features will cost you money. I pay about US$0.15 to transcribe a 22-minute episode of a TV show, and several cents to translate it. Your costs may vary, so pay attention to your billing limits!
 
 [openai-api]: https://platform.openai.com/signup
 
@@ -166,4 +198,4 @@ I'm happy to leave serious, interactive subtitle editing to [Subtitle Edit][], a
 
 This code is distributed under the Apache 2.0 license.  Our test suites contain a half-dozen lines of subtitles from copyrighted TV shows, which should presumably fall under _de minimis_, fair use or equivalent exceptions in most jurisdictions.
 
-Earlier versions of this code were distributed under the CC0 1.0 Universal public domain grant (plus fallback license). This may give you additional rights in certain jurisdictions, but you'd have to check with a legal professional.****
+Earlier versions of this code were distributed under the CC0 1.0 Universal public domain grant (plus fallback license). This may give you additional rights in certain jurisdictions, but you'd have to check with a legal professional.
