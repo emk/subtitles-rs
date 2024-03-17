@@ -21,6 +21,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Translate slightly fewer lines at a time and tweak our prompt, to discourage returning the wrong number of lines.
 
+### Removed
+
+- `substudy` is no longer available as a library. Only the CLI is supported for the time being. We may make a library version available in the future, once the APIs have stabilized more.
+
 ## [0.5.2] - 2024-03-12
 
 ### Added

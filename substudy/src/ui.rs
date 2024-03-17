@@ -1,12 +1,16 @@
 //! Application UI. For now, this is mostly progress bars.
 
+use std::sync::Arc;
+
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 
 /// Application UI state.
 #[derive(Clone)]
 pub struct Ui {
-    /// Our progress bars.
-    multi_progress: MultiProgress,
+    /// Our progress bars. I'm not actually sure that this `Arc` is useful, but
+    /// I'm playing it safe until I understand `MultiProgress` and `tokio`
+    /// interactions better.
+    multi_progress: Arc<MultiProgress>,
 }
 
 impl Ui {
@@ -17,7 +21,7 @@ impl Ui {
         // crate `indicatif-log-bridge` just supresses all messages.
         env_logger::init();
 
-        let multi_progress = MultiProgress::new();
+        let multi_progress = Arc::new(MultiProgress::new());
         Ui { multi_progress }
     }
 

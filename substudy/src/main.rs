@@ -1,13 +1,19 @@
-//! Command-line iterface to substudy.
+//! Tools for studying foreign languages using subtitles.
+
+#![warn(missing_docs)]
 
 use std::path::{Path, PathBuf};
 
+pub use anyhow::{Error, Result};
 use clap::{Parser, Subcommand};
 use dotenv::dotenv;
-use substudy::{
+use export::Exporter;
+use tokio::task::spawn_blocking;
+use video::Video;
+
+use crate::{
     align::combine_files,
-    export,
-    import::{self, WhisperJson},
+    import::{import_whisper_json, WhisperJson},
     lang::Lang,
     services::oai::{
         transcribe_subtitles_to_srt_file, transcribe_subtitles_to_whisper_json,
@@ -15,9 +21,24 @@ use substudy::{
     },
     srt::SubtitleFile,
     ui::Ui,
-    video, Result,
 };
-use tokio::task::spawn_blocking;
+
+pub mod align;
+pub mod clean;
+pub mod contexts;
+pub mod decode;
+pub mod errors;
+pub mod export;
+pub mod import;
+pub mod lang;
+pub mod merge;
+pub mod segment;
+pub mod services;
+pub mod srt;
+pub mod time;
+pub mod ui;
+mod vad;
+pub mod video;
 
 #[derive(Debug, Parser)]
 /// Subtitle processing tools for students of foreign languages. (For now, all
@@ -207,7 +228,6 @@ async fn main() -> Result<()> {
 
     // Parse our command-line arguments using docopt (very shiny).
     let args: Args = Args::parse();
-
     match args {
         Args::Clean { subs } => spawn_blocking(move || cmd_clean(&subs)).await?,
         Args::Combine {
@@ -215,6 +235,7 @@ async fn main() -> Result<()> {
             native_subs,
         } => spawn_blocking(move || cmd_combine(&foreign_subs, &native_subs)).await?,
         Args::Export { format } => {
+            let ui = ui.clone();
             spawn_blocking(move || {
                 cmd_export(
                     &ui,
@@ -256,7 +277,7 @@ fn cmd_combine(path1: &Path, path2: &Path) -> Result<()> {
 }
 
 fn cmd_tracks(path: &Path) -> Result<()> {
-    let v = video::Video::new(path)?;
+    let v = Video::new(path)?;
     for stream in v.streams() {
         let lang = stream.language();
         let lang_str = lang
@@ -275,14 +296,14 @@ fn cmd_export(
     native_sub_path: Option<&Path>,
 ) -> Result<()> {
     // Load our input files.
-    let video = video::Video::new(video_path)?;
+    let video = Video::new(video_path)?;
     let foreign_subs = SubtitleFile::cleaned_from_path(foreign_sub_path)?;
     let native_subs = match native_sub_path {
         None => None,
         Some(p) => Some(SubtitleFile::cleaned_from_path(p)?),
     };
 
-    let mut exporter = export::Exporter::new(video, foreign_subs, native_subs, kind)?;
+    let mut exporter = Exporter::new(video, foreign_subs, native_subs, kind)?;
     match kind {
         "csv" => export::export_csv(ui, &mut exporter)?,
         "review" => export::export_review(ui, &mut exporter)?,
@@ -297,7 +318,7 @@ fn cmd_import(format: ImportFormat) -> Result<()> {
     match format {
         ImportFormat::WhisperJson { whisper_json } => {
             let whisper_json = WhisperJson::from_path(&whisper_json)?;
-            let srt = import::import_whisper_json(&whisper_json)?;
+            let srt = import_whisper_json(&whisper_json)?;
             print!("{}", srt.to_string());
             Ok(())
         }
@@ -310,7 +331,7 @@ async fn cmd_transcribe(
     example_text: &Path,
     format: TranscriptionFormat,
 ) -> Result<()> {
-    let v = video::Video::new(video)?;
+    let v = Video::new(video)?;
     let text = std::fs::read_to_string(example_text)?;
     match format {
         TranscriptionFormat::WhisperJson => {

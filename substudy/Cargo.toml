@@ -55,8 +55,3 @@ whatlang = "0.16.4"
 [dev-dependencies]
 cli_test_dir = { version = "0.1", path = "../cli_test_dir" }
 difference = "2.0.0"
-
-[[bin]]
-name = "substudy"
-test = false
-doc = false

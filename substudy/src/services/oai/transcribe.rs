@@ -128,6 +128,7 @@ pub async fn transcribe_subtitles_to_whisper_json(
             }
         }
     }
+    pb.finish_with_message("Transcribed dialog!");
 
     Ok(transcription.expect("should always have at least one period"))
 }
