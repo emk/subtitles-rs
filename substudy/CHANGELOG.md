@@ -6,16 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.6.0] - 2024-03-16
+
 ### Added
 
-- Whisper-1 transliteration.
+- We now support Whisper-1 transcription of audio!
 - Segmentation support using WebRTC voice audio detection, for finding good split points for speech recognition.
 - Pretty progress bars! Now with more emoji!
-
-### Changed
-
-- All APIs that take a long time to run now take a `ui: &Ui` parameter and display progress bars.
-- The `services::oai` APIs have been refactored.
 
 ### Fixed
 
