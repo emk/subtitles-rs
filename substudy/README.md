@@ -79,9 +79,38 @@ Normally, MacOS and Windows want all programs to be signed by a developer. This 
 
 Obviously, you should only do this if you trust me, and you should _always_ download the binaries from the official [releases page][releases]. And if you have up-to-date instructions for how to do this, please file an [issue][issues] and tell us how you did it.
 
-## Installing `substudy` using `cargo`
+## Setting up your `OPENAI_API_KEY`
 
-You can also install `substudy` is using the `cargo install` command.  To use this, you'll need a recent version of Rust.  If you already have [`rustup`][rustup] installed, you can run:
+Several commands, including `substudy transcribe` and `substudy translate`, require an `OPENAI_API_KEY` environment variable. You can get one by signing up for the [OpenAI GPT-3 API][openai-api]. Once you have an API key, you can set it in your shell like this:
+
+```sh
+# Linux and Mac.
+export OPEN_AI_API_KEY=your-key-here
+
+# Windows.
+set OPEN_AI_API_KEY=your-key-here
+
+# Windows PowerShell.
+$env:OPEN_AI_API_KEY="your-key-here"
+```
+
+Alternatively, `substudy` supports `.env` files. Just place a file somewhere in your working directory (or in a parent directory) with the following contents:
+
+```sh
+OPENAI_API_KEY=your-key-here
+```
+
+Note that these features will cost you money. I pay about US$0.15 to transcribe a 22-minute episode of a TV show, and several cents to translate it. Your costs may vary, so pay attention to your billing limits!
+
+[openai-api]: https://platform.openai.com/signup
+
+## Developer stuff
+
+You can skip this section if you're not planning to work on `substudy` itself.
+
+### Building `substudy`
+
+To build `substudy`, you'll need a recent version of Rust.  If you already have [`rustup`][rustup] installed, you can run:
 
 ```sh
 rustup update stable
@@ -94,26 +123,19 @@ If you've never heard of `rustup`, you can look at the instructions on the [`rus
 curl https://sh.rustup.rs -sSf | sh
 ```
 
-Once that is set up, you can then install `substudy` by running:
-
-```sh
-cargo install substudy
-```
-
-[rustup]: https://www.rustup.rs/
-
-## Building `substudy`
-
 Assuming you have Rust and the other dependencies installed as described above, you can run:
+
 ```sh
-git clone https://github.com/emk/substudy.git
-cd substudy
+git clone https://github.com/emk/subtitles-rs.git
+cd subtitles-rs/substudy
 cargo build
 ```
 
 If this fails, please feel free to submit an issue.
 
-## Contributing
+[rustup]: https://www.rustup.rs/
+
+### Contributing
 
 Please feel welcome to send me a pull request or submit an issue!
 
@@ -144,4 +166,4 @@ I'm happy to leave serious, interactive subtitle editing to [Subtitle Edit][], a
 
 This code is distributed under the Apache 2.0 license.  Our test suites contain a half-dozen lines of subtitles from copyrighted TV shows, which should presumably fall under _de minimis_, fair use or equivalent exceptions in most jurisdictions.
 
-Earlier versions of this code were distributed under the CC0 1.0 Universal public domain grant (plus fallback license). This may give you additional rights in certain jurisdictions, but you'd have to check with a legal professional.
+Earlier versions of this code were distributed under the CC0 1.0 Universal public domain grant (plus fallback license). This may give you additional rights in certain jurisdictions, but you'd have to check with a legal professional.****
