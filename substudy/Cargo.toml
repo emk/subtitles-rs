@@ -20,6 +20,7 @@ exclude = ["fixtures/empty.mp4"]
 [dependencies]
 anyhow = "1.0.80"
 async-openai = { git = "https://github.com/emk/async-openai.git", branch = "transcription_verbose_json" }
+audiotags = "0.5.0"
 bytemuck = "1.15.0"
 cast = "0.3.0"
 chardet = "0.2"

@@ -61,6 +61,15 @@ impl Id3Metadata {
     }
 }
 
+/// A picture. This is basically the same as [`audiotags::types::Picture`], except
+/// that it's `'static`.
+pub struct Picture {
+    /// The MIME type of the picture.
+    pub mime_type: String,
+    /// The picture data.
+    pub data: Vec<u8>,
+}
+
 /// Individual streams inside a video are labelled with a codec type.
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[allow(missing_docs)]
@@ -123,7 +132,8 @@ impl<'de> Deserialize<'de> for Fraction {
 pub struct Stream {
     pub index: usize,
     pub codec_type: CodecType,
-    tags: Option<BTreeMap<String, String>>,
+    pub tags: Option<BTreeMap<String, String>>,
+    pub disposition: Option<BTreeMap<String, u32>>,
 }
 
 impl Stream {
@@ -134,6 +144,17 @@ impl Stream {
             .as_ref()
             .and_then(|tags| tags.get("language"))
             .and_then(|lang| Lang::iso639(lang).ok())
+    }
+
+    /// Does this stream appear to be an attached picture? If so, this is
+    /// probably album cover art attached to a music file, and we'll need to
+    /// handle it specially.
+    pub fn is_attached_pic(&self) -> bool {
+        self.disposition
+            .as_ref()
+            .and_then(|d| d.get("attached_pic"))
+            .map(|&v| v == 1)
+            .unwrap_or(false)
     }
 }
 
@@ -163,6 +184,15 @@ fn test_stream_decode() {
     let stream: Stream = serde_json::from_str(json).unwrap();
     assert_eq!(CodecType::Audio, stream.codec_type);
     assert_eq!(Some(Lang::iso639("en").unwrap()), stream.language())
+}
+
+/// What kind of image source does this file contain?
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ImageSourceType {
+    /// A true video track, which presumably changes over time.
+    Video,
+    /// An attached picture, which is probably album art.
+    AttachedPic,
 }
 
 /// What kind of data do we want to extract, and from what position in the
@@ -302,8 +332,25 @@ impl Video {
         &self.metadata.streams
     }
 
+    /// Our primary video stream, or the closest equivalent.
+    pub fn primary_video_stream(&self) -> Option<&Stream> {
+        self.streams()
+            .iter()
+            .find(|s| s.codec_type == CodecType::Video)
+    }
+
+    /// What type of image source does this file contain?
+    pub fn image_source_type(&self) -> Option<ImageSourceType> {
+        let primary = self.primary_video_stream();
+        match primary {
+            Some(s) if s.is_attached_pic() => Some(ImageSourceType::AttachedPic),
+            Some(_) => Some(ImageSourceType::Video),
+            None => None,
+        }
+    }
+
     /// Choose the best audio for the specified language.
-    pub fn audio_for(&self, lang: Lang) -> Option<usize> {
+    pub fn audio_track_for(&self, lang: Lang) -> Option<usize> {
         self.streams().iter().position(|s| {
             s.codec_type == CodecType::Audio && s.language() == Some(lang)
         })
@@ -378,6 +425,25 @@ impl Video {
         }
         pb.finish_with_message("Extracted media items");
         Ok(())
+    }
+
+    /// Get the attached picture from a "video" file. This typically happens
+    /// when the video file is actually a music file with album art attached.
+    /// Returns the file extension of the extracted image.
+    pub fn attached_pic(&self) -> Result<Picture> {
+        // Get our pic.
+        let tag = audiotags::Tag::new()
+            .read_from_path(&self.path)
+            .with_context(|| {
+                format!("could not read ID3 tags from {}", self.path.display())
+            })?;
+        let pic = tag.album_cover().ok_or_else(|| {
+            anyhow!("no attached picture found in {}", self.path.display())
+        })?;
+        Ok(Picture {
+            mime_type: String::from(pic.mime_type),
+            data: pic.data.to_owned(),
+        })
     }
 
     /// Open a stream from the video file as an async buffered reader.

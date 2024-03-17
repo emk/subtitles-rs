@@ -9,7 +9,7 @@ use crate::{export::Exporter, lang::Lang, time::Period, ui::Ui, Result};
 #[derive(Debug, Serialize)]
 struct SubtitleInfo {
     index: usize,
-    image_path: String,
+    image_path: Option<String>,
     audio_path: String,
     foreign_text: Option<String>,
     native_text: Option<String>,

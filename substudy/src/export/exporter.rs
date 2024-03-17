@@ -11,6 +11,7 @@ use std::{
 };
 
 use anyhow::{anyhow, Context as _};
+use log::debug;
 
 use crate::{
     align::align_available_files,
@@ -18,7 +19,7 @@ use crate::{
     srt::{Subtitle, SubtitleFile},
     time::{Period, ToTimestamp},
     ui::Ui,
-    video::{Extraction, ExtractionSpec, Id3Metadata, Video},
+    video::{Extraction, ExtractionSpec, Id3Metadata, ImageSourceType, Video},
     Result,
 };
 
@@ -48,11 +49,41 @@ impl LanguageResources {
     }
 }
 
+/// Information about a still image attached to a media file, typically the
+/// album cover for an audio file.
+#[derive(Eq, PartialEq)]
+enum AttachedPicState {
+    /// We haven't checked for an attached picture yet.
+    NeedToCheck,
+    /// We found an attached picture and exported it at this
+    /// relative path.
+    Exported { rel_path: String },
+    /// We didn't find an attached picture.
+    NotFound,
+}
+
+impl AttachedPicState {
+    /// Convert our state to an option, if possible.
+    fn as_option(&self) -> Option<&str> {
+        match self {
+            AttachedPicState::Exported { rel_path } => Some(rel_path),
+            _ => None,
+        }
+    }
+}
+
 /// Information about media file and associated subtitles that the user
 /// wants to export.
 pub struct Exporter {
     /// The video file from which to extract images and audio clips.
     video: Video,
+
+    /// If we need images, where should we look for them?
+    image_source_type: Option<ImageSourceType>,
+
+    /// If we only have an attached picture (usually an album cover), we want to
+    /// use it in place of the video images we couldn't export.
+    attached_picture: AttachedPicState,
 
     /// Resources related to the foreign language.
     foreign: LanguageResources,
@@ -81,6 +112,7 @@ impl Exporter {
         native_subtitles: Option<SubtitleFile>,
         label: &str,
     ) -> Result<Exporter> {
+        let image_source_type = video.image_source_type();
         let foreign = LanguageResources::new(foreign_subtitles);
         let native = native_subtitles.map(|subs| LanguageResources::new(subs));
 
@@ -103,6 +135,8 @@ impl Exporter {
 
         Ok(Exporter {
             video: video,
+            image_source_type,
+            attached_picture: AttachedPicState::NeedToCheck,
             foreign: foreign,
             native: native,
             file_stem: file_stem,
@@ -162,15 +196,56 @@ impl Exporter {
         self.dir.join(file_name)
     }
 
+    /// Export an attached picture and return the file name we used as a string.
+    fn export_attached_picture(&self) -> Result<String> {
+        let pic = self.video.attached_pic()?;
+        let ext = match &pic.mime_type[..] {
+            "image/jpeg" => "jpg",
+            "image/png" => "png",
+            "image/gif" => "gif",
+            _ => {
+                return Err(anyhow!(
+                    "don't recognize MIME type for attached picture: {}",
+                    pic.mime_type
+                ));
+            }
+        };
+        let path = format!("{}_pic.{}", self.file_stem, ext);
+        self.export_data_file(&path, &pic.data)?;
+        Ok(path)
+    }
+
+    /// Try to export an attached picture, if we haven't already.
+    fn export_attached_picture_if_needed(&mut self) -> Option<&str> {
+        if self.attached_picture == AttachedPicState::NeedToCheck {
+            self.attached_picture = match self.export_attached_picture() {
+                Ok(rel_path) => AttachedPicState::Exported { rel_path },
+                Err(e) => {
+                    debug!("could not export attached picture: {}", e);
+                    AttachedPicState::NotFound
+                }
+            };
+        }
+        self.attached_picture.as_option()
+    }
+
     /// Schedule an export of the image at the specified time code.
-    /// Returns the path to which the image will be written.
-    pub fn schedule_image_export(&mut self, time: f32) -> String {
-        let path = self.media_path(time, None, "jpg");
-        self.extractions.push(Extraction {
-            path: path.clone(),
-            spec: ExtractionSpec::Image(time),
-        });
-        os_str_to_string(path.file_name().unwrap())
+    /// Returns the path to which the image will be written, if any.
+    pub fn schedule_image_export(&mut self, time: f32) -> Option<String> {
+        match self.image_source_type {
+            Some(ImageSourceType::Video) => {
+                let path = self.media_path(time, None, "jpg");
+                self.extractions.push(Extraction {
+                    path: path.clone(),
+                    spec: ExtractionSpec::Image(time),
+                });
+                Some(os_str_to_string(path.file_name().unwrap()))
+            }
+            Some(ImageSourceType::AttachedPic) => self
+                .export_attached_picture_if_needed()
+                .map(|s| s.to_owned()),
+            None => None,
+        }
     }
 
     /// Schedule an export of the audio at the specified time period.
@@ -193,7 +268,7 @@ impl Exporter {
         metadata: Id3Metadata,
     ) -> String {
         let path = self.media_path(period, lang, "mp3");
-        let stream = lang.and_then(|l| self.video.audio_for(l));
+        let stream = lang.and_then(|l| self.video.audio_track_for(l));
         self.extractions.push(Extraction {
             path: path.clone(),
             spec: ExtractionSpec::Audio(stream, period, metadata),

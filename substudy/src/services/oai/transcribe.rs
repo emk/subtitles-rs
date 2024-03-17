@@ -79,7 +79,7 @@ pub async fn transcribe_subtitles_to_whisper_json(
 
     // Figure out where to split the video to fit under the 25 MB limit.
     let track_id = video
-        .audio_for(lang)
+        .audio_track_for(lang)
         .ok_or_else(|| anyhow!("no audio track found for language: {}", lang))?;
     let periods = segment_on_dialog_breaks(ui, video, track_id, 10.0 * 60.0).await?;
     debug!("split into periods: {:?}", periods);

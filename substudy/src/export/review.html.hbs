@@ -1,29 +1,33 @@
 <html>
-  <head>
-    <title>Subtitles from {{filename}}</title>
-    <meta charset="UTF-8">
-    <link href="style.css" rel="stylesheet" type="text/css">
-  </head>
-  <body>
-    <h1>Subtitles from {{filename}}</h1>
 
-    {{#each subtitles}}
-      <div class="subtitle">
-        <img class="thumbnail" src="{{image_path}}">
-        <img class="play-button" src="play.svg"
-             onclick="document.getElementById('audio-{{index}}').play()">
-        
-        <audio id="audio-{{index}}" src="{{audio_path}}"></audio>
+<head>
+  <title>Subtitles from {{filename}}</title>
+  <meta charset="UTF-8">
+  <link href="style.css" rel="stylesheet" type="text/css">
+</head>
 
-        <div class="text">
-          {{#if foreign_text}}
-            <p class="foreign" lang="{{../../foreign_lang}}">{{foreign_text}}</p>
-          {{/if}}
-          {{#if native_text}}
-            <p class="native" lang="{{../../native_lang}}">{{native_text}}</p>
-          {{/if}}
-        </div>
-      </div>
-    {{/each}}
-  </body>
+<body>
+  <h1>Subtitles from {{filename}}</h1>
+
+  {{#each subtitles}}
+  <div class="subtitle">
+    {{#if image_path}}
+    <img class="thumbnail" src="{{image_path}}">
+    {{/if}}
+    <img class="play-button" src="play.svg" onclick="document.getElementById('audio-{{index}}').play()">
+
+    <audio id="audio-{{index}}" src="{{audio_path}}"></audio>
+
+    <div class="text">
+      {{#if foreign_text}}
+      <p class="foreign" lang="{{../../foreign_lang}}">{{foreign_text}}</p>
+      {{/if}}
+      {{#if native_text}}
+      <p class="native" lang="{{../../native_lang}}">{{native_text}}</p>
+      {{/if}}
+    </div>
+  </div>
+  {{/each}}
+</body>
+
 </html>
