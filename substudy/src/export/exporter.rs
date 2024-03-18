@@ -237,7 +237,7 @@ impl Exporter {
                 let path = self.media_path(time, None, "jpg");
                 self.extractions.push(Extraction {
                     path: path.clone(),
-                    spec: ExtractionSpec::Image(time),
+                    spec: ExtractionSpec::Image { time },
                 });
                 Some(os_str_to_string(path.file_name().unwrap()))
             }
@@ -271,7 +271,11 @@ impl Exporter {
         let stream = lang.and_then(|l| self.video.audio_track_for(l));
         self.extractions.push(Extraction {
             path: path.clone(),
-            spec: ExtractionSpec::Audio(stream, period, metadata),
+            spec: ExtractionSpec::Audio {
+                stream,
+                period,
+                metadata,
+            },
         });
         os_str_to_string(path.file_name().unwrap())
     }

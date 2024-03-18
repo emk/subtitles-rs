@@ -21,7 +21,7 @@ use crate::{
     srt::SubtitleFile,
     ui::Ui,
     vad::segment_on_dialog_breaks,
-    video::{Extraction, Id3Metadata, Video},
+    video::{Extraction, ExtractionSpec, Id3Metadata, Video},
     Result,
 };
 
@@ -78,10 +78,10 @@ pub async fn transcribe_subtitles_to_whisper_json(
         .ok_or_else(|| anyhow!("could not infer language from example text"))?;
 
     // Figure out where to split the video to fit under the 25 MB limit.
-    let track_id = video
+    let stream_id = video
         .audio_track_for(lang)
         .ok_or_else(|| anyhow!("no audio track found for language: {}", lang))?;
-    let periods = segment_on_dialog_breaks(ui, video, track_id, 10.0 * 60.0).await?;
+    let periods = segment_on_dialog_breaks(ui, video, stream_id, 10.0 * 60.0).await?;
     debug!("split into periods: {:?}", periods);
 
     // Extract audio tracks for transcription.
@@ -89,17 +89,17 @@ pub async fn transcribe_subtitles_to_whisper_json(
     let extractions = periods
         .into_iter()
         .enumerate()
-        .map(|(i, p)| {
+        .map(|(i, period)| {
             let mut file_name = video.file_stem().to_owned();
             file_name.push(format!("_{}.mp3", i));
             let path = temp_dir.path().join(&file_name);
             Extraction {
                 path,
-                spec: crate::video::ExtractionSpec::Audio(
-                    Some(track_id),
-                    p,
-                    Id3Metadata::default(),
-                ),
+                spec: ExtractionSpec::Audio {
+                    stream: Some(stream_id),
+                    period,
+                    metadata: Id3Metadata::default(),
+                },
             }
         })
         .collect::<Vec<_>>();

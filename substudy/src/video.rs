@@ -206,17 +206,28 @@ pub enum ImageSourceType {
 #[derive(Clone)]
 pub enum ExtractionSpec {
     /// Extract an image at the specified time.
-    Image(f32),
+    Image {
+        /// Time from which to extract an image. This will only work with
+        /// genuine video streams, not attached pictures.
+        time: f32,
+    },
     /// Extract an audio clip covering the specified stream and period.
-    Audio(Option<StreamId>, Period, Id3Metadata),
+    Audio {
+        /// The stream to extract from, or `None` for the default.
+        stream: Option<StreamId>,
+        /// The period to extract.
+        period: Period,
+        /// Metadata to add to the extracted file.
+        metadata: Id3Metadata,
+    },
 }
 
 impl ExtractionSpec {
     /// The earliest time at which we might need to extract data.
     pub fn earliest_time(&self) -> f32 {
         match self {
-            &ExtractionSpec::Image(time) => time,
-            &ExtractionSpec::Audio(_, period, _) => period.begin(),
+            &ExtractionSpec::Image { time } => time,
+            &ExtractionSpec::Audio { period, .. } => period.begin(),
         }
     }
 
@@ -227,7 +238,7 @@ impl ExtractionSpec {
             // Batch processing of images requires decoding the whole
             // video, but we can do a "fast seek" and extract one image
             // extremely quickly.
-            &ExtractionSpec::Image(_) => false,
+            &ExtractionSpec::Image { .. } => false,
             _ => true,
         }
     }
@@ -237,7 +248,7 @@ impl ExtractionSpec {
     /// decoding at `time_base`.
     fn add_args(&self, cmd: &mut Command, time_base: f32) {
         match self {
-            &ExtractionSpec::Image(time) => {
+            ExtractionSpec::Image { time } => {
                 let scale_filter =
                     format!("scale=iw*min(1\\,min({}/iw\\,{}/ih)):-1", 240, 160);
                 cmd.arg("-ss")
@@ -249,7 +260,11 @@ impl ExtractionSpec {
                     .arg("-f")
                     .arg("image2");
             }
-            &ExtractionSpec::Audio(stream, period, ref metadata) => {
+            ExtractionSpec::Audio {
+                stream,
+                period,
+                metadata,
+            } => {
                 if let Some(sid) = stream {
                     cmd.arg("-map").arg(format!("0:{}", sid.0));
                 }
