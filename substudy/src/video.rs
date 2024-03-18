@@ -25,6 +25,12 @@ use tokio::{
 
 use crate::{errors::RunCommandError, lang::Lang, time::Period, ui::Ui, Result};
 
+/// The identifier of a data stream within a media container
+/// format. This is used to refer to individual audio or video
+/// streams within a file.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct StreamId(usize);
+
 /// Information about an MP3 track (optional).
 #[derive(Clone, Debug, Default)]
 #[allow(missing_docs)]
@@ -189,7 +195,7 @@ fn test_stream_decode() {
 /// What kind of image source does this file contain?
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ImageSourceType {
-    /// A true video track, which presumably changes over time.
+    /// A true video stream, which presumably changes over time.
     Video,
     /// An attached picture, which is probably album art.
     AttachedPic,
@@ -202,7 +208,7 @@ pub enum ExtractionSpec {
     /// Extract an image at the specified time.
     Image(f32),
     /// Extract an audio clip covering the specified stream and period.
-    Audio(Option<usize>, Period, Id3Metadata),
+    Audio(Option<StreamId>, Period, Id3Metadata),
 }
 
 impl ExtractionSpec {
@@ -245,7 +251,7 @@ impl ExtractionSpec {
             }
             &ExtractionSpec::Audio(stream, period, ref metadata) => {
                 if let Some(sid) = stream {
-                    cmd.arg("-map").arg(format!("0:{}", sid));
+                    cmd.arg("-map").arg(format!("0:{}", sid.0));
                 }
                 metadata.add_args(cmd);
                 cmd.arg("-ss")
@@ -327,7 +333,7 @@ impl Video {
         self.path.file_stem().unwrap()
     }
 
-    /// List all the tracks in a video file.
+    /// List all the data streams in a video file.
     pub fn streams(&self) -> &[Stream] {
         &self.metadata.streams
     }
@@ -350,10 +356,13 @@ impl Video {
     }
 
     /// Choose the best audio for the specified language.
-    pub fn audio_track_for(&self, lang: Lang) -> Option<usize> {
-        self.streams().iter().position(|s| {
-            s.codec_type == CodecType::Audio && s.language() == Some(lang)
-        })
+    pub fn audio_track_for(&self, lang: Lang) -> Option<StreamId> {
+        self.streams()
+            .iter()
+            .position(|s| {
+                s.codec_type == CodecType::Audio && s.language() == Some(lang)
+            })
+            .map(StreamId)
     }
 
     /// Create an extraction command using the specified `time_base`.  This
@@ -456,7 +465,7 @@ impl Video {
     /// big-endian PCM, depending on the target architecture.
     pub async fn open_audio_stream(
         &self,
-        id: usize,
+        id: StreamId,
         rate: usize,
     ) -> Result<(BufReader<impl AsyncRead>, impl Future<Output = Result<()>>)> {
         let encoding = if cfg!(target_endian = "big") {
@@ -468,7 +477,7 @@ impl Video {
         let mut cmd = AsyncCommand::new("ffmpeg");
         cmd.arg("-v").arg("quiet");
         cmd.arg("-i").arg(&self.path);
-        cmd.arg("-map").arg(format!("0:{}", id));
+        cmd.arg("-map").arg(format!("0:{}", id.0));
         cmd.arg("-acodec").arg(format!("pcm_{}", encoding));
         cmd.arg("-f").arg(encoding);
         cmd.arg("-ac").arg("1");

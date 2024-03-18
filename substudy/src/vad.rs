@@ -9,7 +9,11 @@ use log::trace;
 use tokio::io::AsyncReadExt as _;
 use webrtc_vad::{Vad, VadMode};
 
-use crate::{time::Period, ui::Ui, video::Video};
+use crate::{
+    time::Period,
+    ui::Ui,
+    video::{StreamId, Video},
+};
 
 /// Sampling rate for voice detection.
 const SAMPLES_PER_SECOND: usize = 8000;
@@ -31,7 +35,7 @@ const WINDOW_FRAMES: usize =
 pub async fn segment_on_dialog_breaks(
     ui: &Ui,
     video: &Video,
-    track: usize,
+    stream: StreamId,
     spacing: f32,
 ) -> Result<Vec<Period>> {
     let spinner = ui.new_spinner();
@@ -39,7 +43,7 @@ pub async fn segment_on_dialog_breaks(
     spinner.set_message("Finding dialog breaks");
 
     let (mut rdr, join_handle) =
-        video.open_audio_stream(track, SAMPLES_PER_SECOND).await?;
+        video.open_audio_stream(stream, SAMPLES_PER_SECOND).await?;
 
     let mut vad = Vad::new();
     vad.set_mode(VadMode::Aggressive);
