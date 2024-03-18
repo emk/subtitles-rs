@@ -27,7 +27,7 @@ const MIN_CHUNK_SIZE: usize = 8;
 const MAX_CHUNK_SIZE: usize = 12;
 
 lazy_static! {
-    /// A JSON Schema for the report_translation"function" we tell OpenAI to
+    /// A JSON Schema for the report_translation "function" we tell OpenAI to
     /// call. This is really just the output we want from the LLM.
     static ref REPORT_TRANSLATION_PARAMETERS_SCHEMA: serde_json::Value = json!({
         "type": "object",
@@ -184,7 +184,7 @@ fn prompt_from_chunk(
 
 ```json\n{template}```
 
-Please call the function `report_translation` with your output, maintaing the right number of lines.",
+Please call the function `report_translation` with your output, maintaining the right number of lines.",
         from = from_lang.english_names()?[0],
         to = to_lang.english_names()?[0],
         template = json_template,
