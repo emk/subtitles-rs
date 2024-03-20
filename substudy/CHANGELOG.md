@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.6.2] - 2024-03-17
+
+### Added
+
+- Add `substudy export anki` for use with AnkiConnect. See the README.md file for an example.
+
+### Fixed
+
+- Correctly transcribe audio files that do not tag language information.
+
 ## [0.6.1] - 2024-03-17
 
 ### Added
