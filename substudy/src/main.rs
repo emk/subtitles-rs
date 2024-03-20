@@ -7,8 +7,8 @@ use std::path::{Path, PathBuf};
 pub use anyhow::{Error, Result};
 use clap::{Parser, Subcommand};
 use dotenv::dotenv;
-use export::Exporter;
-use tokio::task::spawn_blocking;
+use export::ExporterBuilder;
+use tempfile::tempdir;
 use video::Video;
 
 use crate::{
@@ -114,6 +114,32 @@ enum Args {
 
 #[derive(Debug, Subcommand)]
 enum ExportFormat {
+    /// Export to Anki via Anki-Connect plugin:
+    /// https://ankiweb.net/shared/info/2055492159.
+    #[command(name = "anki")]
+    Anki {
+        /// Path to the video.
+        video: PathBuf,
+
+        /// Path to the file containing foreign language subtitles.
+        foreign_subs: PathBuf,
+
+        /// Path to the file containing native language subtitles.
+        native_subs: Option<PathBuf>,
+
+        /// Deck name to use in Anki.
+        #[arg(long)]
+        deck: String,
+
+        /// Tags to add in Anki.
+        #[arg(long = "tag")]
+        tags: Vec<String>,
+
+        /// Skip duplicate subtitles (useful for music).
+        #[arg(long)]
+        skip_duplicates: bool,
+    },
+
     /// Export as CSV file and media for use with Anki.
     #[command(name = "csv")]
     Csv {
@@ -152,48 +178,38 @@ enum ExportFormat {
 }
 
 impl ExportFormat {
-    /// Get the name of the export format to use.
-    fn name(&self) -> &str {
-        match *self {
-            ExportFormat::Csv { .. } => "csv",
-            ExportFormat::Review { .. } => "review",
-            ExportFormat::Tracks { .. } => "tracks",
-        }
-    }
-
     /// Get the path to the video.
     fn video(&self) -> &Path {
-        match *self {
-            ExportFormat::Csv { ref video, .. } => &video,
-            ExportFormat::Review { ref video, .. } => &video,
-            ExportFormat::Tracks { ref video, .. } => &video,
+        match self {
+            ExportFormat::Anki { video, .. } => &video,
+            ExportFormat::Csv { video, .. } => &video,
+            ExportFormat::Review { video, .. } => &video,
+            ExportFormat::Tracks { video, .. } => &video,
         }
     }
 
     /// Get the path to the foreign-language subtitles, if present.
     fn foreign_subs(&self) -> &Path {
-        match *self {
-            ExportFormat::Csv {
-                ref foreign_subs, ..
-            } => &foreign_subs,
-            ExportFormat::Review {
-                ref foreign_subs, ..
-            } => &foreign_subs,
-            ExportFormat::Tracks {
-                ref foreign_subs, ..
-            } => &foreign_subs,
+        match self {
+            ExportFormat::Anki { foreign_subs, .. } => foreign_subs,
+            ExportFormat::Csv { foreign_subs, .. } => foreign_subs,
+            ExportFormat::Review { foreign_subs, .. } => foreign_subs,
+            ExportFormat::Tracks { foreign_subs, .. } => foreign_subs,
         }
     }
 
     /// Get the path to the native-language subtitles, if present.
     fn native_subs(&self) -> Option<&Path> {
-        match *self {
-            ExportFormat::Csv {
-                ref native_subs, ..
-            } => native_subs.as_ref().map(|p| p.as_path()),
-            ExportFormat::Review {
-                ref native_subs, ..
-            } => native_subs.as_ref().map(|p| p.as_path()),
+        match self {
+            ExportFormat::Anki { native_subs, .. } => {
+                native_subs.as_ref().map(|p| p.as_path())
+            }
+            ExportFormat::Csv { native_subs, .. } => {
+                native_subs.as_ref().map(|p| p.as_path())
+            }
+            ExportFormat::Review { native_subs, .. } => {
+                native_subs.as_ref().map(|p| p.as_path())
+            }
             ExportFormat::Tracks { .. } => None,
         }
     }
@@ -229,28 +245,16 @@ async fn main() -> Result<()> {
     // Parse our command-line arguments using docopt (very shiny).
     let args: Args = Args::parse();
     match args {
-        Args::Clean { subs } => spawn_blocking(move || cmd_clean(&subs)).await?,
+        Args::Clean { subs } => cmd_clean(&subs),
         Args::Combine {
             foreign_subs,
             native_subs,
-        } => spawn_blocking(move || cmd_combine(&foreign_subs, &native_subs)).await?,
-        Args::Export { format } => {
-            let ui = ui.clone();
-            spawn_blocking(move || {
-                cmd_export(
-                    &ui,
-                    format.name(),
-                    format.video(),
-                    format.foreign_subs(),
-                    format.native_subs(),
-                )
-            })
-            .await?
-        }
-        Args::Import { format } => spawn_blocking(move || cmd_import(format)).await?,
+        } => cmd_combine(&foreign_subs, &native_subs),
+        Args::Export { format } => cmd_export(&ui, format).await,
+        Args::Import { format } => cmd_import(format),
         Args::List {
             to_list: ToList::Tracks { video },
-        } => spawn_blocking(move || cmd_tracks(&video)).await?,
+        } => cmd_tracks(&video).await,
         Args::Transcribe {
             video,
             example_text,
@@ -276,8 +280,8 @@ fn cmd_combine(path1: &Path, path2: &Path) -> Result<()> {
     Ok(())
 }
 
-fn cmd_tracks(path: &Path) -> Result<()> {
-    let v = Video::new(path)?;
+async fn cmd_tracks(path: &Path) -> Result<()> {
+    let v = Video::new(path).await?;
     for stream in v.streams() {
         let lang = stream.language();
         let lang_str = lang
@@ -288,27 +292,44 @@ fn cmd_tracks(path: &Path) -> Result<()> {
     Ok(())
 }
 
-fn cmd_export(
-    ui: &Ui,
-    kind: &str,
-    video_path: &Path,
-    foreign_sub_path: &Path,
-    native_sub_path: Option<&Path>,
-) -> Result<()> {
+async fn cmd_export(ui: &Ui, format: ExportFormat) -> Result<()> {
     // Load our input files.
-    let video = Video::new(video_path)?;
-    let foreign_subs = SubtitleFile::cleaned_from_path(foreign_sub_path)?;
-    let native_subs = match native_sub_path {
+    let video = Video::new(format.video()).await?;
+    let foreign_subs = SubtitleFile::cleaned_from_path(format.foreign_subs())?;
+    let native_subs = match format.native_subs() {
         None => None,
         Some(p) => Some(SubtitleFile::cleaned_from_path(p)?),
     };
 
-    let mut exporter = Exporter::new(video, foreign_subs, native_subs, kind)?;
-    match kind {
-        "csv" => export::export_csv(ui, &mut exporter)?,
-        "review" => export::export_review(ui, &mut exporter)?,
-        "tracks" => export::export_tracks(ui, &mut exporter)?,
-        _ => panic!("Uknown export type: {}", kind),
+    let builder = ExporterBuilder::new(video, foreign_subs, native_subs);
+    match format {
+        ExportFormat::Anki {
+            deck,
+            tags,
+            skip_duplicates,
+            ..
+        } => {
+            let tmp = tempdir()?;
+            let mut exporter = builder.out_dir(tmp.path().to_owned()).build()?;
+            let options = export::AnkiExportOptions {
+                deck,
+                tags,
+                skip_duplicates,
+            };
+            export::export_anki(ui, &mut exporter, options).await?;
+        }
+        ExportFormat::Csv { .. } => {
+            let mut exporter = builder.out_dir_label("csv")?.build()?;
+            export::export_csv(ui, &mut exporter).await?;
+        }
+        ExportFormat::Review { .. } => {
+            let mut exporter = builder.out_dir_label("review")?.build()?;
+            export::export_review(ui, &mut exporter).await?;
+        }
+        ExportFormat::Tracks { .. } => {
+            let mut exporter = builder.out_dir_label("tracks")?.build()?;
+            export::export_tracks(ui, &mut exporter).await?;
+        }
     }
 
     Ok(())
@@ -331,7 +352,7 @@ async fn cmd_transcribe(
     example_text: &Path,
     format: TranscriptionFormat,
 ) -> Result<()> {
-    let v = Video::new(video)?;
+    let v = Video::new(video).await?;
     let text = std::fs::read_to_string(example_text)?;
     match format {
         TranscriptionFormat::WhisperJson => {

@@ -1,8 +1,10 @@
 //! Align two subtitle files.
 
-use std::cmp::Ordering;
+use std::{cmp::Ordering, collections::HashSet};
 
+use lazy_static::lazy_static;
 use log::debug;
+use regex::Regex;
 
 use self::MatchQuality::{Nearby, NoMatch, Overlap};
 use crate::{
@@ -209,7 +211,39 @@ pub fn align_available_files(
     }
 }
 
-// Clone a subtitle and wrap its lines with formatting.
+/// Normalize a string for uniqueness checking.
+fn normalize_for_uniqueness_check(s: &str) -> String {
+    lazy_static! {
+        static ref WS_PUNC: Regex = Regex::new(r"[\p{Punctuation}\p{White_Space}]+")
+            .expect("bad regex in source");
+    }
+    WS_PUNC
+        .replace_all(&s.to_lowercase(), " ")
+        .trim()
+        .to_owned()
+}
+
+/// Filter aligned files to only include unique native subtitles.
+pub fn unique_foreign_subs(
+    mut aligned: Vec<(Option<Subtitle>, Option<Subtitle>)>,
+) -> Vec<(Option<Subtitle>, Option<Subtitle>)> {
+    let mut known_native_subs = HashSet::new();
+    aligned.retain(|&(ref foreign, _)| {
+        if let Some(ref foreign) = foreign {
+            let normalized = normalize_for_uniqueness_check(&foreign.plain_text());
+            if !known_native_subs.contains(&normalized) {
+                known_native_subs.insert(normalized);
+                return true;
+            } else {
+                debug!("removing duplicate foreign sub: {:?}", foreign);
+            }
+        }
+        false
+    });
+    aligned
+}
+
+/// Clone a subtitle and wrap its lines with formatting.
 fn clone_as(sub: &Subtitle, before: &str, after: &str) -> Subtitle {
     let lines = sub
         .lines

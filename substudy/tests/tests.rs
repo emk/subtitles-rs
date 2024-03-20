@@ -3,7 +3,7 @@
 
 use std::str::from_utf8;
 
-use cli_test_dir::TestDir;
+use cli_test_dir::{TeeOutputExt, TestDir};
 
 #[test]
 fn show_help() {
@@ -70,6 +70,7 @@ fn cmd_export_csv() {
         .arg(testdir.src_path("fixtures/sample.es.srt"))
         .arg(testdir.src_path("fixtures/sample.en.srt"))
         .output()
+        .tee_output()
         .expect("could not run substudy");
     assert!(output.status.success());
     testdir.expect_path("empty_csv/cards.csv");

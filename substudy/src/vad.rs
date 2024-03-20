@@ -35,7 +35,7 @@ const WINDOW_FRAMES: usize =
 pub async fn segment_on_dialog_breaks(
     ui: &Ui,
     video: &Video,
-    stream: StreamId,
+    stream: Option<StreamId>,
     spacing: f32,
 ) -> Result<Vec<Period>> {
     let spinner = ui.new_spinner();

@@ -54,7 +54,7 @@ impl Subtitle {
 }
 
 /// The contents of an SRT-format subtitle file.
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct SubtitleFile {
     /// The subtitles in this file.
     pub subtitles: Vec<Subtitle>,

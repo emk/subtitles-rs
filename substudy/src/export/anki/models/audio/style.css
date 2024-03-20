@@ -1,0 +1,35 @@
+img {
+    max-height: 240px;
+    max-width: 160px;
+}
+
+.card {
+    font-family: arial;
+    font-size: 20px;
+    text-align: center;
+    color: black;
+    background-color: white;
+}
+
+.foreign,
+.native {
+    margin-bottom: 20px;
+}
+
+.foreign .curr {
+    font-size: 120%;
+}
+
+.native {
+    font-size: 80%;
+}
+
+.prev,
+.next {
+    color: grey;
+}
+
+.source {
+    font-size: 60%;
+    color: grey;
+}

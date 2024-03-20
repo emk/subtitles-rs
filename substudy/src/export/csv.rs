@@ -2,108 +2,65 @@
 
 use anyhow::Context as _;
 use csv;
-use regex::Regex;
 use serde::Serialize;
 
-use crate::{
-    contexts::ItemsInContextExt, export::Exporter, srt::Subtitle,
-    time::seconds_to_hhmmss_sss, ui::Ui, Result,
-};
+use crate::{export::Exporter, ui::Ui, Result};
 
-/// Attempt to guess a reasonable episode number, based on the file name.
-/// Honestly, this might be a bit too clever--the original subs2srs CSV
-/// format something this as part of a sort key, but we may be able to do a
-/// lot better if we rethink the CSV columns we're exporting.
-fn episode_prefix(file_stem: &str) -> String {
-    let re = Regex::new(r"[0-9][-_.0-9]+$").unwrap();
-    re.captures(file_stem)
-        .map(|c| {
-            let ep = c.get(0).unwrap().as_str();
-            format!("{} ", ep.replace("-", ".").replace("_", "."))
-        })
-        .unwrap_or_else(|| "".to_owned())
+use super::anki::{export_anki_helper, AudioNote};
+
+/// Data in a CSV row. This is identical to [`AudioNote`], but columns will
+/// never be omitted and we use snake_case for field names.
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub(crate) struct AudioNoteForCsv {
+    pub(crate) sound: String,
+    pub(crate) time: String,
+    pub(crate) source: String,
+    pub(crate) image: Option<String>,
+    pub(crate) foreign_curr: Option<String>,
+    pub(crate) native_curr: Option<String>,
+    pub(crate) foreign_prev: Option<String>,
+    pub(crate) native_prev: Option<String>,
+    pub(crate) foreign_next: Option<String>,
+    pub(crate) native_next: Option<String>,
+    pub(crate) hint: Option<String>,
+    pub(crate) notes: Option<String>,
 }
 
-#[test]
-fn test_episode_prefix() {
-    assert_eq!("01.02 ", episode_prefix("series_01_02"));
-    assert_eq!("", episode_prefix("film"));
-}
-
-#[derive(Debug, Serialize)]
-struct AnkiNote {
-    sound: String,
-    time: String,
-    source: String,
-    image: Option<String>,
-    foreign_curr: Option<String>,
-    native_curr: Option<String>,
-    foreign_prev: Option<String>,
-    native_prev: Option<String>,
-    foreign_next: Option<String>,
-    native_next: Option<String>,
+impl From<AudioNote> for AudioNoteForCsv {
+    fn from(note: AudioNote) -> Self {
+        Self {
+            sound: note.sound,
+            time: note.time,
+            source: note.source,
+            image: note.image,
+            foreign_curr: note.foreign_curr,
+            native_curr: note.native_curr,
+            foreign_prev: note.foreign_prev,
+            native_prev: note.native_prev,
+            foreign_next: note.foreign_next,
+            native_next: note.native_next,
+            hint: note.hint,
+            notes: note.notes,
+        }
+    }
 }
 
 /// Export the video and subtitles as a CSV file with accompanying media
 /// files, for import into Anki.
-pub fn export_csv(ui: &Ui, exporter: &mut Exporter) -> Result<()> {
-    let foreign_lang = exporter.foreign().language;
-    let prefix = episode_prefix(exporter.file_stem());
+pub async fn export_csv(ui: &Ui, exporter: &mut Exporter) -> Result<()> {
+    // Call our helper to do most of the work. We're just a thin wrapper now.
+    let exporting = export_anki_helper(exporter, false)?;
 
-    // Create our CSV writer.
+    // Create our CSV writer and export our notes as a CSV file.
     let mut buffer = Vec::<u8>::new();
     {
+        // TODO: Anki no longer likes having a header row. Do we want to keep it
+        // for non-Anki users, or switch to something that works with Anki?
         let mut wtr = csv::Writer::from_writer(&mut buffer);
-
-        // Align our input files, filtering out ones with no foreign-language
-        // text, because those make lousy SRS cards.  (Yes, it seems like it
-        // should work, but I've seen multiple people try it now, and they're
-        // maybe only 20% as effective as cards with foreign-language text, at
-        // least for people below CEFRL C1.)
-        let aligned: Vec<(Option<Subtitle>, Option<Subtitle>)> = exporter
-            .align()
-            .iter()
-            // The double ref `&&` is thanks to `filter`'s type signature.
-            .filter(|&&(ref f, _)| f.is_some())
-            .cloned()
-            .collect();
-
-        // Output each row in the CSV file.
-        for ctx in aligned.items_in_context() {
-            // We have a `Context<&(Option<Subtitle>, Option<Subtitle>)>`
-            // containing the previous subtitle pair, the current subtitle
-            // pair, and the next subtitle pair.  We want to split apart that
-            // tuple and flatten any nested `Option<&Option<T>>` types into
-            // `Option<&T>`.
-            let foreign = ctx.map(|&(ref f, _)| f).flatten();
-            let native = ctx.map(|&(_, ref n)| n).flatten();
-
-            if let Some(curr) = foreign.curr {
-                let period = curr.period.grow(1.5, 1.5);
-
-                let image_path = exporter.schedule_image_export(period.midpoint());
-                let audio_path = exporter.schedule_audio_export(foreign_lang, period);
-
-                // Try to emulate something like the wierd sort-key column
-                // generated by subs2srs without requiring the user to always
-                // pass in an explicit episode number.
-                let sort_key =
-                    format!("{}{}", &prefix, &seconds_to_hhmmss_sss(period.begin()));
-
-                let note = AnkiNote {
-                    sound: format!("[sound:{}]", &audio_path),
-                    time: sort_key,
-                    source: exporter.title().to_owned(),
-                    image: image_path.map(|ip| format!("<img src=\"{}\" />", ip)),
-                    foreign_curr: foreign.curr.map(|s| s.plain_text()),
-                    native_curr: native.curr.map(|s| s.plain_text()),
-                    foreign_prev: foreign.prev.map(|s| s.plain_text()),
-                    native_prev: native.prev.map(|s| s.plain_text()),
-                    foreign_next: foreign.next.map(|s| s.plain_text()),
-                    native_next: native.next.map(|s| s.plain_text()),
-                };
-                wtr.serialize(&note).context("error serializing to RAM")?;
-            }
+        for note in exporting.notes {
+            let note = AudioNoteForCsv::from(note);
+            wtr.serialize(&note).context("error serializing to RAM")?;
         }
     }
 
@@ -111,7 +68,7 @@ pub fn export_csv(ui: &Ui, exporter: &mut Exporter) -> Result<()> {
     exporter.export_data_file("cards.csv", &buffer)?;
 
     // Extract our media files.
-    exporter.finish_exports(ui)?;
+    exporter.finish_exports(ui).await?;
 
     Ok(())
 }

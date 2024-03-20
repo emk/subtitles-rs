@@ -47,7 +47,7 @@ struct Conv {
 }
 
 /// Export the video as a set of tracks.
-pub fn export_tracks(ui: &Ui, exporter: &mut Exporter) -> Result<()> {
+pub async fn export_tracks(ui: &Ui, exporter: &mut Exporter) -> Result<()> {
     let mut convs: Vec<Conv> = vec![];
 
     // Figure out how to combine subtitles into conversations.
@@ -133,7 +133,7 @@ pub fn export_tracks(ui: &Ui, exporter: &mut Exporter) -> Result<()> {
     exporter.export_data_file("playlist.m3u8", &playlist)?;
 
     // Extract our media files.
-    exporter.finish_exports(ui)?;
+    exporter.finish_exports(ui).await?;
 
     Ok(())
 }

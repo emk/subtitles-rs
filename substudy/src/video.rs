@@ -5,7 +5,7 @@ use std::{
     ffi::OsStr,
     future::Future,
     path::{Path, PathBuf},
-    process::{Command, Stdio},
+    process::Stdio,
     result,
     str::{from_utf8, FromStr},
     time::Duration,
@@ -20,7 +20,7 @@ use serde::{de, Deserialize, Deserializer};
 use serde_json;
 use tokio::{
     io::{AsyncRead, BufReader},
-    process::Command as AsyncCommand,
+    process::Command,
 };
 
 use crate::{errors::RunCommandError, lang::Lang, time::Period, ui::Ui, Result};
@@ -310,7 +310,7 @@ pub struct Video {
 
 impl Video {
     /// Create a new video file, given a path.
-    pub fn new(path: &Path) -> Result<Video> {
+    pub async fn new(path: &Path) -> Result<Video> {
         // Ensure we have an actual file before doing anything else.
         if !path.is_file() {
             return Err(anyhow!("No such file {:?}", path.display()));
@@ -325,7 +325,8 @@ impl Video {
             .arg("-of")
             .arg("json")
             .arg(path)
-            .output();
+            .output()
+            .await;
         let output = cmd.with_context(mkerr)?;
         let stdout = from_utf8(&output.stdout).with_context(mkerr)?;
         debug!("Video metadata: {}", stdout);
@@ -391,18 +392,19 @@ impl Video {
     }
 
     /// Perform a single extraction.
-    fn extract_one(&self, extraction: &Extraction) -> Result<()> {
+    async fn extract_one(&self, extraction: &Extraction) -> Result<()> {
         let time_base = extraction.spec.earliest_time();
         let mut cmd = self.extract_command(time_base);
         extraction.add_args(&mut cmd, time_base);
         cmd.output()
+            .await
             .with_context(|| RunCommandError::new("ffmpg"))?;
         Ok(())
     }
 
     /// Perform a batch extraction.  We assume that the extractions are
     /// sorted in temporal order.
-    fn extract_batch(&self, extractions: &[&Extraction]) -> Result<()> {
+    async fn extract_batch(&self, extractions: &[&Extraction]) -> Result<()> {
         // Bail early if we have nothing to extract
         if extractions.is_empty() {
             return Ok(());
@@ -416,6 +418,7 @@ impl Video {
             e.add_args(&mut cmd, time_base);
         }
         cmd.output()
+            .await
             .with_context(|| RunCommandError::new("ffmpg"))?;
         Ok(())
     }
@@ -423,7 +426,7 @@ impl Video {
     /// Perform a list of extractions as efficiently as possible.  We use a
     /// batch interface to avoid making too many passes through the file.
     /// We assume that the extractions are sorted in temporal order.
-    pub fn extract(&self, ui: &Ui, extractions: &[Extraction]) -> Result<()> {
+    pub async fn extract(&self, ui: &Ui, extractions: &[Extraction]) -> Result<()> {
         let pb = ui.new_progress_bar(cast::u64(extractions.len()));
         pb.set_prefix("✂️");
         pb.set_message("Extracting media");
@@ -434,7 +437,7 @@ impl Video {
             if e.spec.can_be_batched() {
                 batch.push(e);
             } else {
-                self.extract_one(e)?;
+                self.extract_one(e).await?;
                 pb.inc(1);
             }
         }
@@ -444,7 +447,7 @@ impl Video {
         pb.enable_steady_tick(Duration::from_millis(250));
 
         for chunk in batch.chunks(20) {
-            self.extract_batch(chunk)?;
+            self.extract_batch(chunk).await?;
             pb.inc(cast::u64(chunk.len()));
         }
         pb.finish_with_message("Extracted media items");
@@ -480,7 +483,7 @@ impl Video {
     /// big-endian PCM, depending on the target architecture.
     pub async fn open_audio_stream(
         &self,
-        id: StreamId,
+        stream: Option<StreamId>,
         rate: usize,
     ) -> Result<(BufReader<impl AsyncRead>, impl Future<Output = Result<()>>)> {
         let encoding = if cfg!(target_endian = "big") {
@@ -489,10 +492,12 @@ impl Video {
             "s16le"
         };
 
-        let mut cmd = AsyncCommand::new("ffmpeg");
+        let mut cmd = Command::new("ffmpeg");
         cmd.arg("-v").arg("quiet");
         cmd.arg("-i").arg(&self.path);
-        cmd.arg("-map").arg(format!("0:{}", id.0));
+        if let Some(stream) = stream {
+            cmd.arg("-map").arg(format!("0:{}", stream.0));
+        }
         cmd.arg("-acodec").arg(format!("pcm_{}", encoding));
         cmd.arg("-f").arg(encoding);
         cmd.arg("-ac").arg("1");

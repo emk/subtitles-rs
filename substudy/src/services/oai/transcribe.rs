@@ -12,7 +12,6 @@ use async_openai::{
 };
 use log::{debug, trace};
 use tempfile::tempdir;
-use tokio::task::spawn_blocking;
 
 use crate::{
     import::{import_whisper_json, WhisperJson},
@@ -78,10 +77,8 @@ pub async fn transcribe_subtitles_to_whisper_json(
         .ok_or_else(|| anyhow!("could not infer language from example text"))?;
 
     // Figure out where to split the video to fit under the 25 MB limit.
-    let stream_id = video
-        .audio_track_for(lang)
-        .ok_or_else(|| anyhow!("no audio track found for language: {}", lang))?;
-    let periods = segment_on_dialog_breaks(ui, video, stream_id, 10.0 * 60.0).await?;
+    let stream = video.audio_track_for(lang);
+    let periods = segment_on_dialog_breaks(ui, video, stream, 10.0 * 60.0).await?;
     debug!("split into periods: {:?}", periods);
 
     // Extract audio tracks for transcription.
@@ -96,7 +93,7 @@ pub async fn transcribe_subtitles_to_whisper_json(
             Extraction {
                 path,
                 spec: ExtractionSpec::Audio {
-                    stream: Some(stream_id),
+                    stream,
                     period,
                     metadata: Id3Metadata::default(),
                 },
@@ -107,7 +104,7 @@ pub async fn transcribe_subtitles_to_whisper_json(
         let ui = ui.to_owned();
         let video = video.clone();
         let extractions = extractions.to_owned();
-        spawn_blocking(move || video.extract(&ui, &extractions)).await??;
+        video.extract(&ui, &extractions).await?;
     }
 
     // Transcribe the audio tracks.

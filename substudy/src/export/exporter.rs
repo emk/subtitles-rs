@@ -30,6 +30,7 @@ pub fn os_str_to_string(os_str: &OsStr) -> String {
 }
 
 /// Information about a specific language.
+#[derive(Clone)]
 pub struct LanguageResources {
     /// The subtitles associated with this language.
     pub subtitles: SubtitleFile,
@@ -51,9 +52,10 @@ impl LanguageResources {
 
 /// Information about a still image attached to a media file, typically the
 /// album cover for an audio file.
-#[derive(Eq, PartialEq)]
+#[derive(Default, Eq, PartialEq)]
 enum AttachedPicState {
     /// We haven't checked for an attached picture yet.
+    #[default]
     NeedToCheck,
     /// We found an attached picture and exported it at this
     /// relative path.
@@ -72,11 +74,77 @@ impl AttachedPicState {
     }
 }
 
+/// Builder for an [`Exporter`].
+pub struct ExporterBuilder {
+    video: Video,
+    foreign_subtitles: SubtitleFile,
+    native_subtitles: Option<SubtitleFile>,
+    out_dir: Option<PathBuf>,
+}
+
+impl ExporterBuilder {
+    /// Create a new builder for the specified video and subtitles.
+    pub fn new(
+        video: Video,
+        foreign_subtitles: SubtitleFile,
+        native_subtitles: Option<SubtitleFile>,
+    ) -> Self {
+        Self {
+            video,
+            foreign_subtitles,
+            native_subtitles,
+            out_dir: None,
+        }
+    }
+
+    /// Set the output directory based on a label.
+    pub fn out_dir_label(mut self, label: &str) -> Result<Self> {
+        let file_stem = os_str_to_string(self.video.file_stem());
+        let out_dir = Path::new("./").join(format!("{}_{}", &file_stem, label));
+        if fs::metadata(&out_dir).is_ok() {
+            return Err(anyhow!(
+                "Directory already exists: {}",
+                &out_dir.to_string_lossy()
+            ));
+        }
+        fs::create_dir_all(&out_dir)
+            .with_context(|| format!("could not create {}", out_dir.display()))?;
+
+        self.out_dir = Some(out_dir);
+        Ok(self)
+    }
+
+    /// Set the output directory for this exporter.
+    pub fn out_dir(mut self, out_dir: PathBuf) -> Self {
+        self.out_dir = Some(out_dir);
+        self
+    }
+
+    /// Create an exporter using the parameters we've set.
+    pub fn build(self) -> Result<Exporter> {
+        let out_dir = self
+            .out_dir
+            .ok_or_else(|| anyhow!("output directory not set"))?;
+        Exporter::new(
+            self.video,
+            self.foreign_subtitles,
+            self.native_subtitles,
+            &out_dir,
+        )
+    }
+}
+
 /// Information about media file and associated subtitles that the user
 /// wants to export.
 pub struct Exporter {
     /// The video file from which to extract images and audio clips.
     video: Video,
+
+    /// Resources related to the foreign language.
+    foreign: LanguageResources,
+
+    /// Resources related to the native language, if any.
+    native: Option<LanguageResources>,
 
     /// If we need images, where should we look for them?
     image_source_type: Option<ImageSourceType>,
@@ -84,12 +152,6 @@ pub struct Exporter {
     /// If we only have an attached picture (usually an album cover), we want to
     /// use it in place of the video images we couldn't export.
     attached_picture: AttachedPicState,
-
-    /// Resources related to the foreign language.
-    foreign: LanguageResources,
-
-    /// Resources related to the native language, if any.
-    native: Option<LanguageResources>,
 
     /// The base name to use when constructing other filenames.
     file_stem: String,
@@ -103,36 +165,18 @@ pub struct Exporter {
 }
 
 impl Exporter {
-    /// Create a new exporter for the specified video and subtitles.  The
-    /// `label` parameter will be used to construct an output directory
-    /// name.
+    /// Create a new exporter for the specified video and subtitles, using the
+    /// specified output directory.
     pub fn new(
         video: Video,
         foreign_subtitles: SubtitleFile,
         native_subtitles: Option<SubtitleFile>,
-        label: &str,
+        out_dir: &Path,
     ) -> Result<Exporter> {
         let image_source_type = video.image_source_type();
         let foreign = LanguageResources::new(foreign_subtitles);
         let native = native_subtitles.map(|subs| LanguageResources::new(subs));
-
-        // Construct a path `dir` which we'll use to store our output
-        // files.  This is much uglier than it ought to be because paths
-        // are not necessarily valid Unicode strings on all OSes, so we
-        // need to jump through extra hoops.  We test for a directory's
-        // existence using the `metadata` call, which is the only way to do
-        // it in stable Rust.
         let file_stem = os_str_to_string(video.file_stem());
-        let dir = Path::new("./").join(format!("{}_{}", &file_stem, label));
-        if fs::metadata(&dir).is_ok() {
-            return Err(anyhow!(
-                "Directory already exists: {}",
-                &dir.to_string_lossy()
-            ));
-        }
-        fs::create_dir_all(&dir)
-            .with_context(|| format!("could not create {}", dir.display()))?;
-
         Ok(Exporter {
             video: video,
             image_source_type,
@@ -140,7 +184,7 @@ impl Exporter {
             foreign: foreign,
             native: native,
             file_stem: file_stem,
-            dir: dir,
+            dir: out_dir.to_owned(),
             extractions: vec![],
         })
     }
@@ -149,6 +193,11 @@ impl Exporter {
     /// removed.
     pub fn file_stem(&self) -> &str {
         &self.file_stem
+    }
+
+    /// The directory into which we're exporting files.
+    pub fn dir(&self) -> &Path {
+        &self.dir
     }
 
     /// Return a title for this video.
@@ -294,8 +343,8 @@ impl Exporter {
     }
 
     /// Finish all scheduled exports.
-    pub fn finish_exports(&mut self, ui: &Ui) -> Result<()> {
-        self.video.extract(ui, &self.extractions)?;
+    pub async fn finish_exports(&mut self, ui: &Ui) -> Result<()> {
+        self.video.extract(ui, &self.extractions).await?;
         Ok(())
     }
 }

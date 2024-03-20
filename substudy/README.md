@@ -44,7 +44,13 @@ substudy combine episode_01_01.es.srt episode_01_01.en.srt >
 substudy export review episode_01_01.mkv \
     episode_01_01.es.srt episode_01_01.en.srt
 
-# Export as CSV and `collection.media` files for Anki.
+# Export directly to Anki with help from the AnkiConnect plugin.:
+# https://ankiweb.net/shared/info/2055492159
+substudy export anki episode_01_01.mkv \
+    episode_01_01.es.srt episode_01_01.en.srt \
+    --deck="Español" --skip-duplicates --tag="TV"
+
+# Export as CSV and media files, in a mostly Anki-friendly format.
 substudy export csv episode_01_01.mkv \
     episode_01_01.es.srt episode_01_01.en.srt
 
