@@ -6,7 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-## [0.6.2] - 2024-03-17
+## [0.6.3] - 2024-03-20
+
+### Fixed
+
+- Linux: Do not use OpenSSL. It prevents us from building static binaries, and generally makes everything else harder.
+
+## [0.6.2] - 2024-03-20
 
 ### Added
 
