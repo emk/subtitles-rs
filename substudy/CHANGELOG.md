@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.6.4] - 2024-03-24
+
+### Added
+
+- We now support `substudy transcribe` with a `--format=whisper-srt` option. This outputs an SRT file generated directly by Whisper. This seems to have more artifacts than the default `--format=srt`, but it probably works a lot better for languages like Japanese that don't use spaces between words.
+
 ## [0.6.3] - 2024-03-20
 
 ### Fixed
