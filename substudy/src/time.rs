@@ -127,6 +127,14 @@ impl Period {
         self.begin + self.duration() / 2.0
     }
 
+    /// Shift this time period by the specified amount.
+    pub fn shift(&self, amount: f32) -> Period {
+        Period {
+            begin: self.begin + amount,
+            end: self.end + amount,
+        }
+    }
+
     /// Grow this time period by the specified amount, making any necessary
     /// adjustments to keep it valid.
     ///

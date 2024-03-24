@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     clean::clean_subtitle_file,
     segment::segment_subtitle_text,
-    srt::{Subtitle, SubtitleFile},
+    srt::{AppendWithOffset, Subtitle, SubtitleFile},
     time::Period,
     Result,
 };
@@ -149,40 +149,6 @@ impl WhisperJson {
             .with_context(|| format!("Failed to parse Whisper JSON string: {:?}", s))
     }
 
-    /// Append another Whisper JSON file, shifting it by the specified time offset.
-    /// We use this to reassamble transcription segments.
-    pub fn append_with_offset(
-        &mut self,
-        mut other: WhisperJson,
-        time_offset: f32,
-    ) -> Result<()> {
-        if self.language != other.language {
-            return Err(anyhow::anyhow!(
-                "Whisper transcriptions have different languages: {:?} vs {:?}",
-                self.language,
-                other.language
-            ));
-        }
-        self.duration = time_offset + other.duration;
-        self.text.push('\n');
-        self.text.push_str(&other.text);
-        for word in &mut other.words {
-            word.offset(time_offset);
-        }
-        self.words.extend(other.words);
-        for segment in &mut other.segments {
-            segment.offset(time_offset);
-        }
-        self.segments.extend(other.segments);
-        if log_enabled!(Level::Debug) && !other.extra.is_empty() {
-            debug!(
-                "Ignoring extra keys in appended Whisper JSON: {:?}",
-                other.extra
-            );
-        }
-        Ok(())
-    }
-
     /// Clean up and normalize the Whisper JSON file.
     fn clean(mut self) -> WhisperJson {
         // We don't bother to clean the "text" field, because we don't use it to
@@ -277,6 +243,42 @@ impl WhisperJson {
             }
         }
         segment_words
+    }
+}
+
+impl AppendWithOffset for WhisperJson {
+    /// Append another Whisper JSON file, shifting it by the specified time offset.
+    /// We use this to reassamble transcription segments.
+    fn append_with_offset(
+        &mut self,
+        mut other: WhisperJson,
+        time_offset: f32,
+    ) -> Result<()> {
+        if self.language != other.language {
+            return Err(anyhow::anyhow!(
+                "Whisper transcriptions have different languages: {:?} vs {:?}",
+                self.language,
+                other.language
+            ));
+        }
+        self.duration = time_offset + other.duration;
+        self.text.push('\n');
+        self.text.push_str(&other.text);
+        for word in &mut other.words {
+            word.offset(time_offset);
+        }
+        self.words.extend(other.words);
+        for segment in &mut other.segments {
+            segment.offset(time_offset);
+        }
+        self.segments.extend(other.segments);
+        if log_enabled!(Level::Debug) && !other.extra.is_empty() {
+            debug!(
+                "Ignoring extra keys in appended Whisper JSON: {:?}",
+                other.extra
+            );
+        }
+        Ok(())
     }
 }
 

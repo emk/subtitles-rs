@@ -121,7 +121,7 @@ dependencies = [
 [[package]]
 name = "async-openai"
 version = "0.19.1"
-source = "git+https://github.com/emk/async-openai.git?branch=transcription_verbose_json#a313a1797c1de14fa011e36b44b4b0f304835696"
+source = "git+https://github.com/emk/async-openai.git?branch=transcription_verbose_json#930778ba2892a92830544a7b4a5611b72cdbfa71"
 dependencies = [
  "async-convert",
  "backoff",
@@ -144,9 +144,9 @@ dependencies = [
 
 [[package]]
 name = "async-trait"
-version = "0.1.77"
+version = "0.1.79"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c980ee35e870bd1a4d2c8294d4c04d0499e67bca1e4b5cefcc693c2fa00caea9"
+checksum = "a507401cad91ec6a857ed5513a2073c82a9b9048762b885bb98655b306964681"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1872,6 +1872,7 @@ version = "0.6.3"
 dependencies = [
  "anyhow",
  "async-openai",
+ "async-trait",
  "audiotags",
  "bytemuck",
  "cast",

@@ -114,6 +114,40 @@ impl SubtitleFile {
     }
 }
 
+/// Interface for time-based formats that can be appended with an offset.
+pub trait AppendWithOffset {
+    /// Append another file, shifting it by the specified time offset.
+    /// We use this to reassamble transcription segments.
+    fn append_with_offset(&mut self, other: Self, time_offset: f32) -> Result<()>;
+}
+
+impl AppendWithOffset for SubtitleFile {
+    fn append_with_offset(
+        &mut self,
+        mut other: SubtitleFile,
+        time_offset: f32,
+    ) -> Result<()> {
+        // Renumber indices in the first file starting from 1.
+        let mut next_index = 1;
+        for sub in &mut self.subtitles {
+            sub.index = next_index;
+            next_index += 1;
+        }
+
+        // Renumber indices in the second file starting from the next index, and
+        // shift the time periods by the specified offset.
+        for sub in &mut other.subtitles {
+            sub.index = next_index;
+            next_index += 1;
+            sub.period = sub.period.shift(time_offset);
+        }
+
+        // Append the second file to the first.
+        self.subtitles.extend(other.subtitles);
+        Ok(())
+    }
+}
+
 peg::parser! {
     grammar grammar() for str {
         use std::str::FromStr;

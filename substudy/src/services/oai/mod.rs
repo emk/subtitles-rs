@@ -15,13 +15,7 @@ use tokio::time::sleep;
 
 use crate::Result;
 
-pub use self::{
-    transcribe::{
-        transcribe_subtitles_to_srt_file, transcribe_subtitles_to_whisper_json,
-        TranscriptionFormat,
-    },
-    translate::translate_subtitle_file,
-};
+pub use self::{transcribe::TranscriptionFormat, translate::translate_subtitle_file};
 
 mod transcribe;
 mod translate;

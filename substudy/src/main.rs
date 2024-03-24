@@ -2,7 +2,10 @@
 
 #![warn(missing_docs)]
 
-use std::path::{Path, PathBuf};
+use std::{
+    io::{stdout, BufWriter},
+    path::{Path, PathBuf},
+};
 
 pub use anyhow::{Error, Result};
 use clap::{Parser, Subcommand};
@@ -15,10 +18,7 @@ use crate::{
     align::combine_files,
     import::{import_whisper_json, WhisperJson},
     lang::Lang,
-    services::oai::{
-        transcribe_subtitles_to_srt_file, transcribe_subtitles_to_whisper_json,
-        translate_subtitle_file, TranscriptionFormat,
-    },
+    services::oai::{translate_subtitle_file, TranscriptionFormat},
     srt::SubtitleFile,
     ui::Ui,
 };
@@ -348,23 +348,17 @@ fn cmd_import(format: ImportFormat) -> Result<()> {
 
 async fn cmd_transcribe(
     ui: &Ui,
-    video: &Path,
-    example_text: &Path,
+    video_path: &Path,
+    example_text_path: &Path,
     format: TranscriptionFormat,
 ) -> Result<()> {
-    let v = Video::new(video).await?;
-    let text = std::fs::read_to_string(example_text)?;
-    match format {
-        TranscriptionFormat::WhisperJson => {
-            let json = transcribe_subtitles_to_whisper_json(ui, &v, &text).await?;
-            let json_str = serde_json::to_string_pretty(&json)?;
-            print!("{}", json_str);
-        }
-        TranscriptionFormat::Srt => {
-            let srt = transcribe_subtitles_to_srt_file(ui, &v, &text).await?;
-            print!("{}", srt.to_string());
-        }
-    }
+    let video = Video::new(video_path).await?;
+    let prompt = std::fs::read_to_string(example_text_path)?;
+    let out = stdout();
+    let writer = out.lock();
+    format
+        .write_transcription(ui, &video, &prompt, &mut BufWriter::new(writer))
+        .await?;
     Ok(())
 }
 
