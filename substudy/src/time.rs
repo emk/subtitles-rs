@@ -3,7 +3,7 @@
 use std::result;
 
 use anyhow::anyhow;
-use serde::{ser::SerializeTuple, Serialize, Serializer};
+use serde::{ser::SerializeTuple, Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::Result;
 
@@ -239,6 +239,16 @@ impl Period {
     /// ```
     pub fn overlap(&self, other: Period) -> f32 {
         (self.end.min(other.end) - self.begin.max(other.begin)).max(0.0)
+    }
+}
+
+impl<'de> Deserialize<'de> for Period {
+    fn deserialize<D>(deserializer: D) -> result::Result<Period, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let tuple = <(f32, f32)>::deserialize(deserializer)?;
+        Period::new(tuple.0, tuple.1).map_err(serde::de::Error::custom)
     }
 }
 

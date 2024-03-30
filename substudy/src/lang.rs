@@ -170,6 +170,16 @@ impl fmt::Display for Lang {
     }
 }
 
+impl<'de> serde::Deserialize<'de> for Lang {
+    fn deserialize<D>(deserializer: D) -> result::Result<Lang, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        Lang::iso639(&s).map_err(serde::de::Error::custom)
+    }
+}
+
 impl Serialize for Lang {
     fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
     where

@@ -11,7 +11,7 @@ use webrtc_vad::{Vad, VadMode};
 
 use crate::{
     time::Period,
-    ui::Ui,
+    ui::{ProgressConfig, Ui},
     video::{StreamId, Video},
 };
 
@@ -38,9 +38,12 @@ pub async fn segment_on_dialog_breaks(
     stream: Option<StreamId>,
     spacing: f32,
 ) -> Result<Vec<Period>> {
-    let spinner = ui.new_spinner();
-    spinner.set_prefix("💬");
-    spinner.set_message("Finding dialog breaks");
+    let prog_conf = ProgressConfig {
+        emoji: "💬",
+        msg: "Finding dialog breaks",
+        done_msg: "Found dialog breaks",
+    };
+    let spinner = ui.new_spinner(&prog_conf);
 
     let (mut rdr, join_handle) =
         video.open_audio_stream(stream, SAMPLES_PER_SECOND).await?;
@@ -100,7 +103,7 @@ pub async fn segment_on_dialog_breaks(
     }
     // Wait for the audio stream to finish and report any errors.
     join_handle.await?;
-    spinner.finish_with_message("Found dialog breaks");
+    ui.finish(&prog_conf, spinner);
     Ok(periods)
 }
 

@@ -23,7 +23,9 @@ use crate::{
     ui::Ui,
 };
 
+pub(crate) mod ai;
 pub mod align;
+pub(crate) mod cache;
 pub mod clean;
 pub mod contexts;
 pub mod decode;

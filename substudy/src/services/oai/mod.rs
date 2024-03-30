@@ -1,7 +1,5 @@
 //! OpenAI client.
 
-use std::{future::Future, time::Duration};
-
 use anyhow::{anyhow, Context};
 use async_openai::types::{
     ChatCompletionNamedToolChoice, ChatCompletionRequestMessage,
@@ -11,7 +9,6 @@ use async_openai::types::{
     CreateChatCompletionResponse, FunctionName, FunctionObject, Role,
 };
 use log::debug;
-use tokio::time::sleep;
 
 use crate::Result;
 
@@ -19,44 +16,6 @@ pub use self::{transcribe::TranscriptionFormat, translate::translate_subtitle_fi
 
 mod transcribe;
 mod translate;
-
-/// Retry an OpenAI request a few times.
-async fn retry_openai_request<T, Func, Fut>(f: Func) -> Result<T>
-where
-    Func: Fn() -> Fut,
-    Fut: Future<Output = Result<T>>,
-    T: std::fmt::Debug + Send,
-{
-    let mut max_tries = 3;
-    loop {
-        let result = f().await;
-        max_tries -= 1;
-        match result {
-            Ok(t) => return Ok(t),
-            Err(e) if max_tries == 0 => return Err(e),
-            Err(e) => {
-                log::warn!("OpenAI request failed, retrying: {:?}", e);
-                sleep(Duration::from_secs(2)).await;
-            }
-        }
-    }
-}
-
-// let mut max_tries = 3;
-// let translated_lines = loop {
-//     let result = translate_chunk(&client, chunk, from_lang, to_lang).await;
-//     max_tries -= 1;
-//     match result {
-//         Ok(lines) => break lines,
-//         Err(e) if max_tries == 0 => {
-//             return Err(e);
-//         }
-//         Err(e) => {
-//             warn!("Failed to translate chunk, retrying: {}", e);
-//             sleep(Duration::from_secs(2)).await;
-//         }
-//     }
-// };
 
 /// Generate a system message.
 fn system_message(content: &str) -> ChatCompletionRequestMessage {

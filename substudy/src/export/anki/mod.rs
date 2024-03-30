@@ -1,9 +1,6 @@
 //! Export to Anki via Anki-Connect.
 
-use std::{
-    path::{Path, PathBuf},
-    time::Duration,
-};
+use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, Context as _};
 use log::debug;
@@ -22,7 +19,7 @@ use crate::{
     },
     srt::Subtitle,
     time::seconds_to_hhmmss_sss,
-    ui::Ui,
+    ui::{ProgressConfig, Ui},
     Result,
 };
 
@@ -203,10 +200,12 @@ pub async fn export_anki(
     }
 
     // Add our media files to Anki.
-    let pb = ui.new_progress_bar(exporting.media.len() as u64);
-    pb.set_prefix("🎥");
-    pb.set_message("Adding media");
-    pb.tick();
+    let media_prog_conf = ProgressConfig {
+        emoji: "🎥",
+        msg: "Adding media",
+        done_msg: "Added media",
+    };
+    let pb = ui.new_progress_bar(&media_prog_conf, exporting.media.len() as u64);
     for media in exporting.media {
         client
             .request(StoreMediaFileRequest {
@@ -216,13 +215,15 @@ pub async fn export_anki(
             .await?;
         pb.inc(1);
     }
-    pb.finish_with_message("Added media");
+    ui.finish(&media_prog_conf, pb);
 
     // Add our notes.
-    let spinner = ui.new_spinner();
-    spinner.set_prefix("🗒️");
-    spinner.set_message("Adding notes");
-    spinner.enable_steady_tick(Duration::from_millis(500));
+    let note_prog_conf = ProgressConfig {
+        emoji: "🗒️",
+        msg: "Adding notes",
+        done_msg: "Added notes",
+    };
+    let spinner = ui.new_spinner(&note_prog_conf);
     let notes = exporting
         .notes
         .into_iter()
@@ -253,7 +254,7 @@ pub async fn export_anki(
     }
 
     let results = client.request(AddNotesRequest { notes }).await?;
-    spinner.finish_with_message("Added notes");
+    ui.finish(&note_prog_conf, spinner);
     if results.iter().any(|r| r.is_none()) {
         return Err(anyhow!("error adding notes to Anki"));
     }

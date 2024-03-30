@@ -249,17 +249,12 @@ impl WhisperJson {
 impl AppendWithOffset for WhisperJson {
     /// Append another Whisper JSON file, shifting it by the specified time offset.
     /// We use this to reassamble transcription segments.
-    fn append_with_offset(
-        &mut self,
-        mut other: WhisperJson,
-        time_offset: f32,
-    ) -> Result<()> {
+    fn append_with_offset(&mut self, mut other: WhisperJson, time_offset: f32) {
         if self.language != other.language {
-            return Err(anyhow::anyhow!(
+            warn!(
                 "Whisper transcriptions have different languages: {:?} vs {:?}",
-                self.language,
-                other.language
-            ));
+                self.language, other.language
+            );
         }
         self.duration = time_offset + other.duration;
         self.text.push('\n');
@@ -278,7 +273,6 @@ impl AppendWithOffset for WhisperJson {
                 other.extra
             );
         }
-        Ok(())
     }
 }
 

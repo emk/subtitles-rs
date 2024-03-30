@@ -3,9 +3,8 @@
 use std::{
     fmt,
     io::{BufWriter, Write},
-    path::Path,
+    path::{Path, PathBuf},
     str::FromStr,
-    time::Duration,
 };
 
 use anyhow::{anyhow, Context as _};
@@ -18,14 +17,15 @@ use async_openai::{
 };
 use async_trait::async_trait;
 use log::{debug, trace};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use tempfile::tempdir;
 
 use crate::{
+    ai::{AiRequest, AiRequestStatic},
     import::{import_whisper_json, WhisperJson},
     lang::Lang,
-    services::oai::retry_openai_request,
     srt::{AppendWithOffset, SubtitleFile},
-    ui::Ui,
+    ui::{ProgressConfig, Ui},
     vad::segment_on_dialog_breaks,
     video::{Extraction, ExtractionSpec, Id3Metadata, Video},
     Result,
@@ -126,7 +126,7 @@ async fn transcribe_subtitles<Subs>(
     prompt: &str,
 ) -> Result<Subs>
 where
-    Subs: TranscribeFile + fmt::Debug + Send,
+    Subs: TranscribeFile + DeserializeOwned + Serialize + Send + Sync,
 {
     // Find our language.
     let lang = Lang::for_text(prompt)
@@ -140,7 +140,8 @@ where
     // Extract audio tracks for transcription.
     let temp_dir = tempdir().context("failed to create temporary directory")?;
     let extractions = periods
-        .into_iter()
+        .iter()
+        .cloned()
         .enumerate()
         .map(|(i, period)| {
             let mut file_name = video.file_stem().to_owned();
@@ -159,27 +160,80 @@ where
     video.extract(&ui, &extractions).await?;
 
     // Transcribe the audio tracks.
-    let pb = ui.new_progress_bar(extractions.len() as u64);
-    pb.set_prefix("🎧");
-    pb.set_message("Transcribing dialog");
-    pb.enable_steady_tick(Duration::from_secs(1));
-    let mut transcription = None;
-    for extraction in extractions {
-        let path = &extraction.path;
-        let whisper_json =
-            retry_openai_request(|| Subs::transcribe_file(&path, lang, prompt))
-                .await?;
-        pb.inc(1);
-        match &mut transcription {
-            None => transcription = Some(whisper_json),
-            Some(t) => {
-                t.append_with_offset(whisper_json, extraction.spec.earliest_time())?
-            }
+    let reqs = extractions
+        .iter()
+        .map(|extraction| TranscriptionRequest {
+            path: extraction.path.clone(),
+            lang,
+            prompt: prompt.to_owned(),
+            _phantom: std::marker::PhantomData::<Subs>,
+        })
+        .collect::<Vec<_>>();
+    let resps = TranscriptionRequest::perform_requests(ui, reqs).await?;
+
+    let transcription = resps
+        .into_iter()
+        .zip(periods.into_iter().map(|p| p.begin()))
+        .reduce(|(mut a_subs, a_start), (b_subs, b_start)| {
+            a_subs.append_with_offset(b_subs, b_start);
+            (a_subs, a_start)
+        });
+    Ok(transcription
+        .expect("should always have at least one period")
+        .0)
+}
+
+/// A request to transcribe a file.
+///
+/// We don't actually cache these, because they require large files on disk.
+#[derive(Debug, Deserialize, Serialize)]
+struct TranscriptionRequest<Subs> {
+    path: PathBuf,
+    lang: Lang,
+    prompt: String,
+    _phantom: std::marker::PhantomData<Subs>,
+}
+
+#[async_trait]
+impl<Subs> AiRequest for TranscriptionRequest<Subs>
+where
+    Subs: TranscribeFile + DeserializeOwned + Serialize + Send + Sync,
+{
+    type Response = Subs;
+
+    async fn perform(
+        &self,
+        _error_history: &[anyhow::Error],
+    ) -> Result<Self::Response> {
+        Subs::transcribe_file(&self.path, self.lang, &self.prompt).await
+    }
+}
+
+impl<Subs> AiRequestStatic for TranscriptionRequest<Subs>
+where
+    Subs: TranscribeFile + DeserializeOwned + Serialize + Send + Sync,
+{
+    fn progress_config() -> &'static ProgressConfig<'static> {
+        &ProgressConfig {
+            emoji: "🎤",
+            msg: "Transcribing audio",
+            done_msg: "Transcribed audio",
         }
     }
-    pb.finish_with_message("Transcribed dialog!");
 
-    Ok(transcription.expect("should always have at least one period"))
+    fn cache_name() -> &'static str {
+        // Since our `cache_size` is 0, we don't actually need a real cache
+        // name.
+        "unused"
+    }
+
+    fn cache_size() -> u64 {
+        0
+    }
+
+    fn concurrency_limit() -> usize {
+        4
+    }
 }
 
 /// The Whisper model to use.

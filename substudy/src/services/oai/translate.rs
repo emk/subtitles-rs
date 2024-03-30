@@ -2,6 +2,7 @@
 
 use anyhow::anyhow;
 use async_openai::{config::OpenAIConfig, types::CreateChatCompletionRequest, Client};
+use async_trait::async_trait;
 use lazy_static::lazy_static;
 use log::{debug, trace};
 use regex::Regex;
@@ -9,13 +10,14 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use super::{
-    function_tool, function_tool_choice, retry_openai_request, system_message,
-    tool_call_response, user_message,
+    function_tool, function_tool_choice, system_message, tool_call_response,
+    user_message,
 };
 use crate::{
+    ai::{AiRequest, AiRequestStatic},
     lang::Lang,
     srt::{Subtitle, SubtitleFile},
-    ui::Ui,
+    ui::{ProgressConfig, Ui},
     Result,
 };
 
@@ -76,7 +78,7 @@ pub async fn translate_subtitle_file(
     // Split into chunks of at least `MIN_CHUNK_SIZE`, but then try to end on a
     // sentence boundary. Even if we can't find a sentence boundary, end
     // no later than `MAX_CHUNK_SIZE`.
-    let mut sub_chunks = vec![];
+    let mut requests = vec![];
     let mut current_chunk = vec![];
     for sub in &file.subtitles {
         current_chunk.push(sub.clone());
@@ -85,27 +87,64 @@ pub async fn translate_subtitle_file(
             && (current_chunk.len() >= MAX_CHUNK_SIZE
                 || SENTENCE_END.is_match(&last_line))
         {
-            sub_chunks.push(current_chunk.clone());
+            requests.push(TranslationRequest {
+                from_lang,
+                to_lang,
+                lines: current_chunk.clone(),
+            });
             current_chunk.clear();
         }
     }
     if current_chunk.len() > 0 {
-        sub_chunks.push(current_chunk);
+        requests.push(TranslationRequest {
+            from_lang,
+            to_lang,
+            lines: current_chunk,
+        });
     }
 
-    let progress = ui.new_progress_bar(file.subtitles.len() as u64);
-    progress.set_prefix("📖");
-    progress.set_message("Translating");
-    progress.tick();
+    let translated = TranslationRequest::perform_requests(&ui, requests.clone())
+        .await?
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
 
-    let client = Client::new();
-    let mut translated_subs = vec![];
-    for chunk in &sub_chunks {
-        let translated_lines = retry_openai_request(|| {
-            translate_chunk(&client, chunk, from_lang, to_lang)
-        })
-        .await?;
-        for (sub, translated) in chunk.iter().zip(translated_lines) {
+    // Reassemble the translated chunks.
+    Ok(SubtitleFile {
+        subtitles: translated,
+    })
+}
+
+/// A request to translate a chunk of subtitles.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+struct TranslationRequest {
+    from_lang: Lang,
+    to_lang: Lang,
+    lines: Vec<Subtitle>,
+}
+
+#[async_trait]
+impl AiRequest for TranslationRequest {
+    type Response = Vec<Subtitle>;
+
+    fn max_tries(&self) -> u32 {
+        5
+    }
+
+    fn progress_increment(&self) -> u64 {
+        self.lines.len() as u64
+    }
+
+    async fn perform(
+        &self,
+        _error_history: &[anyhow::Error],
+    ) -> Result<Self::Response> {
+        let client = Client::new();
+        let translated_lines =
+            translate_chunk(&client, &self.lines, self.from_lang, self.to_lang)
+                .await?;
+        let mut translated_subs = vec![];
+        for (sub, translated) in self.lines.iter().zip(translated_lines) {
             let mut translated_sub = sub.clone();
             translated_sub.lines =
                 vec![translated.translation.clone().ok_or_else(|| {
@@ -116,14 +155,30 @@ pub async fn translate_subtitle_file(
                 })?];
             translated_subs.push(translated_sub);
         }
-        progress.inc(chunk.len() as u64);
+        Ok(translated_subs)
     }
-    progress.finish_with_message("Translated subtitles");
+}
 
-    // Reassemble the translated chunks.
-    Ok(SubtitleFile {
-        subtitles: translated_subs,
-    })
+impl AiRequestStatic for TranslationRequest {
+    fn progress_config() -> &'static ProgressConfig<'static> {
+        &ProgressConfig {
+            emoji: "📖",
+            msg: "Translating subtitles",
+            done_msg: "Translated subtitles",
+        }
+    }
+
+    fn cache_name() -> &'static str {
+        "oai_sub_trans_v1"
+    }
+
+    fn cache_size() -> u64 {
+        1000
+    }
+
+    fn concurrency_limit() -> usize {
+        8
+    }
 }
 
 async fn translate_chunk(
@@ -214,5 +269,42 @@ impl LineTranslation {
             original: sub.lines.join(" "),
             translation: None,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use dotenv::dotenv;
+
+    use crate::time::Period;
+
+    use super::*;
+
+    // Ignored by default because it requires an OpenAI API key.
+    #[ignore]
+    #[tokio::test]
+    async fn translate_subtitle_file_works() {
+        dotenv().ok();
+        let s = |idx, start, end, line: &str| Subtitle {
+            index: idx,
+            period: Period::new(start, end).unwrap(),
+            lines: vec![line.to_owned()],
+        };
+        let file = SubtitleFile {
+            subtitles: vec![
+                s(1, 0.0, 1.0, "Hello, world!"),
+                s(2, 1.0, 2.0, "Goodbye, world!"),
+                s(3, 3.0, 4.0, "The quick brown fox jumps over the lazy dog."),
+                s(4, 4.0, 5.0, "Here is more text to make sure that this gets gets detected as English."),
+                s(5, 5.0, 6.0, "And another big sentence to make sure that this gets detected as English."),
+            ],
+        };
+
+        let ui = Ui::init_for_tests();
+        let translated =
+            translate_subtitle_file(&ui, &file, Lang::iso639("es").unwrap())
+                .await
+                .unwrap();
+        assert_eq!(translated.subtitles.len(), file.subtitles.len());
     }
 }

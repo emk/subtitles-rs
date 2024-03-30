@@ -8,7 +8,6 @@ use std::{
     process::Stdio,
     result,
     str::{from_utf8, FromStr},
-    time::Duration,
 };
 
 use anyhow::{anyhow, Context as _};
@@ -23,7 +22,13 @@ use tokio::{
     process::Command,
 };
 
-use crate::{errors::RunCommandError, lang::Lang, time::Period, ui::Ui, Result};
+use crate::{
+    errors::RunCommandError,
+    lang::Lang,
+    time::Period,
+    ui::{ProgressConfig, Ui},
+    Result,
+};
 
 /// The identifier of a data stream within a media container
 /// format. This is used to refer to individual audio or video
@@ -427,10 +432,12 @@ impl Video {
     /// batch interface to avoid making too many passes through the file.
     /// We assume that the extractions are sorted in temporal order.
     pub async fn extract(&self, ui: &Ui, extractions: &[Extraction]) -> Result<()> {
-        let pb = ui.new_progress_bar(cast::u64(extractions.len()));
-        pb.set_prefix("✂️");
-        pb.set_message("Extracting media");
-        pb.tick();
+        let prog_conf = ProgressConfig {
+            emoji: "✂️",
+            msg: "Extracting media",
+            done_msg: "Extracted media items",
+        };
+        let pb = ui.new_progress_bar(&prog_conf, cast::u64(extractions.len()));
 
         let mut batch: Vec<&Extraction> = vec![];
         for e in extractions {
@@ -442,15 +449,11 @@ impl Video {
             }
         }
 
-        // Poke the progress bar occasionally, so that it displays more reliably
-        // even when the first batch of extractions is long.
-        pb.enable_steady_tick(Duration::from_millis(250));
-
         for chunk in batch.chunks(20) {
             self.extract_batch(chunk).await?;
             pb.inc(cast::u64(chunk.len()));
         }
-        pb.finish_with_message("Extracted media items");
+        ui.finish(&prog_conf, pb);
         Ok(())
     }
 

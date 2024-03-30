@@ -3,7 +3,7 @@
 use std::{fs::File, io::Read as _, path::Path};
 
 use anyhow::Context as _;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     clean::{clean_subtitle_file, strip_formatting},
@@ -22,7 +22,7 @@ pub fn format_time(time: f32) -> String {
 
 /// A single SRT-format subtitle, minus some of the optional fields used in
 /// various versions of the file format.
-#[derive(Debug, PartialEq, Clone, Serialize)]
+#[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
 pub struct Subtitle {
     /// The index of this subtitle.  We should normalize these to start
     /// with 1 on output.
@@ -54,7 +54,7 @@ impl Subtitle {
 }
 
 /// The contents of an SRT-format subtitle file.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct SubtitleFile {
     /// The subtitles in this file.
     pub subtitles: Vec<Subtitle>,
@@ -118,15 +118,11 @@ impl SubtitleFile {
 pub trait AppendWithOffset {
     /// Append another file, shifting it by the specified time offset.
     /// We use this to reassamble transcription segments.
-    fn append_with_offset(&mut self, other: Self, time_offset: f32) -> Result<()>;
+    fn append_with_offset(&mut self, other: Self, time_offset: f32);
 }
 
 impl AppendWithOffset for SubtitleFile {
-    fn append_with_offset(
-        &mut self,
-        mut other: SubtitleFile,
-        time_offset: f32,
-    ) -> Result<()> {
+    fn append_with_offset(&mut self, mut other: SubtitleFile, time_offset: f32) {
         // Renumber indices in the first file starting from 1.
         let mut next_index = 1;
         for sub in &mut self.subtitles {
@@ -144,7 +140,6 @@ impl AppendWithOffset for SubtitleFile {
 
         // Append the second file to the first.
         self.subtitles.extend(other.subtitles);
-        Ok(())
     }
 }
 
