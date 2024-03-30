@@ -2,10 +2,10 @@
 //! built for speed, because it's caching expensive AI requests that are made
 //! over the network. Instead, we focus on reliability.
 
-use std::{marker::PhantomData, path::PathBuf};
+use std::{fs, marker::PhantomData, path::PathBuf};
 
 use anyhow::Context as _;
-use log::{debug, trace};
+use log::{debug, trace, warn};
 use rusqlite::Connection;
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -33,6 +33,14 @@ where
         cache_name: &str,
         approx_max_entries: u64,
     ) -> Result<Self> {
+        // Make sure our parent directory exists.
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        } else {
+            warn!("no parent directory for cache path");
+        }
+
+        // Set up the cache table.
         let conn = Connection::open(&path)?;
         conn.execute(
             "CREATE TABLE IF NOT EXISTS substudy_cache (
