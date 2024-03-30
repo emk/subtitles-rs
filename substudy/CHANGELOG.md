@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.6.5] - 2024-03-30
+
+### Added
+
+- Run more transcription and translation requests in parallel. This greatly reduces the time needed to work with large media files.
+- Cache AI API requests. Calling an AI model is slow and costs money. Making the same calls over and over again is a waste of time and money,
+especially when we successfully process 99.5% of a large media file. So now we cache recent successful requests. So if you need to re-run a incomplete translation, it should be much faster and cheaper. (Cache files are stored wherever your OS thinks they should be stored. On Linux, this is `~/.cache/substudy`.)
+
 ## [0.6.4] - 2024-03-24
 
 ### Added
