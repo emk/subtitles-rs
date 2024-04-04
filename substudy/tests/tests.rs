@@ -168,6 +168,7 @@ fn cmd_transcribe_no_text() {
     let output = testdir
         .cmd()
         .arg("transcribe")
+        .arg("--lang=es")
         .arg(testdir.src_path("fixtures/poem.es.mp3"))
         .output()
         .expect("could not run substudy");

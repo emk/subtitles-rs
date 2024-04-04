@@ -35,7 +35,7 @@ use crate::{
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TranscriptionPrompt {
     /// Text similar to the output we want. This acts as a hint to the AI.
-    Example(String),
+    Related(String),
 
     /// Expected output from the transcription, including line breaks. This is
     /// used to synchronize existing text with media. Most useful for lyrics.
@@ -46,7 +46,7 @@ impl TranscriptionPrompt {
     /// Get the text of the prompt.
     pub fn text(&self) -> &str {
         match self {
-            TranscriptionPrompt::Example(text)
+            TranscriptionPrompt::Related(text)
             | TranscriptionPrompt::Expected(text) => text,
         }
     }
@@ -73,6 +73,7 @@ impl TranscriptionFormat {
         ui: &Ui,
         video: &Video,
         prompt: Option<&TranscriptionPrompt>,
+        lang: Option<Lang>,
         writer: &mut BufWriter<W>,
     ) -> Result<()>
     where
@@ -83,22 +84,25 @@ impl TranscriptionFormat {
     {
         match self {
             TranscriptionFormat::Srt => {
-                let srt = transcribe_subtitles_to_substudy_srt_file(ui, video, prompt)
-                    .await?;
+                let srt =
+                    transcribe_subtitles_to_substudy_srt_file(ui, video, prompt, lang)
+                        .await?;
                 writer
                     .write_all(srt.to_string().as_bytes())
                     .context("failed to write SRT transcription")?;
             }
             TranscriptionFormat::WhisperSrt => {
                 let srt =
-                    transcribe_subtitles::<SubtitleFile>(ui, video, prompt).await?;
+                    transcribe_subtitles::<SubtitleFile>(ui, video, prompt, lang)
+                        .await?;
                 writer
                     .write_all(srt.to_string().as_bytes())
                     .context("failed to write SRT transcription")?;
             }
             TranscriptionFormat::WhisperJson => {
                 let json =
-                    transcribe_subtitles::<WhisperJson>(ui, video, prompt).await?;
+                    transcribe_subtitles::<WhisperJson>(ui, video, prompt, lang)
+                        .await?;
                 serde_json::to_writer(writer, &json)
                     .context("failed to write Whisper JSON transcription")?;
             }
@@ -135,8 +139,9 @@ async fn transcribe_subtitles_to_substudy_srt_file(
     ui: &Ui,
     video: &Video,
     prompt: Option<&TranscriptionPrompt>,
+    lang: Option<Lang>,
 ) -> Result<SubtitleFile> {
-    let whisper_json = transcribe_subtitles(&ui, video, prompt).await?;
+    let whisper_json = transcribe_subtitles(&ui, video, prompt, lang).await?;
     import_whisper_json(&whisper_json)
 }
 
@@ -145,15 +150,13 @@ async fn transcribe_subtitles<Subs>(
     ui: &Ui,
     video: &Video,
     prompt: Option<&TranscriptionPrompt>,
+    lang: Option<Lang>,
 ) -> Result<Subs>
 where
     Subs: TranscribeFile + DeserializeOwned + Serialize + Send + Sync,
 {
     // Find our language.
-    let lang = match prompt {
-        Some(TranscriptionPrompt::Example(text)) => Lang::for_text(text),
-        _ => None,
-    };
+    let lang = lang.or_else(|| prompt.and_then(|p| Lang::for_text(p.text())));
 
     // Figure out where to split the video to fit under the 25 MB limit.
     let stream = lang.and_then(|l| video.audio_track_for(l));

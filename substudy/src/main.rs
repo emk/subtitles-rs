@@ -91,24 +91,62 @@ enum Args {
     },
 
     /// Transcribe subtitles from audio.
-    #[command(name = "transcribe")]
+    #[command(
+        name = "transcribe",
+        after_help = "\
+Examples:
+
+To transcribe a song, you might use the following command:
+
+    substudy transcribe --expected-text=full-lyrics.txt song.mp3 > song.srt
+
+To transcribe a video, you might use the following command:
+
+    substudy transcribe --related-text=opening-voiceover.txt vid.mp4 > vid.srt
+
+If your output is missing lots of lines, you might try Whisper's raw SRT output:
+
+    substudy transcribe --format=whisper-srt --related-text=sample-dialog.txt \\
+        vid.mp4 > vid.srt
+
+This may require more cleanup.
+
+If you have no related text at all, you can omit both `--related-text` and
+`--expected-text`. The transcriber will try its best."
+    )]
     Transcribe {
         /// Path to the video.
         video: PathBuf,
 
-        /// Path to sample text which resembles the content of the video.
-        #[arg(long, conflicts_with = "expected_text")]
-        example_text: Option<PathBuf>,
+        /// Path to sample text which resembles the content of the video. Using
+        /// this will help the transciber to better understand the audio.
+        ///
+        /// Cannot be used with `--expected-text`.
+        #[arg(long, conflicts_with = "expected_text", alias = "example-text")]
+        related_text: Option<PathBuf>,
 
-        /// Path to expected text, for when you already know more or less what
-        /// the subtitles should say, but you want to sync them up with the
-        /// video. Line breaks will be treated as subtitle breaks. Most useful
-        /// for music.
-        #[arg(long, conflicts_with = "example_text")]
+        /// Path to complete expected text. This is for when you already know
+        /// more or less what the subtitles should say, but you want to sync
+        /// them up with the video. Line breaks will be treated as subtitle
+        /// breaks. Most useful for music.
+        ///
+        /// Cannot be used with `--example-text`. Treated the same as
+        /// `--related-text` when `--format=whisper-srt`.
+        #[arg(long, conflicts_with = "related_text")]
         expected_text: Option<PathBuf>,
 
-        /// Output format for the transcription.
-        #[arg(long, default_value = "srt")]
+        /// Primary language used in the media (e.g. "en" for English). This can
+        /// normally be auto-detected from `--related-text` or
+        /// `--expected-text`. But if you don't pass either, it might help.
+        #[arg(long)]
+        lang: Option<String>,
+
+        /// Output format for the transcription. Possible values:
+        ///
+        /// - `srt`: Standard SRT format, with cleanup applied.
+        /// - `whisper-srt`: Whisper's raw SRT format, with no cleanup.
+        /// - `whisper-json`: Whisper's verbose JSON output, for programmers.
+        #[arg(long, default_value = "srt", verbatim_doc_comment)]
         format: TranscriptionFormat,
     },
 
@@ -269,12 +307,14 @@ async fn main() -> Result<()> {
         } => cmd_tracks(&video).await,
         Args::Transcribe {
             video,
-            example_text,
+            related_text,
             expected_text,
+            lang,
             format,
         } => {
-            let prompt = prompt_from(example_text, expected_text)?;
-            cmd_transcribe(&ui, &video, prompt.as_ref(), format).await
+            let lang = lang.map(|l| Lang::iso639(&l)).transpose()?;
+            let prompt = prompt_from(related_text, expected_text)?;
+            cmd_transcribe(&ui, &video, prompt.as_ref(), lang, format).await
         }
         Args::Translate {
             foreign_subs,
@@ -285,21 +325,21 @@ async fn main() -> Result<()> {
 
 /// Build our transcription prompt from the command-line arguments.
 fn prompt_from(
-    example_text: Option<PathBuf>,
+    related_text: Option<PathBuf>,
     expected_text: Option<PathBuf>,
 ) -> Result<Option<TranscriptionPrompt>> {
     let read = |p: &Path| {
         read_to_string(p)
             .with_context(|| format!("Could not read file: {}", p.display()))
     };
-    match (example_text, expected_text) {
+    match (related_text, expected_text) {
         (Some(_), Some(_)) => {
             // Clap should prevent this from happening.
             bail!("Cannot specify both --example-text and --expected-text")
         }
-        (Some(example_text), None) => {
-            let example_text = read(&example_text)?;
-            Ok(Some(TranscriptionPrompt::Example(example_text)))
+        (Some(related_text), None) => {
+            let related_text = read(&related_text)?;
+            Ok(Some(TranscriptionPrompt::Related(related_text)))
         }
         (None, Some(expected_text)) => {
             let expected_text = read(&expected_text)?;
@@ -392,13 +432,14 @@ async fn cmd_transcribe(
     ui: &Ui,
     video_path: &Path,
     prompt: Option<&TranscriptionPrompt>,
+    lang: Option<Lang>,
     format: TranscriptionFormat,
 ) -> Result<()> {
     let video = Video::new(video_path).await?;
     let out = stdout();
     let writer = out.lock();
     format
-        .write_transcription(ui, &video, prompt, &mut BufWriter::new(writer))
+        .write_transcription(ui, &video, prompt, lang, &mut BufWriter::new(writer))
         .await?;
     Ok(())
 }
