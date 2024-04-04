@@ -125,3 +125,101 @@ fn cmd_list_tracks() {
         .find("#1 es Audio")
         .is_some());
 }
+
+#[ignore]
+#[test]
+fn cmd_transcribe_example_text() {
+    let testdir = TestDir::new("substudy", "cmd_transcribe_example_text");
+    let output = testdir
+        .cmd()
+        .arg("transcribe")
+        .arg(testdir.src_path("fixtures/poem.es.mp3"))
+        .arg("--example-text")
+        .arg(testdir.src_path("fixtures/poem.es.txt"))
+        .output()
+        .expect("could not run substudy");
+    assert!(output.status.success());
+    // This is does not reliably produce text because no_speech_prop tends to be
+    // too high.
+    //
+    //assert!(from_utf8(&output.stdout).unwrap().find("viento").is_some());
+}
+
+#[ignore]
+#[test]
+fn cmd_transcribe_expected_text() {
+    let testdir = TestDir::new("substudy", "cmd_transcribe_expected_text");
+    let output = testdir
+        .cmd()
+        .arg("transcribe")
+        .arg(testdir.src_path("fixtures/poem.es.mp3"))
+        .arg("--expected-text")
+        .arg(testdir.src_path("fixtures/poem.es.txt"))
+        .output()
+        .expect("could not run substudy");
+    assert!(output.status.success());
+    assert!(from_utf8(&output.stdout).unwrap().find("viento").is_some());
+}
+
+#[ignore]
+#[test]
+fn cmd_transcribe_no_text() {
+    let testdir = TestDir::new("substudy", "cmd_transcribe_no_text");
+    let output = testdir
+        .cmd()
+        .arg("transcribe")
+        .arg(testdir.src_path("fixtures/poem.es.mp3"))
+        .output()
+        .expect("could not run substudy");
+    assert!(output.status.success());
+    // I don't even know whether I expect this to work.
+}
+
+#[ignore]
+#[test]
+fn cmd_transcribe_format_whisper_srt() {
+    let testdir = TestDir::new("substudy", "cmd_transcribe_format_whisper_srt");
+    let output = testdir
+        .cmd()
+        .arg("transcribe")
+        .arg(testdir.src_path("fixtures/poem.es.mp3"))
+        .arg("--format=whisper-srt")
+        .arg("--example-text")
+        .arg(testdir.src_path("fixtures/poem.es.txt"))
+        .output()
+        .expect("could not run substudy");
+    assert!(output.status.success());
+    assert!(from_utf8(&output.stdout).unwrap().find("viento").is_some());
+}
+
+#[ignore]
+#[test]
+fn cmd_transcribe_format_whisper_json() {
+    let testdir = TestDir::new("substudy", "cmd_transcribe_format_whisper_json");
+    let output = testdir
+        .cmd()
+        .arg("transcribe")
+        .arg(testdir.src_path("fixtures/poem.es.mp3"))
+        .arg("--format=whisper-json")
+        .arg("--example-text")
+        .arg(testdir.src_path("fixtures/poem.es.txt"))
+        .output()
+        .expect("could not run substudy");
+    assert!(output.status.success());
+    assert!(from_utf8(&output.stdout).unwrap().find("viento").is_some());
+}
+
+#[ignore]
+#[test]
+fn cmd_translate() {
+    let testdir = TestDir::new("substudy", "cmd_translate");
+    let output = testdir
+        .cmd()
+        .arg("translate")
+        .arg(testdir.src_path("fixtures/poem.es.srt"))
+        .arg("--native-lang=en")
+        .output()
+        .expect("could not run substudy");
+    assert!(output.status.success());
+    assert!(from_utf8(&output.stdout).unwrap().find("trees").is_some());
+}

@@ -15,7 +15,7 @@ repository = "https://github.com/emk/substudy"
 readme = "README.md"
 keywords = ["text"]
 
-exclude = ["fixtures/empty.mp4"]
+exclude = ["/fixtures"]
 
 [dependencies]
 anyhow = "1.0.80"

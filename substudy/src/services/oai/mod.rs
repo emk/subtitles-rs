@@ -12,7 +12,10 @@ use log::debug;
 
 use crate::Result;
 
-pub use self::{transcribe::TranscriptionFormat, translate::translate_subtitle_file};
+pub use self::{
+    transcribe::{TranscriptionFormat, TranscriptionPrompt},
+    translate::translate_subtitle_file,
+};
 
 mod transcribe;
 mod translate;

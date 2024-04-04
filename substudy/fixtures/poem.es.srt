@@ -1,0 +1,7 @@
+0
+00:00:00,000 --> 00:00:03,840
+En el bosque se escucha un susurro, el viento entre los árboles murmuro.
+
+1
+00:00:04,247 --> 00:00:08,580
+Bajo su sombra, todo es puro, en su abrazo, el mundo se siente seguro.

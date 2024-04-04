@@ -44,7 +44,9 @@ const DEFAULT_CHARS_PER_SECOND: f32 = 15.0;
 /// Import a Whisper JSON file and convert it to an SRT file.
 pub fn import_whisper_json(whisper_json: &WhisperJson) -> Result<SubtitleFile> {
     let mut whisper = whisper_json.clone().clean();
-    whisper.resegment();
+    if !whisper.trust_segment_text {
+        whisper.resegment();
+    }
     let words = whisper.words_for_each_segment(&whisper.words);
     let mut analyzed = AnalyzedSegments::new(&whisper.segments, &words);
     analyzed.fix_times();
@@ -127,6 +129,10 @@ pub struct WhisperJson {
     words: Vec<Word>,
     segments: Vec<Segment>,
 
+    /// Should we trust the segment text as much as possible?
+    #[serde(default, skip)]
+    trust_segment_text: bool,
+
     /// Other keys we don't recognize but want to keep.
     #[serde(flatten)]
     extra: serde_json::Map<String, serde_json::Value>,
@@ -147,6 +153,20 @@ impl WhisperJson {
     pub fn from_str(s: &str) -> Result<WhisperJson> {
         serde_json::from_str(s)
             .with_context(|| format!("Failed to parse Whisper JSON string: {:?}", s))
+    }
+
+    /// Set segments from untimed text. This will be split into lines. We use
+    /// this when we have known-good text, and we want to match it to timing
+    /// data.
+    pub(crate) fn set_segments_from_untimed_text(&mut self, text: &str) {
+        debug!("Setting segments from untimed text");
+        self.trust_segment_text = true;
+        self.segments = text
+            .lines()
+            .map(|s| s.trim())
+            .filter(|s| !s.is_empty())
+            .map(Segment::from_untimed_text)
+            .collect();
     }
 
     /// Clean up and normalize the Whisper JSON file.
@@ -332,6 +352,17 @@ struct Segment {
 }
 
 impl Segment {
+    /// Build a segment from untimed text.
+    fn from_untimed_text<S: Into<String>>(text: S) -> Segment {
+        Segment {
+            text: text.into(),
+            start: 0.0,
+            end: 0.0,
+            no_speech_prob: 0.0,
+            extra: Default::default(),
+        }
+    }
+
     /// Offset by the specified time.
     fn offset(&mut self, time_offset: f32) {
         self.start += time_offset;

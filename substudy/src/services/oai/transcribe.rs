@@ -16,7 +16,7 @@ use async_openai::{
     Client,
 };
 use async_trait::async_trait;
-use log::{debug, trace};
+use log::{debug, trace, warn};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use tempfile::tempdir;
 
@@ -30,6 +30,27 @@ use crate::{
     video::{Extraction, ExtractionSpec, Id3Metadata, Video},
     Result,
 };
+
+/// "Prompt" text, which is really a sample of what the output should look like.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TranscriptionPrompt {
+    /// Text similar to the output we want. This acts as a hint to the AI.
+    Example(String),
+
+    /// Expected output from the transcription, including line breaks. This is
+    /// used to synchronize existing text with media. Most useful for lyrics.
+    Expected(String),
+}
+
+impl TranscriptionPrompt {
+    /// Get the text of the prompt.
+    pub fn text(&self) -> &str {
+        match self {
+            TranscriptionPrompt::Example(text)
+            | TranscriptionPrompt::Expected(text) => text,
+        }
+    }
+}
 
 /// Output format for subtitle transcriptions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -51,7 +72,7 @@ impl TranscriptionFormat {
         &self,
         ui: &Ui,
         video: &Video,
-        prompt: &str,
+        prompt: Option<&TranscriptionPrompt>,
         writer: &mut BufWriter<W>,
     ) -> Result<()>
     where
@@ -113,7 +134,7 @@ impl fmt::Display for TranscriptionFormat {
 async fn transcribe_subtitles_to_substudy_srt_file(
     ui: &Ui,
     video: &Video,
-    prompt: &str,
+    prompt: Option<&TranscriptionPrompt>,
 ) -> Result<SubtitleFile> {
     let whisper_json = transcribe_subtitles(&ui, video, prompt).await?;
     import_whisper_json(&whisper_json)
@@ -123,17 +144,19 @@ async fn transcribe_subtitles_to_substudy_srt_file(
 async fn transcribe_subtitles<Subs>(
     ui: &Ui,
     video: &Video,
-    prompt: &str,
+    prompt: Option<&TranscriptionPrompt>,
 ) -> Result<Subs>
 where
     Subs: TranscribeFile + DeserializeOwned + Serialize + Send + Sync,
 {
     // Find our language.
-    let lang = Lang::for_text(prompt)
-        .ok_or_else(|| anyhow!("could not infer language from example text"))?;
+    let lang = match prompt {
+        Some(TranscriptionPrompt::Example(text)) => Lang::for_text(text),
+        _ => None,
+    };
 
     // Figure out where to split the video to fit under the 25 MB limit.
-    let stream = video.audio_track_for(lang);
+    let stream = lang.and_then(|l| video.audio_track_for(l));
     let periods = segment_on_dialog_breaks(ui, video, stream, 10.0 * 60.0).await?;
     debug!("split into periods: {:?}", periods);
 
@@ -165,22 +188,23 @@ where
         .map(|extraction| TranscriptionRequest {
             path: extraction.path.clone(),
             lang,
-            prompt: prompt.to_owned(),
+            prompt: prompt.map(|p| p.text().to_owned()),
             _phantom: std::marker::PhantomData::<Subs>,
         })
         .collect::<Vec<_>>();
     let resps = TranscriptionRequest::perform_requests(ui, reqs).await?;
 
-    let transcription = resps
+    let mut transcription = resps
         .into_iter()
         .zip(periods.into_iter().map(|p| p.begin()))
         .reduce(|(mut a_subs, a_start), (b_subs, b_start)| {
             a_subs.append_with_offset(b_subs, b_start);
             (a_subs, a_start)
-        });
-    Ok(transcription
+        })
         .expect("should always have at least one period")
-        .0)
+        .0;
+    transcription.post_process(prompt);
+    Ok(transcription)
 }
 
 /// A request to transcribe a file.
@@ -189,8 +213,8 @@ where
 #[derive(Debug, Deserialize, Serialize)]
 struct TranscriptionRequest<Subs> {
     path: PathBuf,
-    lang: Lang,
-    prompt: String,
+    lang: Option<Lang>,
+    prompt: Option<String>,
     _phantom: std::marker::PhantomData<Subs>,
 }
 
@@ -205,7 +229,7 @@ where
         &self,
         _error_history: &[anyhow::Error],
     ) -> Result<Self::Response> {
-        Subs::transcribe_file(&self.path, self.lang, &self.prompt).await
+        Subs::transcribe_file(&self.path, self.lang, self.prompt.as_deref()).await
     }
 }
 
@@ -251,7 +275,15 @@ fn audio_input_for_path(path: &Path) -> AudioInput {
 /// Create a new transcription in the specified format.
 #[async_trait]
 trait TranscribeFile: AppendWithOffset + Sized + 'static {
-    async fn transcribe_file(path: &Path, lang: Lang, prompt: &str) -> Result<Self>;
+    async fn transcribe_file(
+        path: &Path,
+        lang: Option<Lang>,
+        prompt: Option<&str>,
+    ) -> Result<Self>;
+
+    /// Post-process a transcription. This should be done once, after merging
+    /// piecemal transcriptions.
+    fn post_process(&mut self, prompt: Option<&TranscriptionPrompt>);
 }
 
 #[async_trait]
@@ -259,16 +291,16 @@ impl TranscribeFile for WhisperJson {
     /// Transcribe a single media file in JSON format using OpenAI's Whisper model.
     async fn transcribe_file(
         path: &Path,
-        lang: Lang,
-        prompt: &str,
+        lang: Option<Lang>,
+        prompt: Option<&str>,
     ) -> Result<WhisperJson> {
         let client = Client::new();
         let req = CreateTranscriptionRequest {
             file: audio_input_for_path(path),
             model: WHISPER_MODEL.to_owned(),
-            prompt: Some(prompt.to_owned()),
+            prompt: prompt.map(|p| p.to_owned()),
             response_format: Some(AudioResponseFormat::VerboseJson),
-            language: Some(lang.to_string()),
+            language: lang.map(|l| l.to_string()),
             timestamp_granularities: Some(vec![
                 TimestampGranularity::Word,
                 TimestampGranularity::Segment,
@@ -282,6 +314,12 @@ impl TranscribeFile for WhisperJson {
             .map_err(|e| anyhow!("failed to serialize response: {}", e))?;
         WhisperJson::from_str(&reserialized)
     }
+
+    fn post_process(&mut self, prompt: Option<&TranscriptionPrompt>) {
+        if let Some(TranscriptionPrompt::Expected(expected)) = prompt {
+            self.set_segments_from_untimed_text(expected);
+        }
+    }
 }
 
 #[async_trait]
@@ -290,16 +328,16 @@ impl TranscribeFile for SubtitleFile {
     /// model.
     async fn transcribe_file(
         path: &Path,
-        lang: Lang,
-        prompt: &str,
+        lang: Option<Lang>,
+        prompt: Option<&str>,
     ) -> Result<SubtitleFile> {
         let client = Client::new();
         let req = CreateTranscriptionRequest {
             file: audio_input_for_path(path),
             model: WHISPER_MODEL.to_owned(),
-            prompt: Some(prompt.to_owned()),
+            prompt: prompt.map(|p| p.to_owned()),
             response_format: Some(AudioResponseFormat::Srt),
-            language: Some(lang.to_string()),
+            language: lang.map(|l| l.to_string()),
             ..Default::default()
         };
         trace!("transcribe request: {:#?}", req);
@@ -308,5 +346,11 @@ impl TranscribeFile for SubtitleFile {
             .map_err(|e| anyhow!("failed to convert SRT to UTF-8: {}", e))?;
         trace!("transcribe response: {:#?}", srt_str);
         SubtitleFile::from_str(&srt_str)
+    }
+
+    fn post_process(&mut self, prompt: Option<&TranscriptionPrompt>) {
+        if let Some(TranscriptionPrompt::Expected(_)) = prompt {
+            warn!("using OpenAI's SRT output, instead of expected output");
+        }
     }
 }

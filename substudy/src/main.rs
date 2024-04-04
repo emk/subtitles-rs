@@ -3,14 +3,17 @@
 #![warn(missing_docs)]
 
 use std::{
+    fs::read_to_string,
     io::{stdout, BufWriter},
     path::{Path, PathBuf},
 };
 
+use anyhow::{bail, Context};
 pub use anyhow::{Error, Result};
 use clap::{Parser, Subcommand};
 use dotenv::dotenv;
 use export::ExporterBuilder;
+use services::oai::TranscriptionPrompt;
 use tempfile::tempdir;
 use video::Video;
 
@@ -93,9 +96,16 @@ enum Args {
         /// Path to the video.
         video: PathBuf,
 
-        /// Example text related to or similar to audio.
-        #[arg(long)]
-        example_text: PathBuf,
+        /// Path to sample text which resembles the content of the video.
+        #[arg(long, conflicts_with = "expected_text")]
+        example_text: Option<PathBuf>,
+
+        /// Path to expected text, for when you already know more or less what
+        /// the subtitles should say, but you want to sync them up with the
+        /// video. Line breaks will be treated as subtitle breaks. Most useful
+        /// for music.
+        #[arg(long, conflicts_with = "example_text")]
+        expected_text: Option<PathBuf>,
 
         /// Output format for the transcription.
         #[arg(long, default_value = "srt")]
@@ -260,12 +270,42 @@ async fn main() -> Result<()> {
         Args::Transcribe {
             video,
             example_text,
+            expected_text,
             format,
-        } => cmd_transcribe(&ui, &video, &example_text, format).await,
+        } => {
+            let prompt = prompt_from(example_text, expected_text)?;
+            cmd_transcribe(&ui, &video, prompt.as_ref(), format).await
+        }
         Args::Translate {
             foreign_subs,
             native_lang,
         } => cmd_translate(&ui, &foreign_subs, &native_lang).await,
+    }
+}
+
+/// Build our transcription prompt from the command-line arguments.
+fn prompt_from(
+    example_text: Option<PathBuf>,
+    expected_text: Option<PathBuf>,
+) -> Result<Option<TranscriptionPrompt>> {
+    let read = |p: &Path| {
+        read_to_string(p)
+            .with_context(|| format!("Could not read file: {}", p.display()))
+    };
+    match (example_text, expected_text) {
+        (Some(_), Some(_)) => {
+            // Clap should prevent this from happening.
+            bail!("Cannot specify both --example-text and --expected-text")
+        }
+        (Some(example_text), None) => {
+            let example_text = read(&example_text)?;
+            Ok(Some(TranscriptionPrompt::Example(example_text)))
+        }
+        (None, Some(expected_text)) => {
+            let expected_text = read(&expected_text)?;
+            Ok(Some(TranscriptionPrompt::Expected(expected_text)))
+        }
+        (None, None) => Ok(None),
     }
 }
 
@@ -351,15 +391,14 @@ fn cmd_import(format: ImportFormat) -> Result<()> {
 async fn cmd_transcribe(
     ui: &Ui,
     video_path: &Path,
-    example_text_path: &Path,
+    prompt: Option<&TranscriptionPrompt>,
     format: TranscriptionFormat,
 ) -> Result<()> {
     let video = Video::new(video_path).await?;
-    let prompt = std::fs::read_to_string(example_text_path)?;
     let out = stdout();
     let writer = out.lock();
     format
-        .write_transcription(ui, &video, &prompt, &mut BufWriter::new(writer))
+        .write_transcription(ui, &video, prompt, &mut BufWriter::new(writer))
         .await?;
     Ok(())
 }
