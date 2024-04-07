@@ -4,15 +4,20 @@
 #opt-level = 3
 
 [workspace]
-members = ["cli_test_dir", "aligned_media", "substudy"]
+members = [
+    "cli_test_dir",
+    "aligned_media",
+    "libs/dict_importer",
+    "libs/dict_manager",
+    "substudy",
+    "substudy-ui",
+    "libs/dict_manager",
+]
 
 # Removed until I can update `nom` over 5 major releases.
 #
 # "vobsub", "vobsub2png"
 
-# Dioxus workspace support is broken:
-# https://github.com/DioxusLabs/dioxus/issues/1990
-exclude = ["substudy-ui"]
 
 # Use the new resolver.
 resolver = "2"

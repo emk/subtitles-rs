@@ -1,0 +1,20 @@
+[package]
+name = "dict_manager"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+isolang = "2.4.0"
+dict_importer = { version = "0.1.0", path = "../dict_importer" }
+dirs = "5.0.1"
+rusqlite = { version = "0.31.0", features = ["bundled"] }
+rust-stemmers = "1.2.0"
+semver = "1.0.22"
+thiserror = "1.0.58"
+tokio = { version = "1.37.0", features = ["macros"] }
+tracing = { version = "0.1.40", features = ["attributes"] }
+
+[dev-dependencies]
+tokio = { version = "1.37.0", features = ["macros", "rt-multi-thread"] }

@@ -7,12 +7,18 @@ edition = "2021"
 
 [dependencies]
 ammonia = { version = "3.3.0", optional = true }
-dioxus = { version = "0.5.0-alpha.0", features = ["fullstack"] }
+anyhow = "1.0.81"
+dioxus = { version = "0.5.0", features = ["fullstack"] }
+dotenv = { version = "0.15.0", optional = true }
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.115"
+tracing-subscriber = "0.3.18"
+tracing-wasm = "0.2.1"
 uuid = { version = "1.7.0", features = ["serde"] }
 
 [features]
 default = []
-server = ["dioxus/axum", "dioxus/ssr", "ammonia"]
+server = ["dioxus/axum", "dioxus/ssr", "dotenv", "ammonia"]
 web = ["dioxus/web"]
 
 # [profile.release]

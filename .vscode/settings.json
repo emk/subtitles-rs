@@ -8,5 +8,9 @@
         "junk": true
     },
     "editor.formatOnSave": true,
-    "rust-analyzer.showUnlinkedFileNotification": false
+    "rust-analyzer.showUnlinkedFileNotification": false,
+    "rust-analyzer.cargo.features": [
+        "server"
+    ],
+    "rust-analyzer.check.features": null
 }
