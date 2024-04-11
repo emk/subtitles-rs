@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.6.6] - 2024-04-11
+
+### Added
+
+- Improved help messages for `substudy transcribe`.
+- `transcribe` now supports `--expected-text`, which should be used when you believe that you have a more-or-less complete and accurate transcription already, which you wish to synchronize. This is especially useful for songs, where lyrics are readily available but the error rate may be higher. This mode also preserves line breaks.
+- The `transcribe --example-text` option is now `--related-text`, in order to make the meaning clearer. The old option is still supported.
+- `transcribe` now supports an optional `--lang` argument. This is most useful when the language is known, but the available "related text" is non-existant or extremely short. Normally, the language is detected automatically.
+
 ## [0.6.5] - 2024-03-30
 
 ### Added
