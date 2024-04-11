@@ -1,6 +1,5 @@
 use std::{fmt, marker::PhantomData};
 
-
 /// Typestate representing whether we trust a given fragment of HTML.
 pub trait Trust {}
 
