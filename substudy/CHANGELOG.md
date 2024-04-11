@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.6.9] - 2024-04-11
+
+### Fixed
+
+- Build only substudy and dependencies, to avoid having builds fail due to `substudy-ui`.
+
+
 ## [0.6.8] - 2024-04-11
 
 ### Fixed

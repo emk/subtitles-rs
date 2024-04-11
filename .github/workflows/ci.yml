@@ -135,7 +135,7 @@ jobs:
           rm -rf $basename.tar.gz
       - name: Build binaries
         run: |
-          ${{ matrix.cargo }} build --release --target ${{ matrix.target }}
+          ${{ matrix.cargo }} build --release --target ${{ matrix.target }} --package substudy
       # If we have a code-signing identity, we could use it like this.
       #
       # - name: Sign binaries (if needed)
