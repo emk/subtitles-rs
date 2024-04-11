@@ -20,7 +20,7 @@
 //! ```no_run
 //! # #[cfg(feature = "download")]
 //! # async fn run() -> Result<(), Box<dyn std::error::Error>> {
-//! use dict_import::{dictd, LanguagePair};
+//! use dict_importer::{dictd, LanguagePair};
 //!
 //! let lang_pair = LanguagePair::from_639_1("es", "en")
 //!     .ok_or("Invalid language codes")?;
