@@ -23,13 +23,21 @@ Example usage:
 
 ```sh
 # Transcribe audio from a video file (requires an `OPENAI_API_KEY`).
-substudy transcribe episode_01_01.mkv --example-text=short-text.txt >
+substudy transcribe episode_01_01.mkv --related-text=short-text.txt >
     episode_01_01.es.srt
 ```
 
 For the `OPENAI_API_KEY` environment variable, see below.
 
 `short-text.txt` contains a short example (50-200 words) related to the content of the video: some lyrics of a song, a few lines of a movie, the introduction of a TV show, etc. This must be in the language we wish to transcribe, and it is used to provide context to the transcriber.
+
+Alternatively, if you have approximately correct text, you can use `--expected-text` to provide it. This works especially well for songs where you have the lyrics:
+
+```sh
+substudy transcribe song.mp3 --expected-text=lyrics.txt > song.es.srt
+```
+
+When using `--expected-text`, `substudy` will also respect the provided line breaks.
 
 ```sh
 # Translate a subtitle file (requires an `OPENAI_API_KEY`).
