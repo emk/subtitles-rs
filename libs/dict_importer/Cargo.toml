@@ -26,7 +26,9 @@ isolang = { version = "2.4.0" }
 # Pure Rust LZMA decoder, because the upstream C library has been recently
 # compromised by one of the maintainers.
 lzma-rs = { version = "0.3.0", optional = true }
-reqwest = { version = "0.12.2", features = ["json"], optional = true }
+reqwest = { version = "0.12.2", default-features = false, features = [
+    "json",
+], optional = true }
 serde = { version = "1.0.130", features = ["derive"], optional = true }
 serde_json = { version = "1.0.68", optional = true }
 tar = { version = "0.4.40", optional = true }
