@@ -255,7 +255,7 @@ impl ExtractionSpec {
         match self {
             ExtractionSpec::Image { time } => {
                 let scale_filter =
-                    format!("scale=iw*min(1\\,min({}/iw\\,{}/ih)):-1", 240, 160);
+                    format!("scale=iw*min(1\\,min({}/iw\\,{}/ih)):-1", 360, 240);
                 cmd.arg("-ss")
                     .arg(format!("{}", time - time_base))
                     .arg("-vframes")
