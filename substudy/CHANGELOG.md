@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.6.10] - 2024-05-04
+
+### Added
+
+- It is now possible (though usually unnecessary) to supply the source language when translating subtitles.
+
+### Fixed
+
+- Exported images are now 50% larger in each dimension. Screens got bigger in the last 8 years, and 240x160 is feeling a little small.
+- Transcribed subtitles now default to 40 characters per line, rather than 30. This is more standard, and it uses space more efficently in VLC.
+- Improve docs and error messages for `export anki`. Thank you to @rdearman for the feedback!
+- Give a more helpful error for overlapping subtitles in input files, which we don't really support at the moment (though we can fix small overlaps). Thank you to everyone who let me know about this!
+
 ## [0.6.9] - 2024-04-11
 
 ### Fixed
