@@ -131,6 +131,20 @@ impl AnkiRequestParams for VersionRequest {
     }
 }
 
+/// Get all deck names.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct DeckNamesRequest;
+
+impl AnkiRequestParams for DeckNamesRequest {
+    const ACTION: &'static str = "deckNames";
+    type Response = Vec<String>;
+
+    fn omit_params(&self) -> bool {
+        true
+    }
+}
+
 /// Get all model names.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]

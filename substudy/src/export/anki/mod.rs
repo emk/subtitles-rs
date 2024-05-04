@@ -12,8 +12,8 @@ use crate::{
     export::{
         anki::connect::{
             AddNotesRequest, AnkiConnect, CanAddNotesWithErrorDetailRequest,
-            ModelNamesRequest, Note, NoteOptions, StoreMediaFileRequest,
-            VersionRequest,
+            DeckNamesRequest, ModelNamesRequest, Note, NoteOptions,
+            StoreMediaFileRequest, VersionRequest,
         },
         Exporter,
     },
@@ -175,16 +175,29 @@ pub async fn export_anki(
     exporter: &mut Exporter,
     options: AnkiExportOptions,
 ) -> Result<()> {
-    let exporting = export_anki_helper(exporter, options.skip_duplicates)?;
-    exporter.finish_exports(ui).await?;
-    let model = &models::AUDIO_MODEL;
-
     // Make sure we can talk to Anki-Connect.
     let client = AnkiConnect::new();
     let version = client.request(VersionRequest).await.context(
-        "Could not connect to Anki (Anki not running, Anki-Connect plugin not installed, or blocked by local firewall?)",
+        "Could not connect to AnkiConnect (see `substudy export anki --help` for troubleshooting)",
     )?;
     debug!("Anki-Connect version: {}", version);
+
+    // Make sure our deck exists.
+    let deck_names = client
+        .request(DeckNamesRequest)
+        .await
+        .context("error fetching deck names from Anki-Connect")?;
+    if !deck_names.iter().any(|n| n == &options.deck) {
+        return Err(anyhow!(
+            "deck not found: {:?} (please create it in Anki first)",
+            options.deck
+        ));
+    }
+
+    // Export our notes and media (to a temporary directory).
+    let exporting = export_anki_helper(exporter, options.skip_duplicates)?;
+    exporter.finish_exports(ui).await?;
+    let model = &models::AUDIO_MODEL;
 
     // Make sure our model exists.
     let model_names = client
