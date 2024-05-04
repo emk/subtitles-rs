@@ -10,7 +10,7 @@ use unicode_width::UnicodeWidthChar;
 /// webpage that recommends 41. But that's actually pretty huge in `mpv`, for
 /// example, and it's getting too long to make a good audio flashcard. 30 seems
 /// to work nicely.
-const MAX_LINE_LENGTH: usize = 30;
+const MAX_LINE_LENGTH: usize = 40;
 
 /// The ideal maximum number of lines in a subtitle.
 const MAX_LINES: usize = 2;
