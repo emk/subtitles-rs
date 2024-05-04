@@ -3,10 +3,12 @@
 
 use std::borrow::Cow;
 
+use anyhow::Context;
 use regex::Regex;
 
 use crate::{
     srt::{Subtitle, SubtitleFile},
+    time::seconds_to_hhmmss,
     Result,
 };
 
@@ -28,6 +30,7 @@ fn clean_line(line: &str) -> String {
     // Used to compress and normalize consecutive whitespace.
     let whitespace = Regex::new(r"\s+").unwrap();
 
+    // Note that `replace_all` may take O(N^2) time in pathological cases.
     whitespace
         .replace_all(&clutter.replace_all(line, ""), " ")
         .trim()
@@ -69,7 +72,19 @@ pub fn clean_subtitle_file(file: &SubtitleFile) -> Result<SubtitleFile> {
     if subs.len() >= 2 {
         for i in 0..subs.len() - 1 {
             let limit = subs[i + 1].period.begin();
-            subs[i].period.end_before(limit)?;
+            // Give a nice error, because users tend to report this a lot.
+            //
+            // We might want to create some strategy for fixing this
+            // automatically at some point.
+            subs[i].period.end_before(limit).with_context(|| {
+                format!(
+                    "Unable to fix overlapping subtitles:\n- {}: {:?}\n- {}: {:?}",
+                    seconds_to_hhmmss(subs[i].period.begin()),
+                    subs[i].lines,
+                    seconds_to_hhmmss(subs[i + 1].period.begin()),
+                    subs[i + 1].lines,
+                )
+            })?;
         }
     }
 
