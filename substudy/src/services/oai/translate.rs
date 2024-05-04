@@ -68,12 +68,15 @@ lazy_static! {
 pub async fn translate_subtitle_file(
     ui: &Ui,
     file: &SubtitleFile,
+    from_lang: Option<Lang>,
     to_lang: Lang,
 ) -> Result<SubtitleFile> {
     // Infer the language of the subtitle file.
-    let from_lang = file.detect_language().ok_or_else(|| {
-        anyhow!("Could not detect the language of the input subtitle file")
-    })?;
+    let from_lang = from_lang
+        .or_else(|| file.detect_language())
+        .ok_or_else(|| {
+            anyhow!("Could not detect the language of the input subtitle file")
+        })?;
 
     // Split into chunks of at least `MIN_CHUNK_SIZE`, but then try to end on a
     // sentence boundary. Even if we can't find a sentence boundary, end
@@ -302,7 +305,7 @@ mod tests {
 
         let ui = Ui::init_for_tests();
         let translated =
-            translate_subtitle_file(&ui, &file, Lang::iso639("es").unwrap())
+            translate_subtitle_file(&ui, &file, None, Lang::iso639("es").unwrap())
                 .await
                 .unwrap();
         assert_eq!(translated.subtitles.len(), file.subtitles.len());

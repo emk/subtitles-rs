@@ -156,6 +156,11 @@ If you have no related text at all, you can omit both `--related-text` and
         /// Path to the subtitle file to translate.
         foreign_subs: PathBuf,
 
+        /// Language to translate from. This can normally be omitted, but it
+        /// might help with closely-related languages or mixed-language content.
+        #[arg(long)]
+        foreign_lang: Option<String>,
+
         /// Target language code (e.g. "en" for English).
         #[arg(long)]
         native_lang: String,
@@ -318,8 +323,12 @@ async fn main() -> Result<()> {
         }
         Args::Translate {
             foreign_subs,
+            foreign_lang,
             native_lang,
-        } => cmd_translate(&ui, &foreign_subs, &native_lang).await,
+        } => {
+            cmd_translate(&ui, &foreign_subs, foreign_lang.as_deref(), &native_lang)
+                .await
+        }
     }
 }
 
@@ -444,10 +453,17 @@ async fn cmd_transcribe(
     Ok(())
 }
 
-async fn cmd_translate(ui: &Ui, foreign_subs: &Path, native_lang: &str) -> Result<()> {
+async fn cmd_translate(
+    ui: &Ui,
+    foreign_subs: &Path,
+    foreign_lang: Option<&str>,
+    native_lang: &str,
+) -> Result<()> {
     let file = SubtitleFile::cleaned_from_path(foreign_subs)?;
+    let foreign_lang = foreign_lang.map(|f| Lang::iso639(f)).transpose()?;
     let native_lang = Lang::iso639(native_lang)?;
-    let translated = translate_subtitle_file(ui, &file, native_lang).await?;
+    let translated =
+        translate_subtitle_file(ui, &file, foreign_lang, native_lang).await?;
     print!("{}", translated.to_string());
     Ok(())
 }
