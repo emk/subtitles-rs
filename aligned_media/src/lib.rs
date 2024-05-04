@@ -7,11 +7,15 @@
 
 #![warn(missing_docs)]
 
+use relative_path::{RelativePath, RelativePathBuf};
 use serde::de::Error as DeError;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::HashMap;
+use std::hash::Hash;
+use std::path::Path;
 use std::result;
 use thiserror::Error;
+use uuid::Uuid;
 
 pub mod html;
 
@@ -37,6 +41,14 @@ pub enum Error {
     #[error("could not parse metadata")]
     #[non_exhaustive]
     CouldNotParseMetadata {
+        /// The underlying error.
+        source: Box<dyn std::error::Error + Send + Sync + 'static>,
+    },
+
+    /// We could not serialize the metadata.
+    #[error("could not serialize metadata")]
+    #[non_exhaustive]
+    CouldNotSerializeMetadata {
         /// The underlying error.
         source: Box<dyn std::error::Error + Send + Sync + 'static>,
     },
@@ -94,51 +106,44 @@ pub enum Error {
     },
 }
 
+/// A unique identifier for a track, within the context of a file.
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[serde(transparent)]
+pub struct TrackId(pub String);
+
 /// A single media file, typically an episode of a TV series, a film, an chapter
 /// of an audiobook. It might also be something more exotic, like a PDF of a
 /// graphic novel.
-#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[cfg_attr(feature = "no_forwards_compatibility", serde(deny_unknown_fields))]
 #[non_exhaustive]
 pub struct Metadata {
-    /// The title of a book, TV series, album, etc. This may be the same for
-    /// multiple files if `section_number` and/or `section_title` are used.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub title: Option<String>,
-
-    /// The "section" number. This might be an episode number, a track number,
-    /// or a chapter number.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub section_number: Option<u32>,
-
-    /// The title of this particular section. Typically a song name or chapter
-    /// title, if somebody wants to record that.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub section_title: Option<String>,
-
-    /// Authors, etc., of this work.
+    /// Authors, etc., of this work. This may be used to group works by the same
+    /// creator together.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub creators: Vec<String>,
+
+    /// Information about how this work fits into a series. This may be used to
+    /// group related works together, such as episodes of a TV series, books in a
+    /// series, or songs in an album.
+    pub series: Option<SeriesMetadata>,
+
+    /// The title of a book, a TV episode, or a song, etc.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
 
     /// The year in which this work was published.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub year: Option<i32>,
 
-    /// The primary media track for this `MediaFile`. This is used as the "time
-    /// base" for all `Alignment`s. This may be omitted if no timed media is
-    /// available, as would be in the case of two texts aligned against each
-    /// other.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub base_track: Option<Track>,
+    /// Tracks associated with this file.
+    ///
+    pub tracks: HashMap<TrackId, Track>,
 
-    /// Optional other tracks associated with this file.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub tracks: Vec<Track>,
-
-    /// A list of synchronized sentences, subtitles, or other linguistic
-    /// content.
-    pub alignments: Vec<Alignment>,
+    /// The primary media track for this `MediaFile`.
+    ///
+    /// This is used as the "time base" for all `Alignment`s.
+    pub base_track_id: TrackId,
 
     /// Tags. These may be used by the user or application to categorize the
     /// media file.
@@ -148,6 +153,14 @@ pub struct Metadata {
     /// Application-specific extension data.
     #[serde(default, skip_serializing_if = "ExtensionData::is_empty")]
     pub ext: ExtensionData,
+
+    /// A list of synchronized sentences, subtitles, or other linguistic
+    /// content.
+    pub alignments: Vec<AlignmentOrGroup>,
+
+    /// Unknown fields.
+    #[serde(flatten)]
+    pub unknown: HashMap<String, serde_json::Value>,
 }
 
 impl Metadata {
@@ -165,6 +178,15 @@ impl Metadata {
     pub fn from_str(data: &str) -> Result<Metadata> {
         Self::from_bytes(data.as_bytes())
     }
+
+    /// Convert this metadata to a JSON string.
+    pub fn to_string(&self) -> Result<String> {
+        serde_json::to_string_pretty(self).map_err(|err| {
+            Error::CouldNotSerializeMetadata {
+                source: Box::new(err),
+            }
+        })
+    }
 }
 
 #[test]
@@ -181,13 +203,38 @@ fn parse_metadata() {
     }
 }
 
+/// Information about how a media file fits into a series.
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+#[cfg_attr(feature = "no_forwards_compatibility", serde(deny_unknown_fields))]
+#[non_exhaustive]
+pub struct SeriesMetadata {
+    /// The title of this series. This might be "The Lord of the Rings" for a series
+    /// of books, "Avatar: La Leyenda de Aang" for a TV series, or "Abbey Road" for
+    /// an album.
+    series_title: String,
+    /// The position of this work in the series. This might be a book number, an
+    /// episode number, or a track number.
+    index_in_series: Option<u32>,
+
+    /// Unknown fields.
+    #[serde(flatten)]
+    pub unknown: HashMap<String, serde_json::Value>,
+}
+
 /// An individual "track" of context. This might be a single subtitle in a
 /// single language, or a still image taken from a video
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "no_forwards_compatibility", serde(deny_unknown_fields))]
 #[non_exhaustive]
 pub struct Track {
+    /// The origin of this track.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub origin: Option<TrackOrigin>,
+
+    /// If this track was derived from another track, this should contain the
+    /// `id` of the original track.
+    pub derived_from_track_id: Option<String>,
+
     /// The kind of data stored in this track.
     #[serde(rename = "type")]
     pub track_type: TrackType,
@@ -200,16 +247,9 @@ pub struct Track {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lang: Option<isolang::Language>,
 
-    /// The actual underlying file on disk, if any. Either this or `html` should
-    /// be present, but not both.
+    /// A file containing the entire contents of this track. If this is not
+    /// present, we will assume that the actual data is stored in
     pub file: Option<FilePath>,
-
-    // TODO: Do we want a `fileSpan: Span` element, to select only a portion of
-    // a media file?
-    /// Textual context, which should be valid HTML 5, optionally with embedded
-    /// tags like `<b>`, `<i>` and `<br>`.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub html: Option<html::Fragment>,
 
     /// How was this generated? For AI-generated data, this should contain the
     /// model name, such as `"whisper-1"` or `"gpt-3.5-turbo"`.
@@ -218,51 +258,51 @@ pub struct Track {
     /// Application-specific extension data.
     #[serde(default, skip_serializing_if = "ExtensionData::is_empty")]
     pub ext: ExtensionData,
+
+    /// Unknown fields.
+    #[serde(flatten)]
+    pub unknown: HashMap<String, serde_json::Value>,
 }
 
 impl Track {
     /// Create a new track with the specified type. This is pretty much useless
     /// unless you also set some additional fields manually.
-    pub fn with_type(track_type: TrackType) -> Track {
+    pub fn new(track_type: TrackType) -> Track {
         Track {
             track_type: track_type,
+            origin: None,
+            derived_from_track_id: None,
             lang: None,
             file: None,
-            html: None,
             generated_by: None,
             ext: ExtensionData::default(),
+            unknown: HashMap::default(),
         }
     }
+}
 
-    /// Create a new HTML track with specified language and content.
-    pub fn html<F>(lang: isolang::Language, html: F) -> Track
-    where
-        F: Into<html::Fragment>,
-    {
-        Track {
-            track_type: TrackType::Html,
-            lang: Some(lang),
-            file: None,
-            html: Some(html.into()),
-            generated_by: None,
-            ext: ExtensionData::default(),
-        }
-    }
-
-    /// Create a new HTML track from plain text.
-    pub fn text<S>(lang: isolang::Language, text: S) -> Track
-    where
-        S: Into<String>,
-    {
-        Track {
-            track_type: TrackType::Html,
-            lang: Some(lang),
-            file: None,
-            html: Some(html::Fragment::from_text(text)),
-            generated_by: None,
-            ext: ExtensionData::default(),
-        }
-    }
+/// Different origins for a track.
+#[derive(
+    Clone, Debug, Eq, Hash, PartialEq, PartialOrd, Ord, Deserialize, Serialize,
+)]
+#[serde(rename_all = "snake_case")]
+#[non_exhaustive]
+pub enum TrackOrigin {
+    /// This track is the original source material, as created by the author.
+    Original,
+    /// This track is a translation of the original source material **by a
+    /// human.**
+    HumanTranslated,
+    /// This track was extracted from another track.
+    Extracted,
+    /// This track was converted from another format. For example, if the original
+    /// was a high-res MKV file, this might be a lower-res MP4.
+    Converted,
+    /// This track was generated by an AI model. This includes AI translations,
+    /// as well as AI-generated images, audio, etc. We mark these separately
+    /// because they may have a higher rate of errors, and because using
+    /// AI-generated data to train another AI model can lead to strange errors.
+    AiGenerated,
 }
 
 /// Different possible track types.
@@ -277,7 +317,7 @@ pub enum TrackType {
     Image,
     /// This track contains notes in HTML format. These are not part of the
     /// media themselves, but contain other useful information.
-    Note,
+    Notes,
     /// This track contains a non-standard form of data. When serialized, it
     /// will be named starting with `"x-"`, followed by the `String` value.
     Ext(String),
@@ -290,6 +330,7 @@ impl<'de> Deserialize<'de> for TrackType {
             "html" => Ok(TrackType::Html),
             "media" => Ok(TrackType::Media),
             "image" => Ok(TrackType::Image),
+            "notes" => Ok(TrackType::Notes),
             other if other.starts_with("x-") => {
                 Ok(TrackType::Ext(other[2..].to_owned()))
             }
@@ -309,23 +350,62 @@ impl Serialize for TrackType {
             TrackType::Html => "html".serialize(serializer),
             TrackType::Media => "media".serialize(serializer),
             TrackType::Image => "image".serialize(serializer),
-            TrackType::Note => "note".serialize(serializer),
+            TrackType::Notes => "notes".serialize(serializer),
             TrackType::Ext(ref name) => format!("x-{}", name).serialize(serializer),
         }
     }
+}
+
+/// Either an alignment, or a group of alignments. This allows us to work with
+/// both single alignments (for example, individual subtitles or sentences) and
+/// groups of alignments (for example, a paragraph of text).
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(untagged)]
+#[non_exhaustive]
+pub enum AlignmentOrGroup {
+    /// A group of alignments.
+    Group(AlignmentGroup),
+    /// A single alignment.
+    Alignment(Alignment),
+}
+
+/// A group of alignments. This can be used to represent a paragraph of text, or
+/// perhaps a verse of a song.
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+#[cfg_attr(feature = "no_forwards_compatibility", serde(deny_unknown_fields))]
+#[non_exhaustive]
+pub struct AlignmentGroup {
+    /// One or more alignments in this group.
+    pub alignments: Vec<Alignment>,
+    // This will require custom deserialization for `AlignmentGroup` to work.
+    //
+    // /// Unknown fields.
+    // #[serde(flatten)]
+    // pub unknown: HashMap<String, serde_json::Value>,
 }
 
 /// The smallest unit of alignment or synchronization. This might be a subtitle,
 /// a sentence, or perhaps multiple sentences if that's the best the aligning
 /// application can do.
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "no_forwards_compatibility", serde(deny_unknown_fields))]
 #[non_exhaustive]
 pub struct Alignment {
-    /// The time span associated with this alignment, relative to
-    /// `MediaFile.baseTrack`. If `MediaFile.baseTrack` was not specified, this
-    /// element must be omitted.
+    /// A globally unique ID for this alignment. This may be used for things
+    /// like bookmarking, or for keeping track of the link between alignments
+    /// and generated Anki cards.
+    pub id: Uuid,
+
+    /// The heading level of this alignment. This works like `h1`, `h2`, etc.,
+    /// in HTML. A book title might be `h1`, a chapter title `h2`, and a section
+    /// title `h3`. This is used by applications that want to display a table of
+    /// contents to the user.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub heading: Option<u8>,
+
+    /// The time span associated with this alignment, relative to the first
+    /// entry in `MediaFile.trakcs`. If that track does not contained timed
+    /// media, this must be omitted.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     time_span: Option<TimeSpan>,
 
@@ -336,8 +416,7 @@ pub struct Alignment {
     /// `MediaFile.baseTrack` track, because we can already use
     /// `MediaFile.baseTrack` and `Alignment.span` to figure out what portion
     /// of the base track corresponds to this alignment.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub tracks: Vec<Track>,
+    pub tracks: HashMap<TrackId, TrackSegment>,
 
     /// Tags. These may be used by the user or application to categorize the
     /// media file. The following values have special meanings by convention:
@@ -351,6 +430,67 @@ pub struct Alignment {
     /// Application-specific extension data.
     #[serde(default, skip_serializing_if = "ExtensionData::is_empty")]
     pub ext: ExtensionData,
+
+    /// Unknown fields.
+    #[serde(flatten)]
+    pub unknown: HashMap<String, serde_json::Value>,
+}
+
+/// A segment of a track included in an alignment. This might be a single
+/// subtitle, a sentence or a line of a song. Or it might be a single image or
+/// audio clip.
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[cfg_attr(feature = "no_forwards_compatibility", serde(deny_unknown_fields))]
+#[non_exhaustive]
+pub struct TrackSegment {
+    /// Text content, represented as HTML. Either this or `text` must be
+    /// present, but not both.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub html: Option<html::Fragment>,
+
+    /// External content, stored in a file. Either this or `html` must be
+    /// present, but not both.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub file: Option<FilePath>,
+
+    /// Unknown fields.
+    #[serde(flatten)]
+    pub unknown: HashMap<String, serde_json::Value>,
+}
+
+impl TrackSegment {
+    /// Create a new HTML track with specified language and content.
+    pub fn html<F>(html: F) -> TrackSegment
+    where
+        F: Into<html::Fragment>,
+    {
+        TrackSegment {
+            html: Some(html.into()),
+            file: None,
+            unknown: HashMap::default(),
+        }
+    }
+
+    /// Create a new HTML track from plain text.
+    pub fn text<S>(text: S) -> TrackSegment
+    where
+        S: Into<String>,
+    {
+        TrackSegment {
+            html: Some(html::Fragment::from_text(text)),
+            file: None,
+            unknown: HashMap::default(),
+        }
+    }
+
+    /// Create a new file track.
+    pub fn file(file: FilePath) -> TrackSegment {
+        TrackSegment {
+            html: None,
+            file: Some(file),
+            unknown: HashMap::default(),
+        }
+    }
 }
 
 /// A span of time, measured in floating-point seconds.
@@ -406,49 +546,78 @@ impl Serialize for TimeSpan {
 /// - Must not contain path segments with the values "", "." or "..".
 /// - Must contain valid UTF-8 data.
 ///
-/// These paths will be interpreted as relative to the `"file/"` sudirectory
-/// located in the same directory as the `metadata.json` file.
+/// These paths will be interpreted as relative to the directory containing the
+/// `metadata.json` file, and should point into a `"file/"` sudirectory located
+/// in the same directory.
 #[derive(Clone, Debug, Eq, Hash, PartialEq, PartialOrd, Ord)]
 pub struct FilePath {
-    path: String,
+    path: RelativePathBuf,
 }
 
 impl FilePath {
-    /// Construct a relative path from a string, being sure to validate it.
-    pub fn new<S: Into<String>>(path: S) -> Result<FilePath> {
-        let path = path.into();
-        for component in path.split("/") {
+    /// Construct a relative path from an OS-specific [`Path`], and validate
+    /// that it points into our `./file/` directory.
+    pub fn from_path(path: &Path) -> Result<FilePath> {
+        let path = RelativePath::from_path(path).map_err(|_| {
+            (|| Error::InvalidPath {
+                path: path.display().to_string(),
+            })()
+        })?;
+        Self::from_rel_path(&path)
+    }
+
+    /// Construct a relative path from a portable [`RelativePath`], and validate
+    /// that it points into our `./file/` directory.
+    fn from_rel_path(path: &RelativePath) -> Result<FilePath> {
+        let components = path.components().collect::<Vec<_>>();
+        eprintln!("{:?}", components);
+        if components.len() < 2 || components[0].as_str() != "files" {
+            return Err((|| Error::InvalidPath {
+                path: path.to_string(),
+            })());
+        }
+        for component in components {
+            let component = component.as_str();
             if component == ""
                 || component == "."
                 || component == ".."
                 || component.contains("\\")
             {
-                return Err(Error::InvalidPath { path: path.clone() });
+                return Err((|| Error::InvalidPath {
+                    path: path.to_string(),
+                })());
             }
         }
-        Ok(FilePath { path })
+        Ok(FilePath {
+            path: path.to_relative_path_buf(),
+        })
     }
 }
 
 #[test]
 fn file_path_checks_validity() {
-    assert!(FilePath::new("good.txt").is_ok());
-    assert!(FilePath::new("dir/good.txt").is_ok());
+    assert!(FilePath::from_rel_path(RelativePath::new("files/good.txt")).is_ok());
+    assert!(FilePath::from_rel_path(RelativePath::new("files/dir/good.txt")).is_ok());
 
-    assert!(FilePath::new("").is_err());
-    assert!(FilePath::new(".").is_err());
-    assert!(FilePath::new("..").is_err());
-    assert!(FilePath::new("dir/..").is_err());
-    assert!(FilePath::new("/absolute").is_err());
-    assert!(FilePath::new("trailing/").is_err());
-    assert!(FilePath::new("dir//file").is_err());
-    assert!(FilePath::new("back\\slash").is_err());
+    assert!(FilePath::from_rel_path(RelativePath::new("")).is_err());
+    assert!(FilePath::from_rel_path(RelativePath::new("files")).is_err());
+    assert!(FilePath::from_rel_path(RelativePath::new("./files")).is_err());
+    assert!(FilePath::from_rel_path(RelativePath::new("files/..")).is_err());
+    assert!(FilePath::from_rel_path(RelativePath::new("../files")).is_err());
+    assert!(FilePath::from_rel_path(RelativePath::new("/absolute")).is_err());
+    // These two are normalized by `RelativePath`. We'd disallow them otherwise,
+    // but this is an extremely popular crate for handling portable paths, so
+    // we'll accept these oddities.
+    //
+    // assert!(FilePath::from_rel_path(RelativePath::new("files/trailing/")).is_err());
+    // assert!(FilePath::from_rel_path(RelativePath::new("files/dir//file")).is_err());
+    assert!(FilePath::from_rel_path(RelativePath::new("files/back\\slash")).is_err());
 }
 
 impl<'de> Deserialize<'de> for FilePath {
     fn deserialize<D: Deserializer<'de>>(d: D) -> result::Result<Self, D::Error> {
-        let path: String = Deserialize::deserialize(d)?;
-        FilePath::new(path).map_err(D::Error::custom)
+        let path: RelativePathBuf = Deserialize::deserialize(d)?;
+        FilePath::from_rel_path(&path).map_err(D::Error::custom)
     }
 }
 

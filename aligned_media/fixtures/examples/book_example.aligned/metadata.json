@@ -1,16 +1,84 @@
 {
+  "creators": [
+    "Miguel de Cervantes Saavedra"
+  ],
+  "title": "El ingenioso hidalgo don Quijote de la Mancha",
+  "year": 1605,
+  "tracks": {
+    "es": {
+      "type": "html",
+      "origin": "original",
+      "lang": "es"
+    },
+    "en": {
+      "type": "html",
+      "origin": "ai_generated",
+      "generated_by": "gpt-4",
+      "derived_from_track_id": "es",
+      "lang": "en"
+    },
+    "notes": {
+      "type": "notes"
+    }
+  },
+  "tags": [
+    "classic"
+  ],
+  "base_track_id": "es",
   "alignments": [
     {
-      "tracks": [
+      "id": "2acdeaf4-7b0c-4f78-abf2-dc299ab362e9",
+      "heading": 1,
+      "tracks": {
+        "es": {
+          "html": "El ingenioso hidalgo don Quijote de la Mancha"
+        },
+        "en": {
+          "html": "The Ingenious Gentleman Don Quijote of La Mancha"
+        }
+      }
+    },
+    {
+      "id": "f4b3b3b4-4b3b-4b3b-4b3b-4b3b4b3b4b3b",
+      "heading": 2,
+      "tracks": {
+        "es": {
+          "html": "Capítulo I. Que trata de la condición y ejercicio del famoso hidalgo don Quijote de la Mancha"
+        },
+        "en": {
+          "html": "Chapter I. Which treats of the condition and exercise of the famous gentleman don Quijote of La Mancha"
+        }
+      }
+    },
+    {
+      "alignments": [
         {
-          "type": "html",
-          "lang": "fr",
-          "html": "<i>Jean &amp; Luc:</i> On y va !"
+          "id": "f5fb686f-b0ab-486c-9e7d-40c4abd51bc7",
+          "tracks": {
+            "es": {
+              "html": "En un lugar de la Mancha, de cuyo nombre no quiero acordarme, no ha mucho tiempo que vivía un hidalgo de los de lanza en astillero, adarga antigua, rocín flaco y galgo corredor."
+            },
+            "en": {
+              "html": "In a place of La Mancha, whose name I do not wish to recall, not long ago there lived a gentleman of the type with a lance in the rack, an ancient shield, a skinny steed, and a racing greyhound."
+            },
+            "notes": {
+              "html": "<ul><li>\"acordarme\" is a reflexive verb that means \"to remember\"; the reflexive pronoun \"me\" is used to indicate that the action is being done to oneself.</li></ul>"
+            }
+          },
+          "tags": [
+            "star"
+          ]
         },
         {
-          "type": "html",
-          "lang": "en",
-          "html": "<i>Jean &amp; Luc:</i> Let's go!"
+          "id": "f24a1744-45f9-4b00-98b1-c7a4c27a5a12",
+          "tracks": {
+            "es": {
+              "html": "Una olla de algo más vaca que carnero, salpicón las más noches, duelos y quebrantos los sábados, lantejas los viernes, algún palomino de añadidura los domingos, consumían las tres partes de su hacienda."
+            },
+            "en": {
+              "html": "A pot of stew more beef than mutton, minced meat most nights, grievous discomforts on Saturdays, lentils on Fridays, and an occasional pigeon as a treat on Sundays, consumed three parts of his estate."
+            }
+          }
         }
       ]
     }

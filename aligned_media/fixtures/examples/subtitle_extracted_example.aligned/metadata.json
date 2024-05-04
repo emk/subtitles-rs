@@ -1,36 +1,66 @@
 {
-  "baseTrack": {
-    "type": "media",
-    "lang": "fr",
-    "file": "episode1.mp4"
+  "tracks": {
+    "base.": {
+      "origin": "original",
+      "type": "media",
+      "lang": "fr",
+      "file": "files/episode1.mp4"
+    },
+    "subs.fr": {
+      "origin": "ai_generated",
+      "generated_by": "whisper-1",
+      "derived_from_track_id": "base",
+      "type": "html",
+      "lang": "fr"
+    },
+    "subs.en": {
+      "origin": "ai_generated",
+      "generated_by": "gpt-3.5-turbo",
+      "derived_from_track_id": "subs.fr",
+      "type": "html",
+      "lang": "en"
+    },
+    "image": {
+      "origin": "extracted",
+      "derived_from_track_id": "base",
+      "type": "image"
+    },
+    "card_audio": {
+      "origin": "extracted",
+      "derived_from_track_id": "base",
+      "type": "media",
+      "lang": "fr"
+    }
   },
+  "base_track_id": "base",
   "alignments": [
     {
+      "id": "b9cbc638-430b-4b71-9c92-3f9e3e651a5c",
       "timeSpan": [
         10,
         15.5
       ],
-      "tracks": [
-        {
+      "tracks": {
+        "subs.fr": {
           "type": "html",
           "lang": "fr",
           "html": "<i>Jean &amp; Luc:</i> On y va !"
         },
-        {
+        "subs.en": {
           "type": "html",
           "lang": "en",
           "html": "<i>Jean &amp; Luc:</i> Let's go!"
         },
-        {
+        "image": {
           "type": "image",
-          "file": "episode1_12_75.jpg"
+          "file": "files/episode1_12_75.jpg"
         },
-        {
+        "card_audio": {
           "type": "media",
           "lang": "fr",
-          "file": "episode1_9_00_16_50.mp3"
+          "file": "files/episode1_9_00_16_50.mp3"
         }
-      ]
+      }
     }
   ]
 }

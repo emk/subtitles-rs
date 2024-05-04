@@ -1,27 +1,47 @@
 {
-  "baseTrack": {
-    "type": "media",
-    "lang": "fr",
-    "file": "episode1.mp4"
+  "series": {
+    "series_title": "Les aventures de Jean & Luc",
+    "index_in_series": 1
   },
+  "title": "Episode 01.01",
+  "tracks": {
+    "base.": {
+      "origin": "original",
+      "type": "media",
+      "lang": "fr",
+      "file": "files/episode1.mp4"
+    },
+    "subs.fr": {
+      "origin": "ai_generated",
+      "generated_by": "whisper-1",
+      "derived_from_track_id": "base",
+      "type": "html",
+      "lang": "fr"
+    },
+    "subs.en": {
+      "origin": "ai_generated",
+      "generated_by": "gpt-3.5-turbo",
+      "derived_from_track_id": "subs.fr",
+      "type": "html",
+      "lang": "en"
+    }
+  },
+  "base_track_id": "base",
   "alignments": [
     {
+      "id": "56523fb0-b4c5-40d4-bb08-4c59fb027dbb",
       "timeSpan": [
         10,
         15.5
       ],
-      "tracks": [
-        {
-          "type": "html",
-          "lang": "fr",
+      "tracks": {
+        "subs.fr": {
           "html": "<i>Jean &amp; Luc:</i> On y va !"
         },
-        {
-          "type": "html",
-          "lang": "en",
+        "subs.en": {
           "html": "<i>Jean &amp; Luc:</i> Let's go!"
         }
-      ]
+      }
     }
   ]
 }
