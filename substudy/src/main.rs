@@ -171,7 +171,22 @@ If you have no related text at all, you can omit both `--related-text` and
 enum ExportFormat {
     /// Export to Anki via Anki-Connect plugin:
     /// https://ankiweb.net/shared/info/2055492159.
-    #[command(name = "anki")]
+    #[command(
+        name = "anki",
+        after_help = "\
+To use this feature, you will need to:
+
+1. Install the Anki-Connect plugin: https://ankiweb.net/shared/info/2055492159
+   in your copy of Anki.
+2. Make sure Anki is running.
+3. Read the install instructions on https://foosoft.net/projects/anki-connect/
+   carefully. In particular:
+   - Make sure that your firewall isn't blocking local access to AnkiConnect.
+   - On the Mac, you will need to disable \"App Nap\" for Anki.
+4. Make sure the deck you specify already exists.
+
+Password authentication to AnkiConnect is not supported."
+    )]
     Anki {
         /// Path to the video.
         video: PathBuf,
