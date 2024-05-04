@@ -73,12 +73,14 @@ jobs:
           - target: x86_64-apple-darwin
             host: x86_64-apple-darwin
             cargo: cargo
-            os: macos-latest
+            # See https://github.com/federicocarboni/setup-ffmpeg/issues/21
+            os: macos-13
             ext: ""
           - target: aarch64-apple-darwin
             host: x86_64-apple-darwin
             cargo: cargo
-            os: macos-latest
+            # See https://github.com/federicocarboni/setup-ffmpeg/issues/21
+            os: macos-13
             ext: ""
           - target: x86_64-pc-windows-msvc
             host: x86_64-pc-windows-msvc
