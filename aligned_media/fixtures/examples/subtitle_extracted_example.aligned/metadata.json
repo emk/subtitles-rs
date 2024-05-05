@@ -1,6 +1,6 @@
 {
   "tracks": {
-    "base.": {
+    "base": {
       "origin": "original",
       "type": "media",
       "lang": "fr",
@@ -36,7 +36,7 @@
   "alignments": [
     {
       "id": "b9cbc638-430b-4b71-9c92-3f9e3e651a5c",
-      "timeSpan": [
+      "time_span": [
         10,
         15.5
       ],

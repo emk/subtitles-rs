@@ -5,7 +5,7 @@
   },
   "title": "Episode 01.01",
   "tracks": {
-    "base.": {
+    "base": {
       "origin": "original",
       "type": "media",
       "lang": "fr",
@@ -30,7 +30,7 @@
   "alignments": [
     {
       "id": "56523fb0-b4c5-40d4-bb08-4c59fb027dbb",
-      "timeSpan": [
+      "time_span": [
         10,
         15.5
       ],

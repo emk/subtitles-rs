@@ -15,6 +15,7 @@ use std::hash::Hash;
 use std::path::Path;
 use std::result;
 use thiserror::Error;
+use tracing::warn;
 use uuid::Uuid;
 
 pub mod html;
@@ -77,12 +78,31 @@ pub enum Error {
         name: String,
     },
 
+    /// We encountered an invalid heading level.
+    #[error("invalid heading level {heading} in segment {segment_id}")]
+    #[non_exhaustive]
+    InvalidHeading {
+        /// The invalid heading level.
+        heading: u8,
+
+        /// The ID of the segment with the invalid heading.
+        segment_id: Uuid,
+    },
+
     /// We encountered an invalid path.
     #[error("path {path:?} is not allowed")]
     #[non_exhaustive]
     InvalidPath {
         /// The invalid path.
         path: String,
+    },
+
+    /// We encountered a [`Segment`] with invalid content.
+    #[error("invalid segment content, must have either HTML or a file but not both")]
+    #[non_exhaustive]
+    InvalidSegmentContent {
+        /// The ID of the alignment with the invalid segment.
+        id: Uuid,
     },
 
     /// We encountered an invalid span.
@@ -93,6 +113,23 @@ pub enum Error {
         begin: f32,
         /// The end of the invalid span.
         end: f32,
+    },
+
+    /// We encountered an unknown field, and our validator is set to fail on
+    /// unknown fields.
+    #[error("unknown field {field:?}")]
+    #[non_exhaustive]
+    UnknownFields {
+        /// The unknown fields.
+        field: Vec<String>,
+    },
+
+    /// We encountered an unknown [`TrackId`].
+    #[error("unknown track ID {id:?} found in file")]
+    #[non_exhaustive]
+    UnknownTrackId {
+        /// The unknown track ID.
+        id: TrackId,
     },
 
     /// We encountered an unknown track type that didn't begin with "x-".
@@ -106,6 +143,16 @@ pub enum Error {
     },
 }
 
+/// Validation mode.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[non_exhaustive]
+pub enum ValidationMode {
+    /// Warn on unknown fields.
+    Warn,
+    /// Fail on unknown fields.
+    Error,
+}
+
 /// A unique identifier for a track, within the context of a file.
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 #[serde(transparent)]
@@ -115,7 +162,6 @@ pub struct TrackId(pub String);
 /// of an audiobook. It might also be something more exotic, like a PDF of a
 /// graphic novel.
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-#[cfg_attr(feature = "no_forwards_compatibility", serde(deny_unknown_fields))]
 #[non_exhaustive]
 pub struct Metadata {
     /// Authors, etc., of this work. This may be used to group works by the same
@@ -167,11 +213,13 @@ impl Metadata {
     /// Parse `metadata.json` represented as raw bytes. This will be interpreted
     /// as UTF-8, because the format is strict.
     pub fn from_bytes(data: &[u8]) -> Result<Metadata> {
-        Ok(serde_json::from_slice(data).map_err(|err| {
+        let metadata: Metadata = serde_json::from_slice(data).map_err(|err| {
             Error::CouldNotParseMetadata {
                 source: Box::new(err),
             }
-        })?)
+        })?;
+        metadata.validate(ValidationMode::Warn)?;
+        Ok(metadata)
     }
 
     /// Parse `metadata.json` represented as a UTF-8 Rust string.
@@ -187,6 +235,64 @@ impl Metadata {
             }
         })
     }
+
+    /// Verify track exists.
+    fn validate_track_exists(&self, track_id: &TrackId) -> Result<()> {
+        if !self.tracks.contains_key(track_id) {
+            Err(Error::UnknownTrackId {
+                id: track_id.clone(),
+            })
+        } else {
+            Ok(())
+        }
+    }
+
+    /// Validate this metadata.
+    pub fn validate(&self, mode: ValidationMode) -> Result<()> {
+        // Make sure our base track is present.
+        self.validate_track_exists(&self.base_track_id)?;
+
+        // Check our series metadata & tracks.
+        if let Some(series) = &self.series {
+            series.validate(mode)?;
+        }
+        for (_track_id, track) in &self.tracks {
+            track.validate(self, mode)?;
+        }
+
+        // Recursively check our alignments, passing in our track info.
+        for alignment_or_group in &self.alignments {
+            alignment_or_group.validate(self, mode)?;
+        }
+
+        // If we're supposed to fail on unknown fields, do so.
+        check_for_unknown_fields(mode, &self.unknown)?;
+        Ok(())
+    }
+}
+
+/// Check for unknown fields, and fail if we're supposed to.
+fn check_for_unknown_fields(
+    mode: ValidationMode,
+    unknown: &HashMap<String, serde_json::Value>,
+) -> std::prelude::v1::Result<(), Error> {
+    if !unknown.is_empty() {
+        match mode {
+            ValidationMode::Warn => {
+                warn!("Unknown fields: {:?}", unknown.keys());
+            }
+            ValidationMode::Error => {
+                return Err(Error::UnknownFields {
+                    field: unknown.keys().cloned().collect(),
+                });
+            }
+        }
+        Err(Error::UnknownFields {
+            field: unknown.keys().cloned().collect(),
+        })
+    } else {
+        Ok(())
+    }
 }
 
 #[test]
@@ -199,13 +305,16 @@ fn parse_metadata() {
         ),
     ];
     for example in examples {
-        Metadata::from_str(example).expect("failed to parse example metadata");
+        let metadata =
+            Metadata::from_str(example).expect("failed to parse example metadata");
+        metadata
+            .validate(ValidationMode::Error)
+            .expect("failed to validate example metadata");
     }
 }
 
 /// Information about how a media file fits into a series.
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-#[cfg_attr(feature = "no_forwards_compatibility", serde(deny_unknown_fields))]
 #[non_exhaustive]
 pub struct SeriesMetadata {
     /// The title of this series. This might be "The Lord of the Rings" for a series
@@ -221,10 +330,18 @@ pub struct SeriesMetadata {
     pub unknown: HashMap<String, serde_json::Value>,
 }
 
+impl SeriesMetadata {
+    /// (Internal.) Validate this [`SeriesMetadata`].
+    fn validate(&self, mode: ValidationMode) -> Result<()> {
+        // If we're supposed to fail on unknown fields, do so.
+        check_for_unknown_fields(mode, &self.unknown)?;
+        Ok(())
+    }
+}
+
 /// An individual "track" of context. This might be a single subtitle in a
 /// single language, or a still image taken from a video
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-#[cfg_attr(feature = "no_forwards_compatibility", serde(deny_unknown_fields))]
 #[non_exhaustive]
 pub struct Track {
     /// The origin of this track.
@@ -233,7 +350,7 @@ pub struct Track {
 
     /// If this track was derived from another track, this should contain the
     /// `id` of the original track.
-    pub derived_from_track_id: Option<String>,
+    pub derived_from_track_id: Option<TrackId>,
 
     /// The kind of data stored in this track.
     #[serde(rename = "type")]
@@ -278,6 +395,17 @@ impl Track {
             ext: ExtensionData::default(),
             unknown: HashMap::default(),
         }
+    }
+
+    fn validate(&self, metadata: &Metadata, mode: ValidationMode) -> Result<()> {
+        // If we're derived from another track, make sure that track exists.
+        if let Some(derived_from_track_id) = &self.derived_from_track_id {
+            metadata.validate_track_exists(derived_from_track_id)?;
+        }
+
+        // If we're supposed to fail on unknown fields, do so.
+        check_for_unknown_fields(mode, &self.unknown)?;
+        Ok(())
     }
 }
 
@@ -369,10 +497,22 @@ pub enum AlignmentOrGroup {
     Alignment(Alignment),
 }
 
+impl AlignmentOrGroup {
+    /// (Internal.) Validate this [`AlignmentOrGroup`].
+    fn validate(&self, metadata: &Metadata, mode: ValidationMode) -> Result<()> {
+        match self {
+            AlignmentOrGroup::Group(group) => group.validate(metadata, mode),
+            AlignmentOrGroup::Alignment(alignment) => {
+                alignment.validate(metadata, mode)
+            }
+        }
+    }
+}
+
 /// A group of alignments. This can be used to represent a paragraph of text, or
 /// perhaps a verse of a song.
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-#[cfg_attr(feature = "no_forwards_compatibility", serde(deny_unknown_fields))]
+#[serde(deny_unknown_fields)]
 #[non_exhaustive]
 pub struct AlignmentGroup {
     /// One or more alignments in this group.
@@ -384,11 +524,20 @@ pub struct AlignmentGroup {
     // pub unknown: HashMap<String, serde_json::Value>,
 }
 
+impl AlignmentGroup {
+    /// (Internal.) Validate this [`AlignmentGroup`].
+    fn validate(&self, metadata: &Metadata, mode: ValidationMode) -> Result<()> {
+        for alignment in &self.alignments {
+            alignment.validate(metadata, mode)?;
+        }
+        Ok(())
+    }
+}
+
 /// The smallest unit of alignment or synchronization. This might be a subtitle,
 /// a sentence, or perhaps multiple sentences if that's the best the aligning
 /// application can do.
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-#[cfg_attr(feature = "no_forwards_compatibility", serde(deny_unknown_fields))]
 #[non_exhaustive]
 pub struct Alignment {
     /// A globally unique ID for this alignment. This may be used for things
@@ -436,11 +585,37 @@ pub struct Alignment {
     pub unknown: HashMap<String, serde_json::Value>,
 }
 
+impl Alignment {
+    /// (Internal.) Validate this [`Alignment`].
+    fn validate(&self, metadata: &Metadata, mode: ValidationMode) -> Result<()> {
+        // Heading must be between 1 and 6.
+        if let Some(heading) = self.heading {
+            if heading < 1 || heading > 6 {
+                return Err(Error::InvalidHeading {
+                    heading,
+                    segment_id: self.id,
+                });
+            }
+        }
+
+        // TODO: Require time_span for time-based media types.
+
+        // Make sure all of our track segments are valid.
+        for (track_id, track_segment) in &self.tracks {
+            metadata.validate_track_exists(track_id)?;
+            track_segment.validate(self)?;
+        }
+
+        // If we're supposed to fail on unknown fields, do so.
+        check_for_unknown_fields(mode, &self.unknown)?;
+        Ok(())
+    }
+}
+
 /// A segment of a track included in an alignment. This might be a single
 /// subtitle, a sentence or a line of a song. Or it might be a single image or
 /// audio clip.
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-#[cfg_attr(feature = "no_forwards_compatibility", serde(deny_unknown_fields))]
 #[non_exhaustive]
 pub struct TrackSegment {
     /// Text content, represented as HTML. Either this or `text` must be
@@ -489,6 +664,16 @@ impl TrackSegment {
             html: None,
             file: Some(file),
             unknown: HashMap::default(),
+        }
+    }
+
+    fn validate(&self, alignment: &Alignment) -> Result<()> {
+        // TODO: Handle mismatches between track type and content.
+        match (self.html.as_ref(), self.file.as_ref()) {
+            (Some(_), None) | (None, Some(_)) => Ok(()),
+            _ => {
+                return Err(Error::InvalidSegmentContent { id: alignment.id });
+            }
         }
     }
 }
