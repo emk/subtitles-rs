@@ -10,7 +10,7 @@ members = [
     "libs/dict_importer",
     "libs/dict_manager",
     "substudy",
-    "substudy-ui",
+    # "substudy-ui",
     "libs/dict_manager",
 ]
 
