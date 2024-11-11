@@ -69,6 +69,27 @@ substudy export tracks episode_01_01.mkv episode_01_01.es.srt
 substudy --help
 ```
 
+### Note for MacOS users
+MacOS users might get the following error when running `substudy export anki ...`:
+```
+Error: Could not connect to Anki-Connect
+
+Caused by:
+    0: error sending request for url (http://localhost:8765/): connection error: Connection reset by peer (os error 54)
+    1: connection error: Connection reset by peer (os error 54)
+    2: Connection reset by peer (os error 54)
+```
+
+If you face this error, make sure to disable "App Nap" for Anki. Execute the following commands in a
+terminal window and restart Anki:
+```
+defaults write net.ankiweb.dtop NSAppSleepDisabled -bool true  
+defaults write net.ichi2.anki NSAppSleepDisabled -bool true  
+defaults write org.qt-project.Qt.QtWebEngineCore NSAppSleepDisabled -bool true  
+```
+
+[Reference here](https://foosoft.net/projects/anki-connect/#:~:text=Notes%20for%20MacOS%20Users)
+
 ## Prerequisites
 
 You will need to know some command-line basics: How to open your terminal, how to install command-line tools, how to configure you `PATH`, how to change directories, and how to set environment variables. But you shouldn't need much more than that, because `substudy` is designed to be a friendly command-line tool, as such things go.
