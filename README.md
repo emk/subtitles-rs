@@ -1,4 +1,4 @@
-# Rust subtitle utilities
+<img width="1533" height="1086" alt="image" src="https://github.com/user-attachments/assets/acc8df08-6548-4251-8273-ddd3ab7b5d8f" /># Rust subtitle utilities
 
 [![Build Status](https://travis-ci.org/emk/subtitles-rs.svg?branch=master)](https://travis-ci.org/emk/subtitles-rs) [![Build status](https://ci.appveyor.com/api/projects/status/3hn8cwckcdhpcasm/branch/master?svg=true)](https://ci.appveyor.com/project/emk/subtitles-rs/branch/master)
 
@@ -22,6 +22,7 @@ This repository contains a number of related tools and libraries for manipulatin
 The following assorted libraries have been moved into the `archive` sub-directory, and are no longer maintained. `vobsub2png` might be worth updating at some point, although fewer language learners rely on DVD subtitles these days.
 
 - [opus_tools][]: Utilities for parsing subtitle data from the OPUS project, for use as input to various language models.
+- [YuzuLingo][]: A browser extension for language learning via burned in video subtitles, offering hover-OCR, dynamic multi-dictionary lookups, and 1-click Anki export.
 
 The following subtitle-related projects can be found in other repositories:
 
